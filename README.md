@@ -1,0 +1,2 @@
+# covidData
+Versioned covid data
