@@ -3,10 +3,8 @@ library(purrr)
 library(tibble)
 library(here)
 
-# after this your working directory should be covidModels/R-package
+# after this your working directory should be covidData
 setwd(here())
-setwd('./R-package')
-
 
 # deaths
 files <- Sys.glob("data-raw/JHU/*deaths_US.csv")
