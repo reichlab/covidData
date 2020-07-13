@@ -1,30 +1,37 @@
 #' Construct table of truths for weekly incident and cumulative deaths at
 #' horizons one though 6
 #'
-#' @param issue_date character issue date (i.e. report date) to use for constructing
-#' truths in format 'yyyy-mm-dd'
+#' @param issue_date character issue date (i.e. report date) to use for
+#' constructing truths in format 'yyyy-mm-dd'
 #' @param spatial_resolution character vector specifying spatial unit types to
 #' include: 'county', 'state' and/or 'national'
 #' @param temporal_resolution character vector specifying temporal resolution
 #' to include: currently only 'weekly' is supported
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
+#' @param adjustment_cases character vector specifying times and locations with
+#' reporting anomalies to adjust.  Either 'none' (the default) or one or more
+#' of 'CO-2020-04-24', 'MS-2020-06-22', 'DE-2020-06-23', 'NJ-2020-06-25'. These
+#' refer to locations and times affected by reporting anomalies documented at
+#' https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data#user-content-retrospective-reporting-of-probable-cases-and-deaths
+#' @param adjustment_method string specifying how anomalies are adjusted.
 #'
-#' @return data frame with
+#' @return data frame with columns location (fips code), date, inc, and cum
 #'
 #' @export
 load_jhu_data <- function(
   issue_date = NULL,
   spatial_resolution = 'state',
   temporal_resolution = 'weekly',
-  measure = 'deaths'
+  measure = 'deaths',
+  adjusted = FALSE
   ) {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c('cases', 'deaths'))
   if(measure == 'cases') {
-    jhu_data <- covidModels::jhu_cases_data
+    jhu_data <- covidData::jhu_cases_data
   } else if(measure == 'deaths') {
-    jhu_data <- covidModels::jhu_deaths_data
+    jhu_data <- covidData::jhu_deaths_data
   }
   
   # validate issue_date
@@ -47,7 +54,7 @@ load_jhu_data <- function(
   # validate temporal_resolution
   temporal_resolution <- match.arg(
     temporal_resolution,
-    choices = 'weekly',
+    choices = c('daily', 'weekly'),
     several.ok = FALSE
   )
 
@@ -72,7 +79,7 @@ load_jhu_data <- function(
       )
   }
 
-  # summarized results for state level
+  # summarized results for county level
   results <- NULL
   if('county' %in% spatial_resolution) {
     county_results <- jhu_data %>%
