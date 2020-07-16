@@ -15,6 +15,9 @@
 #' refer to locations and times affected by reporting anomalies documented at
 #' https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data#user-content-retrospective-reporting-of-probable-cases-and-deaths
 #' @param adjustment_method string specifying how anomalies are adjusted.
+#' 'fill_na' will replace affected observations with NAs.
+#' Currently the only option is 'impute_inc', which leaves cumulative counts
+#' unaffected and imputes the incidence value with the 7-day mean incidence
 #'
 #' @return data frame with columns location (fips code), date, inc, and cum
 #'
@@ -24,7 +27,8 @@ load_jhu_data <- function(
   spatial_resolution = 'state',
   temporal_resolution = 'weekly',
   measure = 'deaths',
-  adjusted = FALSE
+  adjustment_cases = 'none',
+  adjustment_method = 'impute_inc'
   ) {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c('cases', 'deaths'))
@@ -72,6 +76,8 @@ load_jhu_data <- function(
     )
 
   # if weekly temporal resolution, filter to saturdays
+  # TODO: adjust data first, go to weekly resolution later
+  # (so this if block will have to be at the end of the function)
   if(temporal_resolution == 'weekly') {
     jhu_data <- jhu_data %>%
       dplyr::filter(
@@ -119,7 +125,7 @@ load_jhu_data <- function(
       dplyr::group_by(location_name) %>%
       dplyr::mutate(inc = cum - dplyr::lag(cum, 1L)) %>%
       dplyr::ungroup() %>%
-      dplyr::left_join(covidEnsembles::fips_codes, by = 'location_name') %>%
+      dplyr::left_join(covidData::fips_codes, by = 'location_name') %>%
       dplyr::select(location, date, cum, inc)
     
     results <- dplyr::bind_rows(results, state_results)
@@ -141,6 +147,21 @@ load_jhu_data <- function(
 
     results <- dplyr::bind_rows(results, national_results)
   }
+  
+  # TODO: in results data frame, replace daily inc with NA in specific rows, if requested
+  # at this point, the results data frame will have daily incidence values and we want to
+  # replace the numbers in some rows with NAs (no new rows, editing existing rows)
+  
+  # TODO: if temporal_resolution == 'weekly', aggregate daily incidence to weekly incidence here
+  # input: data frame with daily values, output: data frame with approximately 1/7 the # of rows
+  # with weekly inc values
+  # group_by(location, week), and summarize(inc = sum(inc, na.rm = TRUE))
+  
+  # TODO: aggregate inc to get cum
+  # at this point you'll have a data frame with results for all locations
+  # and either an incorrect cum column that we need to replace (if temporal_resolution == daily)
+  # or no cum column  (since previous step got rid of it if temporal_resolution == weekly)
+  # group_by(location) [but not week] and summarize(cum = cumsum(inc))
 
   return(results)
 }
