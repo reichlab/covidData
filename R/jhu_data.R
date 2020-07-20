@@ -86,7 +86,7 @@ load_jhu_data <- function(
         location = sprintf("%05d", FIPS)) %>%
       dplyr::filter(location < '80001') %>%
       dplyr::group_by(location) %>%
-      dplyr::mutate(inc = cum - dplyr::lag(cum, 1L)) %>%
+      dplyr::mutate(inc = diff(c(0,cum))) %>%
       dplyr::select(location, date, cum, inc) %>%
       dplyr::ungroup()
     
@@ -115,7 +115,7 @@ load_jhu_data <- function(
       dplyr::group_by(location_name, date) %>%
       dplyr::summarize(cum = sum(cum)) %>%
       dplyr::group_by(location_name) %>%
-      dplyr::mutate(inc = cum - dplyr::lag(cum, 1L)) %>%
+      dplyr::mutate(inc = diff(c(0,cum))) %>%
       dplyr::ungroup() %>%
       #dplyr::left_join(covidData::fips_codes, by = 'location_name') %>%
       dplyr::left_join(fips_codes, by = 'location_name') %>%
@@ -133,7 +133,7 @@ load_jhu_data <- function(
       dplyr::summarize(cum = sum(cum)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(
-        inc = cum - dplyr::lag(cum, 1L),
+        inc = diff(c(0,cum)),
         location = 'US'
       ) %>%
       dplyr::select(location, date, cum, inc)
@@ -152,22 +152,8 @@ load_jhu_data <- function(
     if (adjustment_method=='fill_na'){
       results <- results %>%
         dplyr:: mutate(
-          inc = ifelse(location == adjustment_state_abbr & date == as.Date(adjustment_date),NA,inc))
+          inc = ifelse(location == adjustment_state_abbr & date == as.Date(adjustment_date),NA_integer_,inc))
     }
-  }
-  
-  
-  # TODO: aggregate inc to get cum
-  # at this point you'll have a data frame with results for all locations
-  # and either an incorrect cum column that we need to replace (if temporal_resolution == daily)
-  # or no cum column  (since previous step got rid of it if temporal_resolution == weekly)
-  # group_by(location) [but not week] and summarize(cum = cumsum(inc))
-  if (temporal_resolution =='daily'){
-    results <- results %>%
-      dplyr:: mutate(date = lubridate::ymd(date)) %>%
-      dplyr:: group_by(location,.drop=FALSE)%>%
-      dplyr:: summarize(date = date,cum = cumsum(tidyr::replace_na(inc, 0)))%>%
-      dplyr:: ungroup()
   }
   
   # TODO: if temporal_resolution == 'weekly', aggregate daily incidence to weekly incidence here
@@ -176,15 +162,30 @@ load_jhu_data <- function(
   # group_by(location, week), and summarize(inc = sum(inc, na.rm = TRUE))
   # if weekly temporal resolution, filter to saturdays
   # TODO: adjust data first, go to weekly resolution later
-  # (so this if block will have to be at the end of the function)
   if(temporal_resolution == 'weekly') {
     # ??? should be results not jhu_data
     results <- results %>%
-      # ??? include saturday that > max(date)
+      # ??? include saturday that > max(date) --if the last date is not sat-> drop the last week 
       dplyr::mutate(date = lubridate::ceiling_date(lubridate::ymd(date), unit = "week") - 1) %>%
-      dplyr::group_by(location, week) %>%
-      dplyr::summarize(inc = sum(inc, na.rm = TRUE))%>%
+      dplyr::group_by(location, date) %>%
+      dplyr::summarize(inc = sum(inc, na.rm = FALSE))%>%
       dplyr::ungroup() 
   }
+  
+  # TODO: aggregate inc to get cum
+  # at this point you'll have a data frame with results for all locations
+  # and either an incorrect cum column that we need to replace (if temporal_resolution == daily)
+  # or no cum column  (since previous step got rid of it if temporal_resolution == weekly)
+  # group_by(location) [but not week] and summarize(cum = cumsum(inc))
+  # add cumulative col
+  #results <- results %>%
+  #  dplyr:: mutate(date = lubridate::ymd(date),
+  #                 cum = results %>%
+      # dplyr:: group_by(location)%>%
+      # dplyr:: summarize(cum = cumsum(inc))%>%
+      # dplyr:: ungroup() %>%
+      # dplyr::pull(cum))
+  
+  
   return(results)
 }
