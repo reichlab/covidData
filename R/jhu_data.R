@@ -29,15 +29,15 @@ load_jhu_data <- function(
   measure = 'deaths',
   adjustment_cases = 'none',
   adjustment_method = 'impute_inc'
-  ) {
+) {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c('cases', 'deaths'))
   if(measure == 'cases') {
-    #jhu_data <- covidData::jhu_cases_data
-    jhu_data <- jhu_cases_data
+    jhu_data <- covidData::jhu_cases_data
+    #jhu_data <- jhu_cases_data
   } else if(measure == 'deaths') {
-    #jhu_data <- covidData::jhu_deaths_data
-    jhu_data <- jhu_deaths_data
+    jhu_data <- covidData::jhu_deaths_data
+    #jhu_data <- jhu_deaths_data
   }
   
   # validate issue_date
@@ -50,20 +50,20 @@ load_jhu_data <- function(
     stop(paste0('Invalid issue date; must be one of: ',
                 paste0(jhu_data$issue_date, collapse = ', ')))
   }
-
+  
   # validate spatial_resolution
   spatial_resolution <- match.arg(
     spatial_resolution,
     choices = c('county', 'state', 'national'),
     several.ok = TRUE)
-
+  
   # validate temporal_resolution
   temporal_resolution <- match.arg(
     temporal_resolution,
     choices = c('daily', 'weekly'),
     several.ok = FALSE
   )
-
+  
   # get report for specified issue date
   jhu_data <- jhu_data %>%
     dplyr::filter(issue_date == UQ(issue_date)) %>%
@@ -76,7 +76,7 @@ load_jhu_data <- function(
     dplyr::mutate(
       date = as.character(lubridate::mdy(date))
     )
-
+  
   # summarized results for county level
   results <- NULL
   if('county' %in% spatial_resolution) {
@@ -108,7 +108,7 @@ load_jhu_data <- function(
       'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee',
       'Texas', 'Utah', 'Vermont', 'Virgin Islands', 'Virginia',
       'Washington', 'West Virginia', 'Wisconsin', 'Wyoming')
-
+    
     state_results <- jhu_data %>%
       dplyr::filter(Province_State %in% states_to_keep) %>%
       dplyr::mutate(location_name = Province_State) %>%
@@ -123,7 +123,7 @@ load_jhu_data <- function(
     
     results <- dplyr::bind_rows(results, state_results)
   }
-
+  
   # summarized results for national level
   if('national' %in% spatial_resolution) {
     # because we don't filter on states_to_keep as above, we are off by a total
@@ -137,7 +137,7 @@ load_jhu_data <- function(
         location = 'US'
       ) %>%
       dplyr::select(location, date, cum, inc)
-
+    
     results <- dplyr::bind_rows(results, national_results)
   }
   
@@ -178,14 +178,14 @@ load_jhu_data <- function(
   # or no cum column  (since previous step got rid of it if temporal_resolution == weekly)
   # group_by(location) [but not week] and summarize(cum = cumsum(inc))
   # add cumulative col
-  #results <- results %>%
-  #  dplyr:: mutate(date = lubridate::ymd(date),
-  #                 cum = results %>%
-      # dplyr:: group_by(location)%>%
-      # dplyr:: summarize(cum = cumsum(inc))%>%
-      # dplyr:: ungroup() %>%
-      # dplyr::pull(cum))
-  
+  results <- results %>%
+    dplyr:: mutate(
+      date = lubridate::ymd(date),
+      cum = results %>%
+        dplyr::group_by(location)%>%
+        dplyr::mutate(cum = cumsum(inc)) %>%
+        dplyr::ungroup() %>%
+        dplyr::pull(cum))
   
   return(results)
 }
