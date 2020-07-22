@@ -145,7 +145,7 @@ load_jhu_data <- function(
   # at this point, the results data frame will have daily incidence values and we want to
   # replace the numbers in some rows with NAs (no new rows, editing existing rows)
   
-   if (length(adjustment_cases)>0){
+   if (adjustment_cases !='none' & length(adjustment_cases)>0){
      adjustment_states = sub("-.*", "", adjustment_cases)
      adjustment_dates = sub("^.*?-", "", adjustment_cases)
      adjustment_state_fips = unlist(lapply(adjustment_states, function(x) covidData::fips_codes[which(covidData::fips_codes$abbreviation==x),]$location))
@@ -154,7 +154,10 @@ load_jhu_data <- function(
        results <- results %>%
          dplyr::rowwise() %>%
          dplyr:: mutate(
-           inc = ifelse(date %in% adjustments$dates[adjustments$fips==location],NA_integer_,inc)) %>%
+           # for each row, if date is in adjustment date and location is in adjustment states
+           inc = ifelse(date %in% adjustments$dates[adjustments$fips==location] |
+                          # if first two digits of county fips is the state fips of adjustment states
+                          date %in% adjustments$dates[adjustments$fips==stringr::str_sub(location, start = 1, end=2)] ,NA_integer_,inc)) %>%
          dplyr::ungroup()
      }
    }   
