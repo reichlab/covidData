@@ -145,16 +145,22 @@ load_jhu_data <- function(
   # at this point, the results data frame will have daily incidence values and we want to
   # replace the numbers in some rows with NAs (no new rows, editing existing rows)
   
-  if (adjustment_cases!= "none"){
-    adjustment_state = sub("-.*", "", adjustment_cases)
-    adjustment_date = sub("^.*?-", "", adjustment_cases)
-    adjustment_state_abbr = fips_codes[which(fips_codes$abbreviation==adjustment_state),]$location
-    if (adjustment_method=='fill_na'){
-      results <- results %>%
-        dplyr:: mutate(
-          inc = ifelse(location == adjustment_state_abbr & date == as.Date(adjustment_date),NA_integer_,inc))
-    }
-  }
+   if (length(adjustment_cases)>0){
+     adjustment_states = sub("-.*", "", adjustment_cases)
+     adjustment_dates = sub("^.*?-", "", adjustment_cases)
+     adjustment_state_fips = unlist(lapply(adjustment_states, function(x) covidData::fips_codes[which(covidData::fips_codes$abbreviation==x),]$location))
+     adjustments = data.frame(fips = adjustment_state_fips,dates = adjustment_dates)
+     if (adjustment_method=='fill_na'){
+       results <- results %>%
+         dplyr::rowwise() %>%
+         dplyr:: mutate(
+           inc = ifelse(date %in% adjustments$dates[adjustments$fips==location],NA_integer_,inc)) %>%
+         dplyr::ungroup()
+     }
+   }   
+  
+  
+  #ifelse(location == adjustment_state_abbr & date == as.Date(adjustment_date),NA_integer_,inc)
   
   # TODO: if temporal_resolution == 'weekly', aggregate daily incidence to weekly incidence here
   # input: data frame with daily values, output: data frame with approximately 1/7 the # of rows
@@ -163,11 +169,16 @@ load_jhu_data <- function(
   # if weekly temporal resolution, filter to saturdays
   # TODO: adjust data first, go to weekly resolution later
   if(temporal_resolution == 'weekly') {
-    # ??? should be results not jhu_data
     results <- results %>%
-      # ??? include saturday that > max(date) --if the last date is not sat-> drop the last week 
-      dplyr::mutate(date = lubridate::ceiling_date(lubridate::ymd(date), unit = "week") - 1) %>%
-      dplyr::group_by(location, date) %>%
+      dplyr::mutate(sat_date = lubridate::ceiling_date(lubridate::ymd(date), unit = "week") - 1) %>%
+      dplyr::group_by(location) %>%
+      # if the last week is not complete, drop all obs in that week
+      dplyr::filter(if (max(date)<max(sat_date)) date <= max(sat_date)-7 else TRUE) %>%
+      dplyr::ungroup() %>%
+      # delete date column
+      dplyr::select(-2)%>%
+      dplyr::rename (date = sat_date) %>%
+      dplyr::group_by(location,date) %>%
       dplyr::summarize(inc = sum(inc, na.rm = FALSE))%>%
       dplyr::ungroup() 
   }
@@ -178,14 +189,14 @@ load_jhu_data <- function(
   # or no cum column  (since previous step got rid of it if temporal_resolution == weekly)
   # group_by(location) [but not week] and summarize(cum = cumsum(inc))
   # add cumulative col
-  results <- results %>%
-    dplyr:: mutate(
-      date = lubridate::ymd(date),
-      cum = results %>%
-        dplyr::group_by(location)%>%
-        dplyr::mutate(cum = cumsum(inc)) %>%
-        dplyr::ungroup() %>%
-        dplyr::pull(cum))
-  
+   results <- results %>%
+     dplyr:: mutate(
+       date = lubridate::ymd(date),
+       cum = results %>%
+         dplyr::group_by(location)%>%
+         dplyr::mutate(cum = cumsum(inc)) %>%
+         dplyr::ungroup() %>%
+         dplyr::pull(cum))
+
   return(results)
 }
