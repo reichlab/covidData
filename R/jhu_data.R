@@ -15,7 +15,8 @@
 #' refer to locations and times affected by reporting anomalies documented at
 #' https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data#user-content-retrospective-reporting-of-probable-cases-and-deaths
 #' @param adjustment_method string specifying how anomalies are adjusted.
-#' 'fill_na' will replace affected observations with NAs.
+#' 'fill_na' will replace affected observations with NAs and correct daily 
+#' cumulative counts for all dates on and after adjustment date.
 #' Currently the only option is 'impute_inc', which leaves cumulative counts
 #' unaffected and imputes the incidence value with the 7-day mean incidence
 #'
@@ -34,10 +35,8 @@ load_jhu_data <- function(
   measure <- match.arg(measure, choices = c('cases', 'deaths'))
   if(measure == 'cases') {
     jhu_data <- covidData::jhu_cases_data
-    #jhu_data <- jhu_cases_data
   } else if(measure == 'deaths') {
     jhu_data <- covidData::jhu_deaths_data
-    #jhu_data <- jhu_deaths_data
   }
   
   # validate issue_date
@@ -117,8 +116,7 @@ load_jhu_data <- function(
       dplyr::group_by(location_name) %>%
       dplyr::mutate(inc = diff(c(0,cum))) %>%
       dplyr::ungroup() %>%
-      #dplyr::left_join(covidData::fips_codes, by = 'location_name') %>%
-      dplyr::left_join(fips_codes, by = 'location_name') %>%
+      dplyr::left_join(covidData::fips_codes, by = 'location_name') %>%
       dplyr::select(location, date, cum, inc)
     
     results <- dplyr::bind_rows(results, state_results)
@@ -148,7 +146,9 @@ load_jhu_data <- function(
    if (adjustment_cases !='none' & length(adjustment_cases)>0){
      adjustment_states = sub("-.*", "", adjustment_cases)
      adjustment_dates = sub("^.*?-", "", adjustment_cases)
-     adjustment_state_fips = unlist(lapply(adjustment_states, function(x) covidData::fips_codes[which(covidData::fips_codes$abbreviation==x),]$location))
+     adjustment_state_fips = unlist(lapply(
+       adjustment_states, function(x) 
+         covidData::fips_codes[which(covidData::fips_codes$abbreviation==x),]$location))
      adjustments = data.frame(fips = adjustment_state_fips,dates = adjustment_dates)
      if (adjustment_method=='fill_na'){
        results <- results %>%
@@ -163,7 +163,7 @@ load_jhu_data <- function(
    }   
   
   
-  #ifelse(location == adjustment_state_abbr & date == as.Date(adjustment_date),NA_integer_,inc)
+  
   
   # TODO: if temporal_resolution == 'weekly', aggregate daily incidence to weekly incidence here
   # input: data frame with daily values, output: data frame with approximately 1/7 the # of rows
@@ -173,7 +173,8 @@ load_jhu_data <- function(
   # TODO: adjust data first, go to weekly resolution later
   if(temporal_resolution == 'weekly') {
     results <- results %>%
-      dplyr::mutate(sat_date = lubridate::ceiling_date(lubridate::ymd(date), unit = "week") - 1) %>%
+      dplyr::mutate(sat_date = lubridate::ceiling_date
+                    (lubridate::ymd(date), unit = "week") - 1) %>%
       dplyr::group_by(location) %>%
       # if the last week is not complete, drop all obs in that week
       dplyr::filter(if (max(date)<max(sat_date)) date <= max(sat_date)-7 else TRUE) %>%
