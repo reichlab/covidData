@@ -28,6 +28,7 @@ load_jhu_data <- function(
   spatial_resolution = 'state',
   temporal_resolution = 'weekly',
   measure = 'deaths',
+  replace_negatives= TRUE,
   adjustment_cases = 'none',
   adjustment_method = 'impute_inc'
 ) {
@@ -139,6 +140,15 @@ load_jhu_data <- function(
     results <- dplyr::bind_rows(results, national_results)
   }
   
+  # if for neg
+  
+  # +function 
+  # replace -inc --> 0 and put it on the day before it
+  #find inds for -inc + redistribution
+  if (replace_negatives == TRUE){
+    results = replace_negatives(data = results)
+  }
+   
   # TODO: in results data frame, replace daily inc with NA in specific rows, if requested
   # at this point, the results data frame will have daily incidence values and we want to
   # replace the numbers in some rows with NAs (no new rows, editing existing rows)
@@ -149,16 +159,25 @@ load_jhu_data <- function(
      adjustment_state_fips = unlist(lapply(
        adjustment_states, function(x) 
          covidData::fips_codes[which(covidData::fips_codes$abbreviation==x),]$location))
-     adjustments = data.frame(fips = adjustment_state_fips,dates = adjustment_dates)
+     #changed to as.Date
+     adjustments = data.frame(fips = adjustment_state_fips,dates = as.Date(adjustment_dates))
      if (adjustment_method=='fill_na'){
-       results <- results %>%
-         dplyr::rowwise() %>%
-         dplyr:: mutate(
-           # for each row, if date is in adjustment date and location is in adjustment states
-           inc = ifelse(date %in% adjustments$dates[adjustments$fips==location] |
-                          # if first two digits of county fips is the state fips of adjustment states
-                          date %in% adjustments$dates[adjustments$fips==stringr::str_sub(location, start = 1, end=2)] ,NA_integer_,inc)) %>%
-         dplyr::ungroup()
+       results <- covidData::fill_na(results,adjustments)
+     } 
+     
+     # has to be non-neg
+     if (adjustment_method =='impute_and_redistribute'){
+       if (replace_negatives == FALSE){
+         results = replace_negatives(data = results)
+       }
+       
+       for (i in 1:nrow(adjustments)){
+         #location = adjustment_cases[i,]$fips
+         #date = as.Date(adjustment_cases[i,]$date)
+         #results[location == stringr::str_sub(results$location, start = 1, end=2),] = 
+        #   adjust_daily_incidence(data = results[location == stringr::str_sub(results$location, start = 1, end=2),],
+         #                         adjustment_cases[i,])
+       }
      }
    }   
   
