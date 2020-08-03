@@ -125,7 +125,9 @@ load_jhu_data <- function(
       dplyr::group_by(location_name) %>%
       dplyr::mutate(inc = cum - dplyr::lag(cum, 1L)) %>%
       dplyr::ungroup() %>%
-      dplyr::left_join(covidData::fips_codes, by = 'location_name') %>%
+      dplyr::left_join(
+        covidData::fips_codes %>% dplyr::filter(nchar(location) == 2),
+        by = 'location_name') %>%
       dplyr::select(location, date, cum, inc)
     
     results <- dplyr::bind_rows(results, state_results)
