@@ -12,9 +12,8 @@ replace_negatives <- function (data){
     seed = 1234
     location = case$fips
     
-    #data[data$location == location,]$inc = 0
-    
-    imputed_data = adjust_daily_incidence(data[data$location == location,],case,seed)
+    #? measure
+    imputed_data = adjust_daily_incidence(data[data$location == location,],case,seed, measure)
     
     data[data$location == location,]$inc = imputed_data
   }

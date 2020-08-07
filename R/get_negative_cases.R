@@ -10,7 +10,7 @@ get_negative_cases <- function(data){
     }
   }
   
-  adjustments = data.frame(fips = locations,dates = dates)
+  adjustments = data.frame(fips = locations,dates = as.Date(dates))
   
 return(adjustments)
 }

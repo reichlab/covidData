@@ -1,7 +1,7 @@
 
 # might need to take out all as.Date
 
-adjust_daily_incidence <- function (data, adjustment_case,seed){
+adjust_daily_incidence <- function (data, adjustment_case,seed, measure){
   
   set.seed(seed)
   
@@ -11,7 +11,8 @@ adjust_daily_incidence <- function (data, adjustment_case,seed){
                      (stringr::str_sub(data$ location, start = 1, end=2) %in% adjustment_case$fips |
                         data$location == 'US')),]$inc
 
-  replacement = round(impute_daily_incidence (data, adjustment_case),digits=0)
+  # read data
+  replacement = round(impute_daily_incidence (data, adjustment_case, measure),digits=0)
   # if rep > obs  repl= obs for stan 
   
   if (obs > 0){
@@ -28,7 +29,7 @@ adjust_daily_incidence <- function (data, adjustment_case,seed){
                                       adjustment_case$fips),replacement))
   
   
-  #in p
+  #in place
   data = data %>%
     dplyr:: mutate(new_cum = ifelse(date <= as.Date(adjustment_case$date),
                                        cumsum(inc),0)) %>%

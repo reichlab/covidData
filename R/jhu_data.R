@@ -9,6 +9,7 @@
 #' to include: currently only 'weekly' is supported
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
+#' @param replace_negatives 
 #' @param adjustment_cases character vector specifying times and locations with
 #' reporting anomalies to adjust.  Either 'none' (the default) or one or more
 #' of 'CO-2020-04-24', 'MS-2020-06-22', 'DE-2020-06-23', 'NJ-2020-06-25'. These
@@ -145,9 +146,9 @@ load_jhu_data <- function(
   # +function 
   # replace -inc --> 0 and put it on the day before it
   #find inds for -inc + redistribution
-  if (replace_negatives == TRUE){
-    results = replace_negatives(data = results)
-  }
+  #if (replace_negatives == TRUE){
+  #  results = replace_negatives(data = results)
+  #}
    
   # TODO: in results data frame, replace daily inc with NA in specific rows, if requested
   # at this point, the results data frame will have daily incidence values and we want to
@@ -167,19 +168,35 @@ load_jhu_data <- function(
      
      # has to be non-neg
      if (adjustment_method =='impute_and_redistribute'){
-       if (replace_negatives == FALSE){
-         results = replace_negatives(data = results)
-       }
+       #if (replace_negatives == FALSE){
+       #   results = replace_negatives(data = results)
+       #}
        
        for (i in 1:nrow(adjustments)){
-         #location = adjustment_cases[i,]$fips
-         #date = as.Date(adjustment_cases[i,]$date)
-         #results[location == stringr::str_sub(results$location, start = 1, end=2),] = 
-        #   adjust_daily_incidence(data = results[location == stringr::str_sub(results$location, start = 1, end=2),],
-         #                         adjustment_cases[i,])
+         
+         adjustment_location = adjustments[i,]$fips
+         adjustment_date = as.Date(adjustments[i,]$date)
+         
+         # get state, counties and national observations for an adjustment case
+         location_data = results %>%
+           dplyr::filter(stringr::str_sub(location, start = 1, end=2) %in% adjustment_location |
+                           location == 'US' | location == adjustment_location)
+         
+         # for each location in data, get imputed data
+         for (fips in unique(location_data$location)){
+           d = location_data[location_data$location == fips,]
+           
+           seed=1234
+           # get adjusted inc column
+           imputed_inc = adjust_daily_incidence(d, adjustments[i,],seed) 
+           
+           # put imputed data back to results
+           results[which(results$location == fips),]$inc = imputed_inc
        }
+      }
      }
-   }   
+     
+   }      
   
   
   
