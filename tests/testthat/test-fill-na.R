@@ -39,7 +39,7 @@ test_that("agreement with daily cumulative counts in csv file
     dplyr::select(location, date, cum, inc)%>%
     dplyr::mutate(date = as.Date(date))
   
-  case1 = load_jhu_data(
+  case1 = covidData::load_jhu_data(
   issue_date = '2020-07-16',
   temporal_resolution = 'daily',
   adjustment_cases = 'CO-2020-04-24',
@@ -58,7 +58,7 @@ test_that("agreement in daily incident and cumulative counts between
 a call to function with adjustment_cases = 'none'and adjustment_cases = 'CO-2020-04-24'
           for all locations other than colorado",{ 
  
-  no_adjustments = load_jhu_data(
+  no_adjustments = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     adjustment_cases = 'none',
@@ -66,7 +66,7 @@ a call to function with adjustment_cases = 'none'and adjustment_cases = 'CO-2020
     dplyr::filter(location != '08')
     
   
-  with_adjustments = load_jhu_data(
+  with_adjustments = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     adjustment_cases = 'CO-2020-04-24',
@@ -81,7 +81,7 @@ a call to function with adjustment_cases = 'none'and adjustment_cases = 'CO-2020
 test_that("daily incident count for CO on 2020-04-24 to be NA
   and cumulative counts on or after 2020-04-24 to be NA",{
 
-  after_adjustments = load_jhu_data(
+  after_adjustments = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     adjustment_cases = 'CO-2020-04-24',
@@ -89,7 +89,7 @@ test_that("daily incident count for CO on 2020-04-24 to be NA
     measure = 'cases') %>%
     dplyr::filter(location == '08')
   
-  no_adjustments = load_jhu_data(
+  no_adjustments = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     adjustment_cases = 'none',
@@ -131,7 +131,7 @@ test_that("agreement with daily cumulative counts in csv file
     dplyr::ungroup()%>%
     dplyr::mutate(date = as.Date(date))
   
-  case1 = load_jhu_data(
+  case1 = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     spatial_resolution = 'county',
@@ -149,7 +149,7 @@ test_that("agreement with daily cumulative counts in csv file
 test_that("agreement in daily incident and cumulative counts between 
 a call to function with adjustment_cases = 'none' and adjustment_cases = 'CO-2020-04-24' 
           for all locations other than counties in colorado",{ 
-  no_adjustments = load_jhu_data(
+  no_adjustments =covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     spatial_resolution = 'county',
@@ -158,7 +158,7 @@ a call to function with adjustment_cases = 'none' and adjustment_cases = 'CO-202
     dplyr::filter(stringr::str_sub(location, start = 1, end=2) != '08')
   
   
-  with_adjustments = load_jhu_data(
+  with_adjustments = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     spatial_resolution = 'county',
@@ -174,7 +174,7 @@ a call to function with adjustment_cases = 'none' and adjustment_cases = 'CO-202
 test_that("daily incident count for counties in CO on 2020-04-24 to be NA
   and cumulative counts on or after 2020-04-24 to be NA.",{
     
-  after_adjustments = load_jhu_data(
+  after_adjustments = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     spatial_resolution = 'county',
@@ -183,7 +183,7 @@ test_that("daily incident count for counties in CO on 2020-04-24 to be NA
     measure = 'cases') %>%
     dplyr::filter(stringr::str_sub(location, start = 1, end=2)  == '08')
   
-  no_adjustments = load_jhu_data(
+  no_adjustments = covidData::load_jhu_data(
     issue_date = '2020-07-16',
     temporal_resolution = 'daily',
     spatial_resolution = 'county',

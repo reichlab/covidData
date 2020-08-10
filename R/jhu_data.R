@@ -163,7 +163,8 @@ load_jhu_data <- function(
      #changed to as.Date
      adjustments = data.frame(fips = adjustment_state_fips,dates = as.Date(adjustment_dates))
      if (adjustment_method=='fill_na'){
-       results <- covidData::fill_na(results,adjustments)
+       print("if fill na")
+       results = covidData::fill_na(results = results,adjustments = adjustments)
      } 
      
      # has to be non-neg

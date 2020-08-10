@@ -67,7 +67,7 @@ get_imputed_value <- function (data, adjustment_case){
 # generate final output
 get_results <- function (data, measure){
   
-  #data= death_data
+  data= death_data
   # find all cases
   na_adjustments = get_negative_cases(data)
   

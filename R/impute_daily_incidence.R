@@ -1,8 +1,10 @@
 #' Imputed incidence value for the single day with reporting anomaly
 #' 
-#' @param data time series 
-#' @param adjustment_case
-#' @return 
+#' @param data time series data for location in adjustment case
+#' @param adjustment_case a case to adjust
+#' @param measure case or death
+#' @return incidence columns after adjustments
+#' @export
 
 #one location 
 #precalculate output for all counties and states in this adjustment_case

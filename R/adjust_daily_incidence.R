@@ -1,6 +1,14 @@
+#' Redistribute difference of original observation and the 
+#' imputed incidence value for the single day with reporting anomaly
+#' 
+#' @param data time series data for location in adjustment case
+#' @param adjustment_case a case to adjust
+#' @param measure case or death
+#' @return incidence columns after redistribution
+#' @export
+
 
 # might need to take out all as.Date
-
 adjust_daily_incidence <- function (data, adjustment_case,seed, measure){
   
   set.seed(seed)
