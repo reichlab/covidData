@@ -328,7 +328,7 @@ transformed parameters {
     // negative binomial dispersion
     // this is a numerically stable calculation of
     // phi = log{1 + exp(phi_mean + phi_sd * raw_phi)};
-    phi = log1p_exp(fma(phi_sd, raw_phi, phi_mean));
+    phi = log1p_exp(fma(phi_sd, raw_phi, phi_mean)) + 0.01;
   }
 }
 

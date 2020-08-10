@@ -23,7 +23,7 @@ get_negative_cases <- function(data){
 
 
 # call stan model and get imputed value for a adjustment case
-get_imputed_value <- function (data, adjustment_case){
+get_imputed_value <- function (data, adjustment_case, model) {
 
   inds = as.Date(adjustment_case$date) - min(data$date)
   
@@ -39,8 +39,6 @@ get_imputed_value <- function (data, adjustment_case){
   boundary_knots <- all_knots[c(1, length(all_knots))]
   interior_knots <- all_knots[-c(1, length(all_knots))]
   
-  #compile
-  model <- rstan::stan_model(file = "code/data-processing/bspline_forecast_daily.stan")
   #par estimates....predictions
   map_estimates_daily <- rstan::optimizing(object = model, data= list(
     T = nrow(data),
@@ -66,7 +64,7 @@ get_imputed_value <- function (data, adjustment_case){
 }
 
 # generate final output
-get_results <- function (data, measure){
+get_results <- function (data, measure, model){
   
   measure = 'death'
   #data= death_data
@@ -129,7 +127,7 @@ get_results <- function (data, measure){
       dplyr::ungroup()
   
     # for each location in data, get imputed data
-    for (fips in unique(location_data$location)){
+    for (fips in unique(location_data$location)) {
       
       cat(paste(" imputing fips", fips, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
       cat(paste(" imputing date", adjustment_date, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
@@ -138,7 +136,7 @@ get_results <- function (data, measure){
       
       set.seed(1234)
       # call stan model here
-      imputed = round(get_imputed_value(d,adjustments[i,]), digits=0)
+      imputed = round(get_imputed_value(d, adjustments[i,], model), digits=0)
       
       # cols: location, dates, measure, inc
       target = data.frame(location=fips,
@@ -151,8 +149,17 @@ get_results <- function (data, measure){
     }
     
   }
-  # same name :) 
-  save(results, file = 'data/jhu_deaths_imputed_data.rdata')
+
+  # change name and save
+  if (measure == "deaths") {
+    jhu_deaths_imputed_data <- results
+    # need to change cols: location, dates, measure, inc
+    save(jhu_deaths_imputed_data, file = 'data/jhu_deaths_imputed_data.rdata')
+  } else if (measure == "cases") {
+    jhu_cases_imputed_data <- results
+    # need to change cols: location, dates, measure, inc
+    save(jhu_cases_imputed_data, file = 'data/jhu_cases_imputed_data.rdata')
+  }
 }
 
 
@@ -185,9 +192,8 @@ case_data = covidData::load_jhu_data(spatial_resolution = c('state','county','na
                           replace_negatives = FALSE,
                           adjustment_cases = 'none')
 
-get_results(data = death_data, measure = 'death')
+#compile stan model
+model <- rstan::stan_model(file = "code/data-processing/bspline_forecast_daily.stan")
 
-
-
-
-
+get_results(data = death_data, measure = "deaths", model = model)
+get_results(data = case_data, measure = "cases", model = model)
