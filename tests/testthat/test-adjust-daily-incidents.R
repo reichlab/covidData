@@ -1,5 +1,5 @@
 library(dplyr)
-library(testthat)
+testthat::context("adjust_daily_incidence")
 
 # read in data
 data = covidData::load_jhu_data(spatial_resolution = "state", 

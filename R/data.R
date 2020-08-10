@@ -15,3 +15,9 @@
 #'
 #' @format A tibble with a row per issue date
 "jhu_cases_data"
+
+
+#' imputed deaths
+#'
+#' @format A data.frame
+"jhu_deaths_imputed_data"

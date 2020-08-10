@@ -9,11 +9,11 @@ data = covidData::load_jhu_data(spatial_resolution = "state",
   # CO
   dplyr:: filter(location == '08')
 
-imputed_data = replace_negatives(data)
+imputed_data = covidData::replace_negatives(data)
 
 test_that("incidents after the last negative observation shouldn't change",{
   # find  observations with negative inc
-  adjustments = get_negative_cases(data)
+  adjustments = covidData::get_negative_cases(data)
 
   # take the last negative case
   date = adjustments[-1,]$dates

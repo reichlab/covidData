@@ -10,7 +10,7 @@
 #precalculate output for all counties and states in this adjustment_case
 impute_daily_incidence <- function (data, adjustment_case,measure){
   if (measure == 'death'){
-    imputed_data <- get(load("data/jhu_deaths_imputed_data.rdata"))
+    imputed_data <- covidData::jhu_deaths_imputed_data
   } else {
     # imputed case data
   }

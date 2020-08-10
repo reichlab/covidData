@@ -69,7 +69,7 @@ get_imputed_value <- function (data, adjustment_case){
 get_results <- function (data, measure){
   
   measure = 'death'
-  data= death_data
+  #data= death_data
   # find all cases
   na_adjustments = get_negative_cases(data)
   
@@ -151,7 +151,7 @@ get_results <- function (data, measure){
     }
     
   }
-  
+  # same name :) 
   save(results, file = 'data/jhu_deaths_imputed_data.rdata')
 }
 

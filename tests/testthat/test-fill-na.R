@@ -2,7 +2,7 @@ library(dplyr)
 library(testthat)
 
 # read csv file
-jhu_data = readr::read_csv("test data/2020-07-16_time_series_covid19_confirmed_US.csv")
+jhu_data = readr::read_csv("tests/testthat/test data/2020-07-16_time_series_covid19_confirmed_US.csv")
 
 test_that("agreement with daily cumulative counts in csv file
           for all locations other than colorado",{

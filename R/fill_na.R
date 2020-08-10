@@ -6,6 +6,9 @@
 #' @export
 fill_na <- function(results, adjustments){
   print('na')
+  
+  adjustments$dates= as.character(adjustments$dates)
+  
   results = results %>%
     dplyr::rowwise() %>%
     dplyr:: mutate(

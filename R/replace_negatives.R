@@ -1,13 +1,14 @@
 #' Replace negative incidence with 0 in a given data frame
 #'
 #' @param data data frame 
+#' @param measure death or case
 #' @return data frame after replacement
 #'
-#' @export
+#' @export 
 #' 
 # replace -inc --> 0 and put it on the day before it
 # call adjust_daily_inc with cases = dates w/ -inc
-replace_negatives <- function (data){
+replace_negatives <- function (data, measure){
   
   # find  observations with negative inc
   adjustments = get_negative_cases(data)
