@@ -1,3 +1,11 @@
+#' Find all observations with negative incidence in a 
+#' given data frame
+#'
+#' @param data data frame 
+#' @return a data frame of cases with locations and dates
+#'
+#' @export
+#' 
 get_negative_cases <- function(data){
   # find  observations with negative inc
   locations = c()

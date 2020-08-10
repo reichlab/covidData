@@ -3,8 +3,9 @@ library(dplyr)
 library(here)
 
 setwd(here())
+
+# find  observations with negative inc
 get_negative_cases <- function(data){
-  # find  observations with negative inc
   locations = c()
   dates = c()
   
@@ -65,13 +66,18 @@ get_imputed_value <- function (data, adjustment_case, model) {
 # generate final output
 get_results <- function (data, measure, model){
   
-  #data= death_data
+  measure = 'death'
+  data= death_data
   # find all cases
   na_adjustments = get_negative_cases(data)
   
-  results <- NULL 
+  results <-  data.frame(location=character(),
+                         date=as.Date(character()), 
+                         measure=character(), 
+                         inc=integer()) 
+
   
-  # replace negative values to 0 
+  # replace negative values with 0 
   for (i in 1:nrow(na_adjustments)){
     adjustment_location = as.character(na_adjustments[i,]$fips)
     adjustment_date = na_adjustments[i,]$date
@@ -79,27 +85,37 @@ get_results <- function (data, measure, model){
     data = data %>% 
       dplyr::mutate(inc = replace(inc, location == adjustment_location & 
                                     date == adjustment_date, 0))
-    
-    #results = rbind(results, data[which(data$location== adjustment_location& 
-    #                                      data$date == adjustment_date),])
-    
-
   }
   
-  if (measure == 'deaths'){
+  if (measure == 'death'){
+    #only keeps state and national level
+    na_adjustments = dplyr::filter(na_adjustments, nchar(fips) ==2)
     adjustments = rbind(adjustments, na_adjustments)
+    
+    # case that doesn't need adjustment 
+    target = data.frame(location='48',
+                        date=as.Date('2020-07-27'), 
+                        measure=measure, 
+                        inc=44) 
+    results = rbind(results, target)
   } else{
     adjustments = na_adjustments
+    # case that doesn't need adjustment 
+    target = data.frame(location='09',
+                        date=as.Date('2020-07-29'), 
+                        measure=measure, 
+                        inc=79) 
+    results = rbind(results, target)
   }
   
   
   # adjustments includes -inc cases
-  for (i in 1:nrow(adjustments)){
+  for (i in 1:floor(nrow(adjustments)/4)){
     cat(i,file ="code/data-processing/log.txt" ,append = TRUE)
     adjustment_location = adjustments[i,]$fips
     adjustment_date = as.Date(adjustments[i,]$date)
-    cat(paste("adjustment_location", adjustment_location, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
-    cat(paste("adjustment_date", adjustment_date, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
+    cat(paste(" adjustment_location", adjustment_location, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
+    cat(paste(" adjustment_date", adjustment_date, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
     
     # get state, counties and national observations for an adjustment case
     location_data = data %>%
@@ -113,8 +129,8 @@ get_results <- function (data, measure, model){
     # for each location in data, get imputed data
     for (fips in unique(location_data$location)) {
       
-      cat(paste("imputing fips", fips, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
-      cat(paste("imputing date", adjustment_date, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
+      cat(paste(" imputing fips", fips, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
+      cat(paste(" imputing date", adjustment_date, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
       
       d = location_data[location_data$location == fips,]
       
@@ -122,11 +138,14 @@ get_results <- function (data, measure, model){
       # call stan model here
       imputed = round(get_imputed_value(d, adjustments[i,], model), digits=0)
       
-      # put imputed data back
-      d[which(d$date == adjustment_date),]$inc = imputed
+      # cols: location, dates, measure, inc
+      target = data.frame(location=fips,
+                 date=adjustment_date, 
+                 measure=measure, 
+                 inc=imputed) 
       
       # add to final outputs
-      results = rbind(results, d[which(d$date == adjustment_date),])
+      results = rbind(results, target)
     }
     
   }
@@ -147,9 +166,9 @@ get_results <- function (data, measure, model){
 
 # process all adjustment cases
 
-#death+cases
-# + cases for negative values state+ county 
-#deaths
+# update this 
+# TX-2020-07-27 death: 44
+# CT-2020-07-29 case: 463-384
 adjustment_cases <-c('CO-2020-04-24', 'MS-2020-06-22',
                      'DE-2020-06-23', 'NJ-2020-06-25')
 
@@ -160,7 +179,7 @@ adjustment_state_fips = unlist(lapply(
     covidData::fips_codes[which(covidData::fips_codes$abbreviation==x),]$location))
 adjustments = data.frame(fips = adjustment_state_fips,dates = as.Date(adjustment_dates))
 
-# read in data for all locations + replace <0 
+# read in data for all locations
 death_data = covidData::load_jhu_data(spatial_resolution = c('state','county','national'),
                         temporal_resolution = 'daily',
                         measure = 'deaths',
