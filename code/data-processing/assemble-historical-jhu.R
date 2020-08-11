@@ -15,7 +15,7 @@ jhu_deaths_data <- tibble::tibble(
     function(x) substr(x[3], 1, 10)),
   data = purrr::map(
     files,
-    function(filename) readr::read_csv(filename))
+    function(filename) suppressMessages(readr::read_csv(filename)))
 )
 
 save(jhu_deaths_data, file = "data/jhu_deaths_data.rdata")
@@ -29,7 +29,7 @@ jhu_cases_data <- tibble::tibble(
     function(x) substr(x[3], 1, 10)),
   data = purrr::map(
     files,
-    function(filename) readr::read_csv(filename))
+    function(filename) suppressMessages(readr::read_csv(filename)))
 )
 
 save(jhu_cases_data, file = "data/jhu_cases_data.rdata")
