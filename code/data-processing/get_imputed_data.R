@@ -5,27 +5,27 @@ library(here)
 setwd(here())
 
 # find  observations with negative inc
-get_negative_cases <- function(data){
-  locations = c()
-  dates = c()
+get_negative_cases <- function(data) {
+  locations <- c()
+  dates <- c()
   
-  for (i in 1:nrow(data)){
-    if (data[i,]$inc <0) {
-      locations = c(locations, as.character(data[i,]$location))
-      dates = c(dates, as.character(data[i,]$date))
+  for (i in 1:nrow(data)) {
+    if (data[i, ]$inc < 0) {
+      locations <- c(locations, as.character(data[i, ]$location))
+      dates <- c(dates, as.character(data[i, ]$date))
     }
   }
   
-  adjustments = data.frame(fips = locations,dates = as.Date(dates))
+  adjustments <- data.frame(fips = locations, dates = as.Date(dates))
   
   return(adjustments)
 }
 
 
 # call stan model and get imputed value for a adjustment case
-get_imputed_value <- function (data, adjustment_case, model) {
+get_imputed_value <- function(data, adjustment_case, model) {
 
-  inds = as.Date(adjustment_case$date) - min(data$date)
+  inds <- as.Date(adjustment_case$date) - min(data$date)
   
   #int 0
   forecast_horizon <- 0L
@@ -40,7 +40,7 @@ get_imputed_value <- function (data, adjustment_case, model) {
   interior_knots <- all_knots[-c(1, length(all_knots))]
   
   #par estimates....predictions
-  map_estimates_daily <- rstan::optimizing(object = model, data= list(
+  map_estimates_daily <- rstan::optimizing(object = model, data = list(
     T = nrow(data),
     y = as.integer(data$inc),
     spline_order = 4L,
@@ -57,95 +57,93 @@ get_imputed_value <- function (data, adjustment_case, model) {
     t = seq_len(nrow(data)),
     y = data$inc,
     y_hat_daily = unname(map_estimates_daily$par[
-      grepl('y_mean_with_daily', names(map_estimates_daily$par))])[seq_len(nrow(data))]
+      grepl("y_mean_with_daily", names(map_estimates_daily$par))])[seq_len(nrow(data))]
   )
   
-  return (results[inds,]$y_hat_daily)
+  return(results[inds, ]$y_hat_daily)
 }
 
 # generate final output
-get_results <- function (data, measure, model){
-  
-  measure = 'death'
-  #data= death_data
+get_results <- function(data, measure, model) {
+
   # find all cases
-  na_adjustments = get_negative_cases(data)
+  na_adjustments <- get_negative_cases(data)
   
-  results <-  data.frame(location=character(),
-                         date=as.Date(character()), 
-                         measure=character(), 
-                         inc=integer()) 
+  results <-  data.frame(location = character(),
+                         date = as.Date(character()), 
+                         measure = character(), 
+                         inc = integer()) 
 
   
   # replace negative values with 0 
-  for (i in 1:nrow(na_adjustments)){
-    adjustment_location = as.character(na_adjustments[i,]$fips)
-    adjustment_date = na_adjustments[i,]$date
+  for (i in 1:nrow(na_adjustments)) {
+    adjustment_location <- as.character(na_adjustments[i, ]$fips)
+    adjustment_date <- na_adjustments[i, ]$date
     
-    data = data %>% 
+    data <- data %>% 
       dplyr::mutate(inc = replace(inc, location == adjustment_location & 
                                     date == adjustment_date, 0))
   }
   
-  if (measure == 'death'){
+  if (measure == "deaths") {
     #only keeps state and national level
-    na_adjustments = dplyr::filter(na_adjustments, nchar(fips) ==2)
-    adjustments = rbind(adjustments, na_adjustments)
+    na_adjustments <- dplyr::filter(na_adjustments, nchar(fips) == 2)
+    adjustments <- rbind(adjustments, na_adjustments)
     
     # case that doesn't need adjustment 
-    target = data.frame(location='48',
-                        date=as.Date('2020-07-27'), 
-                        measure=measure, 
-                        inc=44) 
-    results = rbind(results, target)
+    target <- data.frame(location = "48",
+                        date = as.Date("2020-07-27"), 
+                        measure = measure, 
+                        inc = 44) 
+    results <- rbind(results, target)
   } else{
-    adjustments = na_adjustments
+    adjustments <- na_adjustments
     # case that doesn't need adjustment 
-    target = data.frame(location='09',
-                        date=as.Date('2020-07-29'), 
-                        measure=measure, 
-                        inc=79) 
-    results = rbind(results, target)
+    target <- data.frame(location = "09",
+                        date = as.Date("2020-07-29"), 
+                        measure = measure, 
+                        inc = 79) 
+    results <- rbind(results, target)
   }
   
   
   # adjustments includes -inc cases
-  for (i in 1:floor(nrow(adjustments)/4)){
-    cat(i,file ="code/data-processing/log.txt" ,append = TRUE)
-    adjustment_location = adjustments[i,]$fips
-    adjustment_date = as.Date(adjustments[i,]$date)
-    cat(paste(" adjustment_location", adjustment_location, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
-    cat(paste(" adjustment_date", adjustment_date, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
+  for (i in 1:floor(nrow(adjustments) / 4)) {
+    cat(i, file = "code/data-processing/log.txt", append = TRUE)
+    adjustment_location <- adjustments[i, ]$fips
+    adjustment_date <- as.Date(adjustments[i, ]$date)
+    cat(paste(" adjustment_location", adjustment_location, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+    cat(paste(" adjustment_date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
     
     # get state, counties and national observations for an adjustment case
-    location_data = data %>%
-      dplyr::filter(stringr::str_sub(location, start = 1, end=2) %in% adjustment_location |
-                           location == 'US' | location == adjustment_location)%>%
-      dplyr::group_by(location)%>%
+    location_data <- data %>%
+      dplyr::filter(stringr::str_sub(location, start = 1, end = 2) %in% adjustment_location |
+                           location == "US" | location == adjustment_location) %>%
+      dplyr::group_by(location) %>%
       # only obs before adjustment_date would change
-      dplyr::filter(date <= adjustment_date)%>%
+      dplyr::filter(date <= adjustment_date) %>%
       dplyr::ungroup()
   
     # for each location in data, get imputed data
     for (fips in unique(location_data$location)) {
       
-      cat(paste(" imputing fips", fips, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
-      cat(paste(" imputing date", adjustment_date, sep = ": "),file ="code/data-processing/log.txt" ,append = TRUE)
+      cat(paste(" imputing fips", fips, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+      cat(paste(" imputing date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
       
-      d = location_data[location_data$location == fips,]
+      d <- location_data[location_data$location == fips, ]
       
       set.seed(1234)
       # call stan model here
-      imputed = round(get_imputed_value(d, adjustments[i,], model), digits=0)
+      imputed <- round(get_imputed_value(d, adjustments[i, ], model), digits = 0)
       
       # cols: location, dates, measure, inc
-      target = data.frame(location=fips,
-                 date=adjustment_date, 
-                 measure=measure, 
-                 inc=imputed) 
+      target <- data.frame(location = fips,
+                 date = adjustment_date, 
+                 measure = measure, 
+                 inc = imputed) 
       
       # add to final outputs
-      results = rbind(results, target)
+      results <- rbind(results, target)
     }
     
   }
@@ -154,11 +152,11 @@ get_results <- function (data, measure, model){
   if (measure == "deaths") {
     jhu_deaths_imputed_data <- results
     # need to change cols: location, dates, measure, inc
-    save(jhu_deaths_imputed_data, file = 'data/jhu_deaths_imputed_data.rdata')
+    save(jhu_deaths_imputed_data, file = "data/jhu_deaths_imputed_data.rdata")
   } else if (measure == "cases") {
     jhu_cases_imputed_data <- results
     # need to change cols: location, dates, measure, inc
-    save(jhu_cases_imputed_data, file = 'data/jhu_cases_imputed_data.rdata')
+    save(jhu_cases_imputed_data, file = "data/jhu_cases_imputed_data.rdata")
   }
 }
 
@@ -169,28 +167,28 @@ get_results <- function (data, measure, model){
 # update this 
 # TX-2020-07-27 death: 44
 # CT-2020-07-29 case: 463-384
-adjustment_cases <-c('CO-2020-04-24', 'MS-2020-06-22',
-                     'DE-2020-06-23', 'NJ-2020-06-25')
+adjustment_cases <- c("CO-2020-04-24", "MS-2020-06-22",
+                     "DE-2020-06-23", "NJ-2020-06-25")
 
-adjustment_states = sub("-.*", "", adjustment_cases)
-adjustment_dates = sub("^.*?-", "", adjustment_cases)
-adjustment_state_fips = unlist(lapply(
+adjustment_states <- sub("-.*", "", adjustment_cases)
+adjustment_dates <- sub("^.*?-", "", adjustment_cases)
+adjustment_state_fips <- unlist(lapply(
   adjustment_states, function(x) 
-    covidData::fips_codes[which(covidData::fips_codes$abbreviation==x),]$location))
-adjustments = data.frame(fips = adjustment_state_fips,dates = as.Date(adjustment_dates))
+    covidData::fips_codes[which(covidData::fips_codes$abbreviation == x), ]$location))
+adjustments <- data.frame(fips = adjustment_state_fips, dates = as.Date(adjustment_dates))
 
 # read in data for all locations
-death_data = covidData::load_jhu_data(spatial_resolution = c('state','county','national'),
-                        temporal_resolution = 'daily',
-                        measure = 'deaths',
+death_data <- covidData::load_jhu_data(spatial_resolution = c("state", "county", "national"),
+                        temporal_resolution = "daily",
+                        measure = "deaths",
                         replace_negatives = FALSE,
-                        adjustment_cases = 'none')
+                        adjustment_cases = "none")
 
-case_data = covidData::load_jhu_data(spatial_resolution = c('state','county','national'),
-                          temporal_resolution = 'daily',
-                          measure = 'cases',
+case_data <- covidData::load_jhu_data(spatial_resolution = c("state", "county", "national"),
+                          temporal_resolution = "daily",
+                          measure = "cases",
                           replace_negatives = FALSE,
-                          adjustment_cases = 'none')
+                          adjustment_cases = "none")
 
 #compile stan model
 model <- rstan::stan_model(file = "code/data-processing/bspline_forecast_daily.stan")

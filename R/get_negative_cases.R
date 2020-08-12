@@ -1,24 +1,22 @@
-#' Find all observations with negative incidence in a 
+#' Find all observations with negative incidence in a
 #' given data frame
 #'
-#' @param data data frame 
+#' @param data data frame
 #' @return a data frame of cases with locations and dates
 #'
 #' @export
-#' 
-get_negative_cases <- function(data){
+#'
+get_negative_cases <- function(data) {
   # find  observations with negative inc
-  locations = c()
-  dates = c()
-  
-  for (i in 1:nrow(data)){
-    if (data[i,]$inc <0) {
-      locations = c(locations, as.character(data[i,]$location))
-      dates = c(dates, as.character(data[i,]$date))
+  locations <- c()
+  dates <- c()
+
+  for (i in 1:nrow(data)) {
+    if (data[i, ]$inc < 0) {
+      locations <- c(locations, as.character(data[i, ]$location))
+      dates <- c(dates, as.character(data[i, ]$date))
     }
   }
-  
-  adjustments = data.frame(fips = locations,dates = as.Date(dates))
-  
-return(adjustments)
+
+  data.frame(fips = locations, dates = as.Date(dates))
 }

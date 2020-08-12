@@ -1,30 +1,30 @@
 library(dplyr)
-library(testthat)
+testthat::context("replace_negatives")
 
 # read in data
-data = covidData::load_jhu_data(spatial_resolution = "state", 
+data <- covidData::load_jhu_data(spatial_resolution = "state", 
                      temporal_resolution = "daily",
-                     measure = "death", replace_negatives = FALSE, 
-                     adjustment_cases = 'none')%>%
+                     measure = "deaths", replace_negatives = FALSE, 
+                     adjustment_cases = "none") %>%
   # CO
-  dplyr:: filter(location == '08')
+  dplyr:: filter(location == "08")
 
-imputed_data = covidData::replace_negatives(data)
+imputed_data <- covidData::replace_negatives(data, measure = "deaths")
 
-test_that("incidents after the last negative observation shouldn't change",{
+test_that("incidents after the last negative observation shouldn't change", {
   # find  observations with negative inc
-  adjustments = covidData::get_negative_cases(data)
+  adjustments <- covidData::get_negative_cases(data)
 
   # take the last negative case
-  date = adjustments[-1,]$dates
+  date <- adjustments[-1, ]$dates
 
 
-  expect_true(all(data[data$date > date,]$inc ==
-                    imputed_data[imputed_data$date > date,]$inc))
+  expect_true(all(data[data$date > date, ]$inc ==
+                    imputed_data[imputed_data$date > date, ]$inc))
 
 })
 
 
-test_that("all incidents are non-negative",{
+test_that("all incidents are non-negative", {
  expect_true(all(imputed_data$inc >= 0))
 })

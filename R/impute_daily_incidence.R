@@ -1,25 +1,23 @@
 #' Imputed incidence value for the single day with reporting anomaly
-#' 
+#'
 #' @param data time series data for location in adjustment case
 #' @param adjustment_case a case to adjust
 #' @param measure case or death
 #' @return incidence columns after adjustments
 #' @export
 
-#one location 
-#precalculate output for all counties and states in this adjustment_case
-impute_daily_incidence <- function (data, adjustment_case,measure){
-  if (measure == 'death'){
+impute_daily_incidence <- function(data, adjustment_case, measure) {
+  if (measure == "deaths") {
     imputed_data <- covidData::jhu_deaths_imputed_data
   } else {
-    # imputed case data
+    imputed_data <- covidData::jhu_cases_imputed_data
   }
-  
-  location = adjustment_case$fips
-  date = adjustment_case$date
-  
-  target = imputed_data[which(imputed_data$location == location, 
-                              imputed_data$date == date),]$inc
-  
-  return (target)
+
+  location <- adjustment_case$fips
+  date <- adjustment_case$date
+
+  imputed_data[which(
+    imputed_data$location == location,
+    imputed_data$date == date
+  ), ]$inc
 }

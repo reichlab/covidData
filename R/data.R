@@ -21,3 +21,9 @@
 #'
 #' @format A data.frame
 "jhu_deaths_imputed_data"
+
+#' imputed cases
+#'
+#' @format A data.frame
+"jhu_cases_imputed_data"
+
