@@ -87,7 +87,7 @@ get_results <- function(data, measure, model) {
   
   if (measure == "deaths") {
     #only keeps state and national level
-    na_adjustments <- dplyr::filter(na_adjustments, nchar(fips) == 2)
+    #na_adjustments <- dplyr::filter(na_adjustments, nchar(fips) == 2)
     adjustments <- rbind(adjustments, na_adjustments)
     
     # case that doesn't need adjustment 
@@ -107,8 +107,7 @@ get_results <- function(data, measure, model) {
   }
   
   
-  # adjustments includes -inc cases
-  for (i in 1:floor(nrow(adjustments) / 4)) {
+  for (i in 1:nrow(adjustments)) {
     cat(i, file = "code/data-processing/log.txt", append = TRUE)
     adjustment_location <- adjustments[i, ]$fips
     adjustment_date <- as.Date(adjustments[i, ]$date)
@@ -117,8 +116,10 @@ get_results <- function(data, measure, model) {
     
     # get state, counties and national observations for an adjustment case
     location_data <- data %>%
-      dplyr::filter(stringr::str_sub(location, start = 1, end = 2) %in% adjustment_location |
-                           location == "US" | location == adjustment_location) %>%
+      dplyr::filter(
+        stringr::str_sub(location, start = 1, end = 2) %in% adjustment_location|
+          location == "US" | location == adjustment_location | 
+          location == stringr::str_sub(adjustment_location, start = 1, end = 2)) %>%
       dplyr::group_by(location) %>%
       # only obs before adjustment_date would change
       dplyr::filter(date <= adjustment_date) %>%
@@ -163,10 +164,6 @@ get_results <- function(data, measure, model) {
 
 
 # process all adjustment cases
-
-# update this 
-# TX-2020-07-27 death: 44
-# CT-2020-07-29 case: 463-384
 adjustment_cases <- c("CO-2020-04-24", "MS-2020-06-22",
                      "DE-2020-06-23", "NJ-2020-06-25")
 

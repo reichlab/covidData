@@ -7,10 +7,10 @@
 #' @export
 #'
 get_negative_cases <- function(data) {
-  # find  observations with negative inc
   locations <- c()
   dates <- c()
 
+  # Find  observations with negative inc
   for (i in 1:nrow(data)) {
     if (data[i, ]$inc < 0) {
       locations <- c(locations, as.character(data[i, ]$location))

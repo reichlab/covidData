@@ -46,7 +46,8 @@ test_that("agreement with daily cumulative counts in csv file
     temporal_resolution = "daily",
     adjustment_cases = "CO-2020-04-24",
     adjustment_method = "fill_na",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   )
 
   case1 <- case1 %>%
@@ -69,7 +70,8 @@ a call to function with adjustment_cases = 'none' and adjustment_cases = 'CO-202
     issue_date = "2020-08-12",
     temporal_resolution = "daily",
     adjustment_cases = "none",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(location != "08")
 
@@ -79,7 +81,8 @@ a call to function with adjustment_cases = 'none' and adjustment_cases = 'CO-202
     temporal_resolution = "daily",
     adjustment_cases = "CO-2020-04-24",
     adjustment_method = "fill_na",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(location != "08")
 
@@ -93,7 +96,8 @@ test_that("daily incident count for CO on 2020-04-24 to be NA
     temporal_resolution = "daily",
     adjustment_cases = "CO-2020-04-24",
     adjustment_method = "fill_na",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(location == "08")
 
@@ -101,7 +105,8 @@ test_that("daily incident count for CO on 2020-04-24 to be NA
     issue_date = "2020-08-12",
     temporal_resolution = "daily",
     adjustment_cases = "none",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(location == "08")
 
@@ -151,7 +156,8 @@ test_that("agreement with daily cumulative counts in csv file
     spatial_resolution = "county",
     adjustment_cases = "CO-2020-04-24",
     adjustment_method = "fill_na",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   )
 
   case1 <- case1 %>%
@@ -173,7 +179,8 @@ a call to function with adjustment_cases = 'none' and adjustment_cases = 'CO-202
     temporal_resolution = "daily",
     spatial_resolution = "county",
     adjustment_cases = "none",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(stringr::str_sub(location, start = 1, end = 2) != "08")
 
@@ -184,7 +191,8 @@ a call to function with adjustment_cases = 'none' and adjustment_cases = 'CO-202
     spatial_resolution = "county",
     adjustment_cases = "CO-2020-04-24",
     adjustment_method = "fill_na",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(stringr::str_sub(location, start = 1, end = 2) != "08")
 
@@ -199,7 +207,8 @@ test_that("daily incident count for counties in CO on 2020-04-24 to be NA
     spatial_resolution = "county",
     adjustment_cases = "CO-2020-04-24",
     adjustment_method = "fill_na",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(stringr::str_sub(location, start = 1, end = 2) == "08")
 
@@ -208,7 +217,8 @@ test_that("daily incident count for counties in CO on 2020-04-24 to be NA
     temporal_resolution = "daily",
     spatial_resolution = "county",
     adjustment_cases = "none",
-    measure = "cases"
+    measure = "cases",
+    replace_negatives = FALSE
   ) %>%
     dplyr::filter(stringr::str_sub(location, start = 1, end = 2) == "08")
 

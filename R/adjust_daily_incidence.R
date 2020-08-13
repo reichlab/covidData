@@ -11,12 +11,9 @@
 adjust_daily_incidence <- function(data, adjustment_case, seed, measure) {
   set.seed(seed)
 
-  obs <- data[which(data$date == as.Date(adjustment_case$date) &
-    # Counties in adjustment state or US
-    (stringr::str_sub(data$location, start = 1, end = 2) %in%
-      adjustment_case$fips | data$location == "US")), ]$inc
+  obs <- data[which(data$date == as.Date(adjustment_case$date)), ]$inc
 
-  # Read data
+  # Read imputed data
   replacement <- round(impute_daily_incidence(data, adjustment_case, measure),
     digits = 0
   )
@@ -32,6 +29,7 @@ adjust_daily_incidence <- function(data, adjustment_case, seed, measure) {
       stringr::str_sub(location, start = 1, end = 2) %in%
         adjustment_case$fips), replacement))
 
+  # Redistribute based on proportion
   data <- data %>%
     dplyr::mutate(new_cum = ifelse(date <= as.Date(adjustment_case$date),
       cumsum(inc), 0
@@ -46,20 +44,17 @@ adjust_daily_incidence <- function(data, adjustment_case, seed, measure) {
     dplyr::ungroup() %>%
     dplyr::select(location, date, cum, inc)
 
-  # new_cum at adjustment_date
+  # Get new cum count at adjustment_date
   new_cum <- sum(data[which(data$date <= as.Date(adjustment_case$date)), ]$inc)
 
   diff <- data[which(data$date == as.Date(adjustment_case$date)), ]$cum - new_cum
 
-  # vector of indices sort data by inc
+  # Get vector of indices sort data by inc
   sorted_inds <- order(data[which(data$date <= as.Date(adjustment_case$date)), ]$inc,
     decreasing = TRUE
   )
 
-  # while diff != 0
-  # inc >=1 add/- 1 to inc, else --> go to the beginning of inds
-  # update diff
-
+  # Redistribute residual to observations with the most inc
   inds_i <- 1
   while (diff != 0) {
     if (data[sorted_inds[inds_i], ]$inc >= 1) {
