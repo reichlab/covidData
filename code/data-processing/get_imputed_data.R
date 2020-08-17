@@ -65,7 +65,6 @@ get_imputed_value <- function(data, adjustment_case, model) {
 
 # generate final output
 get_results <- function(data, measure, model) {
-
   # find all cases
   na_adjustments <- get_negative_cases(data)
   
@@ -86,8 +85,6 @@ get_results <- function(data, measure, model) {
   }
   
   if (measure == "deaths") {
-    #only keeps state and national level
-    #na_adjustments <- dplyr::filter(na_adjustments, nchar(fips) == 2)
     adjustments <- rbind(adjustments, na_adjustments)
     
     # case that doesn't need adjustment 

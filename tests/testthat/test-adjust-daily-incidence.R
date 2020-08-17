@@ -29,9 +29,9 @@ adjustment_state_fips <- unlist(lapply(
 adjustments <- data.frame(fips = adjustment_state_fips, dates = as.Date(adjustment_dates))
 
 # negative obs is on 2020-03-26
-new_inc_case_a <- adjust_daily_incidence(data, adjustments[1, ], seed, measure = "deaths")
+new_inc_case_a <- covidData::adjust_daily_incidence(data, adjustments[1, ], seed, measure = "deaths")
 
-new_inc_case_b <- adjust_daily_incidence(data, adjustments[2, ], seed, measure = "deaths")
+new_inc_case_b <- covidData::adjust_daily_incidence(data, adjustments[2, ], seed, measure = "deaths")
 
 # case a, 1
 # observed is negative, replacement is imputed
