@@ -27,7 +27,6 @@ get_imputed_value <- function(data, adjustment_case, model) {
 
   inds <- as.Date(adjustment_case$date) - min(data$date)
   
-  #int 0
   forecast_horizon <- 0L
   nsim <- 1000L
   knot_frequency <- 7L
@@ -39,7 +38,6 @@ get_imputed_value <- function(data, adjustment_case, model) {
   boundary_knots <- all_knots[c(1, length(all_knots))]
   interior_knots <- all_knots[-c(1, length(all_knots))]
   
-  #par estimates....predictions
   map_estimates_daily <- rstan::optimizing(object = model, data = list(
     T = nrow(data),
     y = as.integer(data$inc),
@@ -105,11 +103,11 @@ get_results <- function(data, measure, model) {
   
   
   for (i in 1:nrow(adjustments)) {
-    cat(i, file = "code/data-processing/log.txt", append = TRUE)
+    #cat(i, file = "code/data-processing/log.txt", append = TRUE)
     adjustment_location <- adjustments[i, ]$fips
     adjustment_date <- as.Date(adjustments[i, ]$date)
-    cat(paste(" adjustment_location", adjustment_location, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
-    cat(paste(" adjustment_date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+    #cat(paste(" adjustment_location", adjustment_location, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+    #cat(paste(" adjustment_date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
     
     # get state, counties and national observations for an adjustment case
     location_data <- data %>%
@@ -125,8 +123,8 @@ get_results <- function(data, measure, model) {
     # for each location in data, get imputed data
     for (fips in unique(location_data$location)) {
       
-      cat(paste(" imputing fips", fips, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
-      cat(paste(" imputing date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+      #cat(paste(" imputing fips", fips, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+      #cat(paste(" imputing date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
       
       d <- location_data[location_data$location == fips, ]
       
@@ -149,11 +147,9 @@ get_results <- function(data, measure, model) {
   # change name and save
   if (measure == "deaths") {
     jhu_deaths_imputed_data <- results
-    # need to change cols: location, dates, measure, inc
     save(jhu_deaths_imputed_data, file = "data/jhu_deaths_imputed_data.rdata")
   } else if (measure == "cases") {
     jhu_cases_imputed_data <- results
-    # need to change cols: location, dates, measure, inc
     save(jhu_cases_imputed_data, file = "data/jhu_cases_imputed_data.rdata")
   }
 }
