@@ -21,6 +21,8 @@ adjust_daily_incidence <- function(data, adjustment_case, seed, measure) {
   if (obs > 0) {
     replacement <- ifelse(replacement > obs, obs, replacement)
   }
+  
+  # Get residual to redistribute
   diff <- obs - replacement
 
   # Replace observation with replacement value
@@ -28,13 +30,13 @@ adjust_daily_incidence <- function(data, adjustment_case, seed, measure) {
     dplyr::mutate(inc = replace(inc, date == as.Date(adjustment_case$date), replacement))
 
   # Redistribute based on proportion
+  new_cum <- sum(data[which(data$date <= as.Date(adjustment_case$date)), ]$inc)
+ 
   data <- data %>%
-    dplyr::mutate(new_cum = ifelse(date <= as.Date(adjustment_case$date),
-      cumsum(inc), 0
-    )) %>%
     dplyr::mutate(proportion = ifelse(date <= as.Date(adjustment_case$date),
-      inc / new_cum[date == as.Date(adjustment_case$date)], 0
+      inc / new_cum, 0
     )) %>%
+    dplyr::mutate(proportion = replace(proportion, is.nan(proportion), 0)) %>%
     dplyr::rowwise() %>%
     dplyr::mutate(inc = ifelse(date <= as.Date(adjustment_case$date),
       max(0, round(inc + diff * proportion, digits = 0)), inc
@@ -44,15 +46,15 @@ adjust_daily_incidence <- function(data, adjustment_case, seed, measure) {
   # Get new cum count at adjustment_date
   new_cum <- sum(data[which(data$date <= as.Date(adjustment_case$date)), ]$inc)
 
+  # Update residual to redistribute
   diff <- data[which(data$date == as.Date(adjustment_case$date)), ]$cum - new_cum
 
   # Get vector of indices sort data by proportion
-  #change
   sorted_inds <- order(data[which(data$date <= as.Date(adjustment_case$date)), ]$proportion,
     decreasing = TRUE
   )
   
-  # Redistribute residual to observations with the most inc
+  # Redistribute residual to observations with the highest proportion
   inds_i <- 1
   while (diff != 0) {
     if (diff > 0) {

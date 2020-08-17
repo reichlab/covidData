@@ -151,7 +151,7 @@ load_jhu_data <- function(
 
   
    if (replace_negatives == TRUE) {
-    results = replace_negatives(data = results, measure = measure)
+    results = covidData::replace_negatives(data = results, measure = measure)
    }
 
   # TODO: in results data frame, replace daily inc with NA in specific rows, if requested
@@ -176,7 +176,7 @@ load_jhu_data <- function(
     
     if (adjustment_method == "impute_and_redistribute") {
        if (replace_negatives == FALSE) {
-         results = replace_negatives(data = results,measure = measure)
+         results = covidData::replace_negatives(data = results, measure = measure)
        }
 
       for (i in 1:nrow(adjustments)) {
@@ -194,7 +194,7 @@ load_jhu_data <- function(
 
           seed <- 1234
           # Get adjusted inc column
-          imputed_inc <- adjust_daily_incidence(d, adjustments[i, ], seed)
+          imputed_inc <- covidData::adjust_daily_incidence(d, adjustments[i, ], seed, measure = measure)
 
           # Put imputed data back to results
           results[which(results$location == fips), ]$inc <- imputed_inc
