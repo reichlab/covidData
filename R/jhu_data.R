@@ -151,7 +151,7 @@ load_jhu_data <- function(
 
   
    if (replace_negatives == TRUE) {
-    results = replace_negatives(data = results)
+    results = replace_negatives(data = results, measure = measure)
    }
 
   # TODO: in results data frame, replace daily inc with NA in specific rows, if requested
@@ -176,7 +176,7 @@ load_jhu_data <- function(
     
     if (adjustment_method == "impute_and_redistribute") {
        if (replace_negatives == FALSE) {
-         results = replace_negatives(data = results)
+         results = replace_negatives(data = results,measure = measure)
        }
 
       for (i in 1:nrow(adjustments)) {

@@ -1,4 +1,5 @@
-#' Replace negative incidence with 0 in a given data frame
+#' Replace negative incidence with imputed data and redistribute
+#' residuals across observations before adjustment date
 #'
 #' @param data data frame
 #' @param measure death or case
@@ -9,7 +10,7 @@
 replace_negatives <- function(data, measure) {
 
   # find observations with negative inc
-  adjustments <- get_negative_cases(data)
+  adjustments <- covidData::get_negative_cases(data)
 
   # replace negative incidents with imputed data for all replated locations
   for (i in 1:nrow(adjustments)) {

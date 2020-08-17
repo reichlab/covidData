@@ -1,6 +1,6 @@
 #' Imputed incidence value for the single day with reporting anomaly
 #'
-#' @param data time series data for location in adjustment case
+#' @param data time series data for one location in adjustment case
 #' @param adjustment_case a case to adjust
 #' @param measure case or death
 #' @return incidence columns after adjustments
@@ -13,11 +13,11 @@ impute_daily_incidence <- function(data, adjustment_case, measure) {
     imputed_data <- covidData::jhu_cases_imputed_data
   }
 
-  location <- adjustment_case$fips
-  date <- adjustment_case$date
-
-  imputed_data[which(
-    imputed_data$location == location,
+  location <- unique(data$location)
+  date <- as.Date(adjustment_case$date)
+  
+  unique(imputed_data[which(
+    imputed_data$location == location &
     imputed_data$date == date
-  ), ]$inc
+  ), ]$inc)
 }
