@@ -3,34 +3,34 @@ testthat::context("load_jhu_data-impute_and_redistribute")
 
 # read in data
 data <- covidData::load_jhu_data(
-  spatial_resolution = "state",
-  temporal_resolution = "daily",
-  measure = "deaths", replace_negatives = TRUE,
-  adjustment_cases = "none")
+  spatial_resolution = 'state',
+  temporal_resolution = 'daily',
+  measure = 'deaths', replace_negatives = TRUE,
+  adjustment_cases = 'none')
 
-before_adjustment_data <- dplyr::filter(data, location == "08")
+before_adjustment_data <- dplyr::filter(data, location == '08')
 
-other_location_data <- dplyr::filter(data, location != "08")
+other_location_data <- dplyr::filter(data, location != '08')
 
 data_case_a <- covidData::load_jhu_data(
-  spatial_resolution = "state",
-  temporal_resolution = "daily",
-  measure = "deaths", replace_negatives = FALSE,
+  spatial_resolution = 'state',
+  temporal_resolution = 'daily',
+  measure = 'deaths', replace_negatives = FALSE,
   adjustment_method = 'impute_and_redistribute',
   adjustment_cases = 'CO-2020-03-26')
 
-after_adjustment_data_case_a <- dplyr::filter(data_case_a, location == "08")
+after_adjustment_data_case_a <- dplyr::filter(data_case_a, location == '08')
 
 other_location_data_case_a <- dplyr::filter(data_case_a, location != '08')
 
 data_case_b <- covidData::load_jhu_data(
-  spatial_resolution = "state",
-  temporal_resolution = "daily",
-  measure = "deaths", replace_negatives = FALSE,
+  spatial_resolution = 'state',
+  temporal_resolution = 'daily',
+  measure = 'deaths', replace_negatives = FALSE,
   adjustment_method = 'impute_and_redistribute',
   adjustment_cases = 'CO-2020-04-24')
 
-after_adjustment_data_case_b <- dplyr::filter(data_case_b, location == "08")
+after_adjustment_data_case_b <- dplyr::filter(data_case_b, location == '08')
 
 other_location_data_case_b <- dplyr::filter(data_case_b, location != '08')
 
@@ -41,7 +41,7 @@ test_that("negative diff, incidents are nonnegative before and on the adjustment
   # negative obs is on 2020-03-26
   expect_true(
     all(
-      after_adjustment_data_case_a[after_adjustment_data_case_a$date <= "2020-03-26", ]$inc >= 0))
+      after_adjustment_data_case_a[after_adjustment_data_case_a$date <= '2020-03-26', ]$inc >= 0))
 })
 
 # case a, 2
@@ -49,8 +49,8 @@ test_that("negative diff, incidents are nonnegative before and on the adjustment
 test_that("negative diff, incidents are unchanged after the adjustment date", {
   expect_true(
     all(
-      after_adjustment_data_case_a[after_adjustment_data_case_a$date > "2020-03-26", ]$inc ==
-                    before_adjustment_data[before_adjustment_data$date > "2020-03-26", ]$inc))
+      after_adjustment_data_case_a[after_adjustment_data_case_a$date > '2020-03-26', ]$inc ==
+                    before_adjustment_data[before_adjustment_data$date > '2020-03-26', ]$inc))
 })
 
 # case a, 3
@@ -58,8 +58,8 @@ test_that("negative diff, incidents are unchanged after the adjustment date", {
 test_that("negative diff, cumulative counts are unchanged on and after the adjustment date", {
   expect_true(
     all(
-      after_adjustment_data_case_a[after_adjustment_data_case_a$date >= "2020-03-26", ]$cum ==
-                    before_adjustment_data[before_adjustment_data$date >= "2020-03-26", ]$cum))
+      after_adjustment_data_case_a[after_adjustment_data_case_a$date >= '2020-03-26', ]$cum ==
+                    before_adjustment_data[before_adjustment_data$date >= '2020-03-26', ]$cum))
 })
 
 
@@ -70,7 +70,7 @@ test_that("positive diff, incidents are nonnegative before and on the adjustment
   
   expect_true(
     all(
-      after_adjustment_data_case_b[after_adjustment_data_case_b$date <= "2020-04-24", ]$inc >= 0))
+      after_adjustment_data_case_b[after_adjustment_data_case_b$date <= '2020-04-24', ]$inc >= 0))
 })
 
 
@@ -81,16 +81,16 @@ test_that("positive diff, incidents are unchanged after the adjustment date", {
   
   expect_true(
     all(
-      after_adjustment_data_case_b[after_adjustment_data_case_b$date > "2020-04-24", ]$inc ==
-                    before_adjustment_data[before_adjustment_data$date > "2020-04-24", ]$inc))
+      after_adjustment_data_case_b[after_adjustment_data_case_b$date > '2020-04-24', ]$inc ==
+                    before_adjustment_data[before_adjustment_data$date > '2020-04-24', ]$inc))
 })
 
 # case b, 3
 # observed is negative, replacement is imputed
 test_that("negative diff, cumulative counts are unchanged on and after the adjustment date", {
   expect_true(all(
-    after_adjustment_data_case_b[after_adjustment_data_case_b$date >= "2020-04-24", ]$cum ==
-                    before_adjustment_data[before_adjustment_data$date >= "2020-04-24", ]$cum))
+    after_adjustment_data_case_b[after_adjustment_data_case_b$date >= '2020-04-24', ]$cum ==
+                    before_adjustment_data[before_adjustment_data$date >= '2020-04-24', ]$cum))
 })
 
 test_that("data should be the same for locations other than the adjustment location",{

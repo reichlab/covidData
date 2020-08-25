@@ -17,13 +17,15 @@
 "jhu_cases_data"
 
 
-#' imputed deaths
+#' Imputed death incidence data for negative incidence and adjustment cases
 #'
-#' @format A data.frame
+#' @format A data.frame with location (fips code), date, 
+#' measure ('deaths') and inc
 "jhu_deaths_imputed_data"
 
-#' imputed cases
+#' imputed cases incidence data for negative incidence and adjustment cases
 #'
-#' @format A data.frame
+#' @format A data.frame with location (fips code), date,
+#' measure ('cases') and inc
 "jhu_cases_imputed_data"
 

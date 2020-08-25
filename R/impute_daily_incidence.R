@@ -3,7 +3,8 @@
 #' @param data time series data for one location related to an adjustment 
 #' case. It has location, date, cum and inc as columns.
 #' @param adjustment_date date from adjustment case
-#' @param measure String specifying measure: 'cases' or 'deaths'
+#' @param measure character vector specifying measure of covid prevalence:
+#' 'deaths' or 'cases'
 #' @return incidence columns after adjustments
 #' @export
 impute_daily_incidence <- function(data, adjustment_date, measure) {

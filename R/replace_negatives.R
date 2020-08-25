@@ -2,8 +2,9 @@
 #' residuals across observations before adjustment date
 #'
 #' @param data data frame with location, date, cum and inc
-#' @param measure death or case
-#' @return data frame after replacement
+#' @param measure character vector specifying measure of covid prevalence:
+#' 'deaths' or 'cases'
+#' @return data frame with location, date, cum and inc after replacement
 #'
 #' @export
 #'
@@ -21,7 +22,7 @@ replace_negatives <- function(data, measure) {
     # get county, state and national locations
     location_data <- data %>%
       dplyr::filter(location == stringr::str_sub(adjustment_location, start = 1, end = 2) |
-                      location == "US" | location == adjustment_location) 
+                      location == 'US' | location == adjustment_location) 
     
     for (fips in unique(location_data$location)) {
       imputed_data <- covidData::adjust_daily_incidence(
