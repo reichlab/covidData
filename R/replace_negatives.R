@@ -1,7 +1,7 @@
 #' Replace negative incidence with imputed data and redistribute
 #' residuals across observations before adjustment date
 #'
-#' @param data data frame
+#' @param data data frame with location, date, cum and inc
 #' @param measure death or case
 #' @return data frame after replacement
 #'
@@ -12,11 +12,11 @@ replace_negatives <- function(data, measure) {
   # find observations with negative inc
   adjustments <- covidData::get_negative_cases(data)
 
-  # replace negative incidents with imputed data for all replated locations
-  for (i in 1:nrow(adjustments)) {
+  # replace negative incidence with imputed data for all replaced locations
+  for (i in seq_len(nrow(adjustments))) {
     case <- adjustments[i, ]
-    seed <- 1234
-    adjustment_location <- case$fips
+    adjustment_location <- case$location
+    adjustment_date <- case$date
     
     # get county, state and national locations
     location_data <- data %>%
@@ -24,9 +24,9 @@ replace_negatives <- function(data, measure) {
                       location == "US" | location == adjustment_location) 
     
     for (fips in unique(location_data$location)) {
-
-      imputed_data <- covidData::adjust_daily_incidence(data[data$location == fips, ], case, seed, measure)
-
+      imputed_data <- covidData::adjust_daily_incidence(
+        data[data$location == fips, ], case$date, seed = 1234, measure)
+      
       data[data$location == fips, ]$inc <- imputed_data
     }
   }
