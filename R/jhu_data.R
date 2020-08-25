@@ -32,7 +32,7 @@ load_jhu_data <- function(
                           measure = 'deaths',
                           replace_negatives = TRUE,
                           adjustment_cases = 'none',
-                          adjustment_method = 'impute_inc') {
+                          adjustment_method = 'none') {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c('cases', 'deaths'))
   if (measure == 'cases') {
@@ -65,6 +65,12 @@ load_jhu_data <- function(
   temporal_resolution <- match.arg(
     temporal_resolution,
     choices = c('daily', 'weekly'),
+    several.ok = FALSE
+  )
+  
+  adjustment_method <- match.arg(
+    adjustment_method,
+    choices = c('fill_na', 'impute_and_redistribute', 'none'),
     several.ok = FALSE
   )
 
@@ -168,13 +174,13 @@ load_jhu_data <- function(
     adjustments <- data.frame(location = adjustment_state_fips, date = as.Date(adjustment_dates))
     
     # replace daily incidence with NA in specific rows
-    if (adjustment_method == 'fill_na') {
+    if ('fill_na' %in% adjustment_method) {
       results <- covidData::fill_na(results = results, adjustments = adjustments)
     }
 
     # replace daily incidence with imputed data and redistribute
     # residuals to related observations
-    if (adjustment_method == 'impute_and_redistribute') {
+    if ('impute_and_redistribute' %in% adjustment_method) {
        if (replace_negatives == FALSE) {
          results = covidData::replace_negatives(data = results, measure = measure)
          
