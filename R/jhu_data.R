@@ -211,7 +211,7 @@ load_jhu_data <- function(
           d <- location_data[location_data$location == fips, ]
 
           # get adjusted inc column
-          imputed_inc <- covidData::adjust_daily_incidence(d, adjustment_date, seed = 1234, measure = measure)
+          imputed_inc <- covidData::adjust_daily_incidence(d, adjustment_date, measure = measure)
 
           # put imputed data back to results
           results[which(results$location == fips), ]$inc <- imputed_inc

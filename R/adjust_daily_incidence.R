@@ -7,8 +7,7 @@
 #' @param measure case or death
 #' @return incidence columns after redistribution
 #' @export
-adjust_daily_incidence <- function(data, adjustment_date, seed, measure) {
-  set.seed(seed)
+adjust_daily_incidence <- function(data, adjustment_date, measure) {
 
   obs <- data[which(data$date == as.Date(adjustment_date)), ]$inc
 

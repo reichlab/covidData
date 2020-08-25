@@ -1,5 +1,5 @@
 library(dplyr)
-testthat::context("fill_na")
+testthat::context("load_jhu_data-fill_na")
 
 # read csv file
 jhu_data <- readr::read_csv("test data/2020-08-12_time_series_covid19_confirmed_US.csv")

@@ -3,7 +3,7 @@
 #' @param results a result data.frame. It has location,
 #' date, cum and inc as columns.
 #' @param adjustments a adjustment case data.frame
-#' @return a data.frame with MAs on adjustment cases
+#' @return a data.frame with NAs on adjustment cases
 #' @export
 fill_na <- function(results, adjustments) {
   adjustments$date <- as.character(adjustments$date)

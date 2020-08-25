@@ -4,24 +4,6 @@ library(here)
 
 setwd(here())
 
-# # find  observations with negative inc
-# get_negative_cases <- function(data) {
-#   locations <- c()
-#   dates <- c()
-#   
-#   for (i in 1:nrow(data)) {
-#     if (data[i, ]$inc < 0) {
-#       locations <- c(locations, as.character(data[i, ]$location))
-#       dates <- c(dates, as.character(data[i, ]$date))
-#     }
-#   }
-#   
-#   adjustments <- data.frame(fips = locations, dates = as.Date(dates))
-#   
-#   return(adjustments)
-# }
-
-
 # call stan model and get imputed value for a adjustment case
 get_imputed_value <- function(data, adjustment_case, model) {
 
@@ -103,11 +85,11 @@ get_results <- function(data, measure, model) {
   
   
   for (i in 1:nrow(adjustments)) {
-    cat(i, file = "code/data-processing/log.txt", append = TRUE)
+    #cat(i, file = "code/data-processing/log.txt", append = TRUE)
     adjustment_location <- adjustments[i, ]$location
     adjustment_date <- as.Date(adjustments[i, ]$date)
-    cat(paste(" adjustment_location", adjustment_location, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
-    cat(paste(" adjustment_date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+    #cat(paste(" adjustment_location", adjustment_location, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+    #cat(paste(" adjustment_date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
     
     # get state, counties and national observations for an adjustment case
     location_data <- data %>%
@@ -123,12 +105,12 @@ get_results <- function(data, measure, model) {
     # for each location in data, get imputed data
     for (fips in unique(location_data$location)) {
       
-      cat(paste(" imputing fips", fips, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
-      cat(paste(" imputing date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+      #cat(paste(" imputing fips", fips, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
+      #cat(paste(" imputing date", adjustment_date, sep = ": "), file = "code/data-processing/log.txt", append = TRUE)
     
       if (fips %in% results$location){
         if (adjustment_date %in% results[which(results$location == fips),]$date){
-          cat(" ---skip--- ", file = "code/data-processing/log.txt", append = TRUE)
+          #cat(" ---skip--- ", file = "code/data-processing/log.txt", append = TRUE)
           #skip the combination of location and date that has been adjusted
           next
         }

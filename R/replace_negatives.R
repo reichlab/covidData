@@ -25,7 +25,7 @@ replace_negatives <- function(data, measure) {
     
     for (fips in unique(location_data$location)) {
       imputed_data <- covidData::adjust_daily_incidence(
-        data[data$location == fips, ], case$date, seed = 1234, measure)
+        data[data$location == fips, ], case$date, measure)
       
       data[data$location == fips, ]$inc <- imputed_data
     }

@@ -7,10 +7,9 @@ data <- covidData::load_jhu_data(
   temporal_resolution = "daily",
   measure = "deaths", replace_negatives = FALSE,
   adjustment_cases = "none"
-) %>%
+  ) %>%
   dplyr::filter(location == "08")
 
-seed <- 1234
 # NY state 36
 # NY-2020-04-19','NY-2020-06-12'
 # negative obs is on 2020-04-19
@@ -26,12 +25,15 @@ adjustment_state_fips <- unlist(lapply(
     covidData::fips_codes[which(covidData::fips_codes$abbreviation == x), ]$location
   }
 ))
-adjustments <- data.frame(fips = adjustment_state_fips, dates = as.Date(adjustment_dates))
+adjustments <- data.frame(location = adjustment_state_fips, date = as.Date(adjustment_dates))
 
 # negative obs is on 2020-03-26
-new_inc_case_a <- covidData::adjust_daily_incidence(data, adjustments[1, ], seed, measure = "deaths")
+new_inc_case_a <- covidData::adjust_daily_incidence(data, adjustments[1, ]$date, measure = "deaths")
 
-new_inc_case_b <- covidData::adjust_daily_incidence(data, adjustments[2, ], seed, measure = "deaths")
+new_inc_case_b <- covidData::adjust_daily_incidence(data, adjustments[2, ]$date, measure = "deaths")
+
+# locations other than the adjustment location
+
 
 # case a, 1
 # observed is negative, replacement is imputed
@@ -46,6 +48,14 @@ test_that("negative diff, incidents are nonnegative before and on the adjustment
 test_that("negative diff, incidents are unchanged after the adjustment date", {
   expect_true(all(new_inc_case_a[data$date > "2020-03-26"] ==
     data[data$date > "2020-03-26", ]$inc))
+})
+
+# case a, 3
+# observed is negative, replacement is imputed
+test_that("negative diff, cumulative countss are unchanged on and after the adjustment date", {
+  cum = cumsum(new_inc_case_a)
+  expect_true(all(cum[data$date >= "2020-03-26"] ==
+                    data[data$date >= "2020-03-26", ]$cum))
 })
 
 
@@ -66,3 +76,12 @@ test_that("positive diff, incidents are unchanged after the adjustment date", {
   expect_true(all(new_inc_case_b[data$date > "2020-04-24"] ==
     data[data$date > "2020-04-24", ]$inc))
 })
+
+# case b, 3
+# observed is negative, replacement is imputed
+test_that("negative diff, cumulative counts are unchanged on and after the adjustment date", {
+  cum = cumsum(new_inc_case_b)
+  expect_true(all(cum[data$date >= "2020-04-24"] ==
+                    data[data$date >= "2020-04-24", ]$cum))
+})
+
