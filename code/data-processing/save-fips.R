@@ -29,4 +29,5 @@ fips_codes <- read_csv("data-raw/locations.csv") %>%
   # Drop extra columns we created above
   dplyr::select(location, location_name, location_name_with_state, abbreviation)
 
+
 save(fips_codes, file = "data/fips_codes.rdata")

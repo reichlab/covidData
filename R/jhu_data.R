@@ -9,56 +9,68 @@
 #' to include: currently only 'weekly' is supported
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
+#' @param replace_negatives boolean to replace negative incs with imputed data
 #' @param adjustment_cases character vector specifying times and locations with
 #' reporting anomalies to adjust.  Either 'none' (the default) or one or more
 #' of 'CO-2020-04-24', 'MS-2020-06-22', 'DE-2020-06-23', 'NJ-2020-06-25'. These
 #' refer to locations and times affected by reporting anomalies documented at
 #' https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data#user-content-retrospective-reporting-of-probable-cases-and-deaths
 #' @param adjustment_method string specifying how anomalies are adjusted.
-#' 'fill_na' will replace affected observations with NAs.
-#' Currently the only option is 'impute_inc', which leaves cumulative counts
-#' unaffected and imputes the incidence value with the 7-day mean incidence
+#' 'fill_na' will replace affected observations with NAs and correct daily
+#' cumulative counts for all dates on and after adjustment date.
+#' 'impute_and_redistribute' will replace affected observations with imputed values.
+#' Difference between the original observation and the imputed value will be redistributed
+#' to observations before and on the adjustment date. 
 #'
 #' @return data frame with columns location (fips code), date, inc, and cum
 #'
 #' @export
 load_jhu_data <- function(
-  issue_date = NULL,
-  spatial_resolution = 'state',
-  temporal_resolution = 'weekly',
-  measure = 'deaths',
-  adjustment_cases = 'none',
-  adjustment_method = 'impute_inc'
-  ) {
+                          issue_date = NULL,
+                          spatial_resolution = 'state',
+                          temporal_resolution = 'weekly',
+                          measure = 'deaths',
+                          replace_negatives = TRUE,
+                          adjustment_cases = 'none',
+                          adjustment_method = 'none') {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c('cases', 'deaths'))
-  if(measure == 'cases') {
+  if (measure == 'cases') {
     jhu_data <- covidData::jhu_cases_data
-  } else if(measure == 'deaths') {
+  } else if (measure == 'deaths') {
     jhu_data <- covidData::jhu_deaths_data
   }
-  
+
   # validate issue_date
-  if(is.null(issue_date)) {
+  if (is.null(issue_date)) {
     issue_date <- max(jhu_data$issue_date)
   } else {
     issue_date <- as.character(lubridate::ymd(issue_date))
   }
-  if(!(issue_date %in% jhu_data$issue_date)) {
-    stop(paste0('Invalid issue date; must be one of: ',
-                paste0(jhu_data$issue_date, collapse = ', ')))
+  if (!(issue_date %in% jhu_data$issue_date)) {
+    stop(paste0(
+      'Invalid issue date; must be one of: ',
+      paste0(jhu_data$issue_date, collapse = ', ')
+    ))
   }
 
   # validate spatial_resolution
   spatial_resolution <- match.arg(
     spatial_resolution,
     choices = c('county', 'state', 'national'),
-    several.ok = TRUE)
+    several.ok = TRUE
+  )
 
   # validate temporal_resolution
   temporal_resolution <- match.arg(
     temporal_resolution,
     choices = c('daily', 'weekly'),
+    several.ok = FALSE
+  )
+  
+  adjustment_method <- match.arg(
+    adjustment_method,
+    choices = c('fill_na', 'impute_and_redistribute', 'none'),
     several.ok = FALSE
   )
 
@@ -70,39 +82,31 @@ load_jhu_data <- function(
     tidyr::pivot_longer(
       matches('^\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}$'),
       names_to = 'date',
-      values_to = 'cum') %>%
+      values_to = 'cum'
+    ) %>%
     dplyr::mutate(
       date = as.character(lubridate::mdy(date))
     )
 
-  # if weekly temporal resolution, filter to saturdays
-  # TODO: adjust data first, go to weekly resolution later
-  # (so this if block will have to be at the end of the function)
-  if(temporal_resolution == 'weekly') {
-    jhu_data <- jhu_data %>%
-      dplyr::filter(
-        lubridate::wday(lubridate::ymd(date), label = TRUE) == 'Sat'
-      )
-  }
-
   # summarized results for county level
   results <- NULL
-  if('county' %in% spatial_resolution) {
+  if ('county' %in% spatial_resolution) {
     county_results <- jhu_data %>%
       dplyr::filter(FIPS > 100) %>%
       dplyr::mutate(
-        location = sprintf("%05d", FIPS)) %>%
+        location = sprintf('%05d', FIPS)
+      ) %>%
       dplyr::filter(location < '80001') %>%
       dplyr::group_by(location) %>%
-      dplyr::mutate(inc = cum - dplyr::lag(cum, 1L)) %>%
+      dplyr::mutate(inc = diff(c(0, cum))) %>%
       dplyr::select(location, date, cum, inc) %>%
       dplyr::ungroup()
-    
+
     results <- dplyr::bind_rows(results, county_results)
   }
-  
+
   # summarized results for state level
-  if('state' %in% spatial_resolution) {
+  if ('state' %in% spatial_resolution) {
     states_to_keep <- c(
       'Alabama', 'Alaska', 'American Samoa', 'Arizona', 'Arkansas', 'California',
       'Colorado', 'Connecticut', 'Delaware', 'District of Columbia',
@@ -115,7 +119,8 @@ load_jhu_data <- function(
       'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico',
       'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee',
       'Texas', 'Utah', 'Vermont', 'Virgin Islands', 'Virginia',
-      'Washington', 'West Virginia', 'Wisconsin', 'Wyoming')
+      'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+    )
 
     state_results <- jhu_data %>%
       dplyr::filter(Province_State %in% states_to_keep) %>%
@@ -123,18 +128,19 @@ load_jhu_data <- function(
       dplyr::group_by(location_name, date) %>%
       dplyr::summarize(cum = sum(cum)) %>%
       dplyr::group_by(location_name) %>%
-      dplyr::mutate(inc = cum - dplyr::lag(cum, 1L)) %>%
+      dplyr::mutate(inc = diff(c(0, cum))) %>%
       dplyr::ungroup() %>%
       dplyr::left_join(
         covidData::fips_codes %>% dplyr::filter(nchar(location) == 2),
-        by = 'location_name') %>%
+        by = 'location_name'
+      ) %>%
       dplyr::select(location, date, cum, inc)
-    
+
     results <- dplyr::bind_rows(results, state_results)
   }
 
   # summarized results for national level
-  if('national' %in% spatial_resolution) {
+  if ('national' %in% spatial_resolution) {
     # because we don't filter on states_to_keep as above, we are off by a total
     # of 3 deaths attributed to Diamond Princess.
     national_results <- jhu_data %>%
@@ -142,7 +148,7 @@ load_jhu_data <- function(
       dplyr::summarize(cum = sum(cum)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(
-        inc = cum - dplyr::lag(cum, 1L),
+        inc = diff(c(0, cum)),
         location = 'US'
       ) %>%
       dplyr::select(location, date, cum, inc)
@@ -150,20 +156,102 @@ load_jhu_data <- function(
     results <- dplyr::bind_rows(results, national_results)
   }
   
-  # TODO: in results data frame, replace daily inc with NA in specific rows, if requested
-  # at this point, the results data frame will have daily incidence values and we want to
-  # replace the numbers in some rows with NAs (no new rows, editing existing rows)
+  # replace negative incidence with imputed data. Residuals will be
+  # redistributed to related observations. 
+  if (replace_negatives) {
+    results = covidData::replace_negatives(data = results, measure = measure)
+  }
   
-  # TODO: if temporal_resolution == 'weekly', aggregate daily incidence to weekly incidence here
-  # input: data frame with daily values, output: data frame with approximately 1/7 the # of rows
-  # with weekly inc values
-  # group_by(location, week), and summarize(inc = sum(inc, na.rm = TRUE))
-  
-  # TODO: aggregate inc to get cum
-  # at this point you'll have a data frame with results for all locations
-  # and either an incorrect cum column that we need to replace (if temporal_resolution == daily)
-  # or no cum column  (since previous step got rid of it if temporal_resolution == weekly)
-  # group_by(location) [but not week] and summarize(cum = cumsum(inc))
+  if (adjustment_cases != 'none' & length(adjustment_cases) > 0) {
+    # create a data frame with adjustment location fips code and adjustment date
+    adjustment_states <- sub('-.*', '', adjustment_cases)
+    adjustment_dates <- sub('^.*?-', '', adjustment_cases)
+    adjustment_state_fips <- purrr::map_chr(
+      adjustment_states, function(x) {
+        covidData::fips_codes[which(covidData::fips_codes$abbreviation == x), ]$location
+      }
+    )
+    adjustments <- data.frame(location = adjustment_state_fips, date = as.Date(adjustment_dates))
+    
+    # replace daily incidence with NA in specific rows
+    if ('fill_na' %in% adjustment_method) {
+      results <- covidData::fill_na(results = results, adjustments = adjustments)
+    }
+
+    # replace daily incidence with imputed data and redistribute
+    # residuals to related observations
+    if ('impute_and_redistribute' %in% adjustment_method) {
+       if (replace_negatives == FALSE) {
+         results = covidData::replace_negatives(data = results, measure = measure)
+         
+         # aggregate inc to get the correct cum
+         results <- results %>%
+           dplyr::mutate(
+             date = lubridate::ymd(date),
+             cum = results %>%
+               dplyr::group_by(location) %>%
+               dplyr::mutate(cum = cumsum(inc)) %>%
+               dplyr::ungroup() %>%
+               dplyr::pull(cum)
+           )
+       }
+
+      for (i in seq_len(nrow(adjustments))) {
+        adjustment_location <- adjustments[i, ]$location
+        adjustment_date <- as.Date(adjustments[i, ]$date)
+
+        # get state, counties and national observations for an adjustment case
+        location_data <- results %>%
+          dplyr::filter(
+            stringr::str_sub(location, start = 1, end = 2) %in% adjustment_location |
+            location == 'US' | location == adjustment_location)
+
+        # for each location in data, get imputed data
+        for (fips in unique(location_data$location)) {
+          d <- location_data[location_data$location == fips, ]
+
+          # get adjusted inc column
+          imputed_inc <- covidData::adjust_daily_incidence(d, adjustment_date, measure = measure)
+
+          # put imputed data back to results
+          results[which(results$location == fips), ]$inc <- imputed_inc
+        }
+      }
+    }
+  }
+
+
+
+
+  # aggregate daily incidence to weekly incidence
+  if (temporal_resolution == 'weekly') {
+    results <- results %>%
+      dplyr::mutate(
+        sat_date = lubridate::ceiling_date(
+          lubridate::ymd(date), unit = 'week') - 1
+      ) %>%
+      dplyr::group_by(location) %>%
+      # if the last week is not complete, drop all observations from the previous Saturday
+      # in that week
+      dplyr::filter(if (max(date) < max(sat_date)) date <= max(sat_date) - 7 else TRUE) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(-date) %>%
+      dplyr::rename(date = sat_date) %>%
+      dplyr::group_by(location, date) %>%
+      dplyr::summarize(inc = sum(inc, na.rm = FALSE)) %>%
+      dplyr::ungroup()
+  }
+
+  # aggregate inc to get the correct cum
+  results <- results %>%
+    dplyr::mutate(
+      date = lubridate::ymd(date),
+      cum = results %>%
+        dplyr::group_by(location) %>%
+        dplyr::mutate(cum = cumsum(inc)) %>%
+        dplyr::ungroup() %>%
+        dplyr::pull(cum)
+    )
 
   return(results)
 }
