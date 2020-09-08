@@ -30,7 +30,7 @@ load_jhu_data <- function(
                           spatial_resolution = 'state',
                           temporal_resolution = 'weekly',
                           measure = 'deaths',
-                          replace_negatives = TRUE,
+                          replace_negatives = FALSE,
                           adjustment_cases = 'none',
                           adjustment_method = 'none') {
   # validate measure and pull in correct data set
@@ -155,13 +155,13 @@ load_jhu_data <- function(
 
     results <- dplyr::bind_rows(results, national_results)
   }
-  
+
   # replace negative incidence with imputed data. Residuals will be
   # redistributed to related observations. 
   if (replace_negatives) {
-    results = covidData::replace_negatives(data = results, measure = measure)
+    results <- replace_negatives(data = results, measure = measure)
   }
-  
+
   if (adjustment_cases != 'none' & length(adjustment_cases) > 0) {
     # create a data frame with adjustment location fips code and adjustment date
     adjustment_states <- sub('-.*', '', adjustment_cases)
@@ -182,7 +182,7 @@ load_jhu_data <- function(
     # residuals to related observations
     if ('impute_and_redistribute' %in% adjustment_method) {
        if (replace_negatives == FALSE) {
-         results = covidData::replace_negatives(data = results, measure = measure)
+         results = replace_negatives(data = results, measure = measure)
          
          # aggregate inc to get the correct cum
          results <- results %>%
