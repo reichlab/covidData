@@ -9,6 +9,10 @@ For this package to be useful, you will probably want to clone it and install it
 To update the data, follow these steps once you have cloned the repository:
 
 1. Create a `JHU` folder within `data-raw`; raw data files from the JHU repository will be stored here.
+2. In a terminal, navigate to `code/data-processing` and run `make all`.
+
+If for some reason the make command doesn't work for you, you can instead run the
+required scripts yourself:
 2. In a terminal, navigate to `code/data-processing` and run `python download-historical-jhu.py`; this downloads raw data files from the JHU repository.
 3. In R, with your working directory set to the package root, run the contents of the `assemble-historical-jhu.R` script in `code/data-processing`.
 4. Whenever you have done this, you will need to re-install the package.  To avoid unnecessary duplication and copying of files, we recommend installing the package from the terminal by `R CMD INSTALL covidData`.
