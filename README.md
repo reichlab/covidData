@@ -6,7 +6,14 @@ This is an R package that provides versioned time series data for COVID-19 from 
 
 For this package to be useful, you will probably want to clone it and install it from your local copy after you have updated the data.
 
-To update the data, follow these steps once you have cloned the repository:
+## using `make`
+We recommend using `make` to simplify the updating of data. To do this, you must complete the following steps once you have cloned the repository:
+
+1. In a terminal/shell window, navigate to `code/data-processing`.
+2. Run `make all`. (This runs the steps below.)
+
+## manually
+If make does not work for you, you may run the following steps by hand. To update the data, follow these steps once you have cloned the repository:
 
 1. Create a `JHU` folder within `data-raw`; raw data files from the JHU repository will be stored here.
 2. In a terminal, navigate to `code/data-processing` and run `make all`.
