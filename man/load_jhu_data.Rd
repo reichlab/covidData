@@ -2,19 +2,22 @@
 % Please edit documentation in R/jhu_data.R
 \name{load_jhu_data}
 \alias{load_jhu_data}
-\title{Construct table of truths for weekly incident and cumulative deaths at
-horizons one though 6}
+\title{Assemble a data frame of incident and cumulative deaths or cases due to
+COVID-19 as they were available as of a specified issue date.}
 \usage{
 load_jhu_data(
   issue_date = NULL,
   spatial_resolution = "state",
   temporal_resolution = "weekly",
-  measure = "deaths"
+  measure = "deaths",
+  replace_negatives = FALSE,
+  adjustment_cases = "none",
+  adjustment_method = "none"
 )
 }
 \arguments{
-\item{issue_date}{character issue date (i.e. report date) to use for constructing
-truths in format 'yyyy-mm-dd'}
+\item{issue_date}{character issue date (i.e. report date) to use for
+constructing truths in format 'yyyy-mm-dd'}
 
 \item{spatial_resolution}{character vector specifying spatial unit types to
 include: 'county', 'state' and/or 'national'}
@@ -24,11 +27,26 @@ to include: currently only 'weekly' is supported}
 
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths' or 'cases'}
+
+\item{replace_negatives}{boolean to replace negative incs with imputed data}
+
+\item{adjustment_cases}{character vector specifying times and locations with
+reporting anomalies to adjust.  Either 'none' (the default) or one or more
+of 'CO-2020-04-24', 'MS-2020-06-22', 'DE-2020-06-23', 'NJ-2020-06-25'. These
+refer to locations and times affected by reporting anomalies documented at
+https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data#user-content-retrospective-reporting-of-probable-cases-and-deaths}
+
+\item{adjustment_method}{string specifying how anomalies are adjusted.
+'fill_na' will replace affected observations with NAs and correct daily
+cumulative counts for all dates on and after adjustment date.
+'impute_and_redistribute' will replace affected observations with imputed values.
+Difference between the original observation and the imputed value will be redistributed
+to observations before and on the adjustment date.}
 }
 \value{
-data frame with
+data frame with columns location (fips code), date, inc, and cum
 }
 \description{
-Construct table of truths for weekly incident and cumulative deaths at
-horizons one though 6
+Assemble a data frame of incident and cumulative deaths or cases due to
+COVID-19 as they were available as of a specified issue date.
 }

@@ -1,5 +1,5 @@
-#' Construct table of truths for weekly incident and cumulative deaths at
-#' horizons one though 6
+#' Assemble a data frame of incident and cumulative deaths or cases due to
+#' COVID-19 as they were available as of a specified issue date.
 #'
 #' @param issue_date character issue date (i.e. report date) to use for
 #' constructing truths in format 'yyyy-mm-dd'

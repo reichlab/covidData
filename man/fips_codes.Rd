@@ -5,8 +5,8 @@
 \alias{fips_codes}
 \title{FIPS codes for the US and its states and territories}
 \format{
-A data.frame with two-digit FIPS codes and two-letter abbreviations
-of states and territories of the US
+A data.frame with two-digit or five-digit FIPS codes, location names,
+and two-letter abbreviations of states and territories of the US
 }
 \usage{
 fips_codes
