@@ -5,6 +5,23 @@ date: "12/3/2020"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+```
+
+
+## Setting up covidData
+
+To use the `covidData` package, you must first do some set-up to install the package and download the data from various sources.
+It is not as straight-forward as installing a normal R package.
+The latest instructions on how to install the package can be found on the package's [GitHub page](https://github.com/reichlab/covidData/).
+
+
+## Code to retrieve and plot data
+
+The following code retrieves and plots case and death data from JHU CSSE and hospitalization data from HealthData.gov.
+For more details about how these data are computed and what sources they come from, please see the [COVID-19 Forecast Hub Technical README file](https://github.com/reichlab/covid19-forecast-hub/blob/master/data-processed/README.md#ground-truth-data).
+
 ```{r message=FALSE}
 library(dplyr)
 library(ggplot2)
@@ -48,10 +65,12 @@ combined_data <- combined_data %>%
 # Plot the data
 ggplot(
     data = combined_data,
+    #data = filter(combined_data, abbreviation %in% c("MA", "SD", "TX")),
     mapping = aes(x = date, y = inc, color = measure)) +
-  geom_line() +
-  geom_point() +
+  geom_smooth(se=FALSE, span=.25) +
+  geom_point(alpha=.2) +
   facet_wrap( ~ abbreviation, ncol = 3, scales = "free_y") +
   scale_y_log10() +
+  #scale_x_date(limits=c(as.Date("2020-07-01"), Sys.Date())) +
   theme_bw()
 ```
