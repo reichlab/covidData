@@ -16,6 +16,12 @@
 #' @format A tibble with a row per issue date
 "jhu_cases_data"
 
+#' HealthData.gov data for the US and its states and territories with counts of
+#' hospitalizations
+#'
+#' @format A tibble with a row per issue date
+"healthdata_hosp_data"
+
 
 #' Imputed death incidence data for negative incidence and adjustment cases
 #'

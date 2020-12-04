@@ -6,7 +6,7 @@
 #' @param spatial_resolution character vector specifying spatial unit types to
 #' include: 'county', 'state' and/or 'national'
 #' @param temporal_resolution character vector specifying temporal resolution
-#' to include: currently only 'weekly' is supported
+#' to include: 'daily' or 'weekly'
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
 #' @param replace_negatives boolean to replace negative incs with imputed data

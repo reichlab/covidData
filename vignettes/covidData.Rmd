@@ -1,0 +1,57 @@
+---
+title: "covidData"
+author: "Evan Ray"
+date: "12/3/2020"
+output: html_document
+---
+
+```{r message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(covidData)
+```
+
+```{r message=FALSE}
+# Load incident cases, hospitalizations, and deaths data at state level
+combined_data <- dplyr::bind_rows(
+  load_jhu_data(
+    issue_date = "2020-12-02",
+    temporal_resolution = "daily",
+    measure = "cases"
+  ) %>%
+    dplyr::mutate(measure = "cases"),
+  load_jhu_data(
+    issue_date = "2020-12-02",
+    temporal_resolution = "daily",
+    measure = "deaths"
+  ) %>%
+    dplyr::mutate(measure = "deaths"),
+  load_healthdata_data(
+    issue_date = "2020-12-02",
+    temporal_resolution = "daily",
+    measure = "hospitalizations"
+  ) %>%
+    dplyr::mutate(measure = "hospitalizations")
+)
+```
+
+```{r}
+# Add more human readable location names
+combined_data <- combined_data %>%
+  dplyr::left_join(
+    covidData::fips_codes,
+    by = "location"
+  )
+```
+
+```{r message=FALSE, fig.width=10, fig.height=32}
+# Plot the data
+ggplot(
+    data = combined_data,
+    mapping = aes(x = date, y = inc, color = measure)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap( ~ abbreviation, ncol = 3, scales = "free_y") +
+  scale_y_log10() +
+  theme_bw()
+```

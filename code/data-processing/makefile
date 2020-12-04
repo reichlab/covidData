@@ -16,7 +16,9 @@ install: assemble download
 # Assemble csv files into R data object
 assemble: download
 	Rscript assemble-historical-jhu.R
+	Rscript assemble-historical-healthdata.R
 
 # Download data from JHU CSSE GitHub repo
 download:
 	python download-historical-jhu.py
+	Rscript download-historical-healthdata.R

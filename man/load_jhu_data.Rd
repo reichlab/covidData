@@ -23,7 +23,7 @@ constructing truths in format 'yyyy-mm-dd'}
 include: 'county', 'state' and/or 'national'}
 
 \item{temporal_resolution}{character vector specifying temporal resolution
-to include: currently only 'weekly' is supported}
+to include: 'daily' or 'weekly'}
 
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths' or 'cases'}
