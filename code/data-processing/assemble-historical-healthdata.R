@@ -50,11 +50,12 @@ build_data <- function(
     result <- last_weekly
   }
 
-  # calculate incidence column, rename state to abbreviation
+  # calculate incidence column, change date to previous day, and
+  # rename state to abbreviation
   result$data[[1]] <- result$data[[1]] %>%
     dplyr::transmute(
       abbreviation = state,
-      date = date,
+      date = date - 1,
       inc = previous_day_admission_adult_covid_confirmed +
         previous_day_admission_pediatric_covid_confirmed
     )
