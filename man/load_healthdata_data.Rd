@@ -7,6 +7,7 @@ COVID-19 as they were available as of a specified issue date.}
 \usage{
 load_healthdata_data(
   issue_date = NULL,
+  as_of = NULL,
   spatial_resolution = "state",
   temporal_resolution = "weekly",
   measure = "hospitalizations",

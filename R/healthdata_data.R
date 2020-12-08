@@ -22,6 +22,7 @@
 #' @export
 load_healthdata_data <- function(
     issue_date = NULL,
+    as_of = NULL,
     spatial_resolution = "state",
     temporal_resolution = "weekly",
     measure = "hospitalizations",
@@ -33,9 +34,22 @@ load_healthdata_data <- function(
 
   healthdata_data <- covidData::healthdata_hosp_data
 
-  # validate issue_date
-  if (is.null(issue_date)) {
+  # validate issue_date and as_of
+  if (!missing(issue_date) && !missing(as_of) &&
+      !is.null(issue_date) && !is.null(as_of)) {
+    stop("Cannot provide both arguments issue_date and as_of to load_healthcare_data.")
+  } else if (is.null(issue_date) && is.null(as_of)) {
     issue_date <- max(healthdata_data$issue_date)
+  } else if (!is.null(as_of)) {
+    avail_issues <- healthdata_data$issue_date[
+        healthdata_data$issue_date <= as.character(as_of)
+      ]
+
+    if (length(avail_issues) == 0) {
+      stop("Provided as_of date is earlier than all available issue dates.")
+    } else {
+      issue_date <- max(avail_issues)
+    }
   } else {
     issue_date <- as.character(lubridate::ymd(issue_date))
   }
@@ -100,16 +114,18 @@ load_healthdata_data <- function(
   }
 
   # aggregate daily incidence to weekly incidence
-  if (temporal_resolution == 'weekly') {
+  if (temporal_resolution == "weekly") {
     results <- results %>%
       dplyr::mutate(
         sat_date = lubridate::ceiling_date(
-          lubridate::ymd(date), unit = 'week') - 1
+          lubridate::ymd(date), unit = "week") - 1
       ) %>%
       dplyr::group_by(location) %>%
-      # if the last week is not complete, drop all observations from the previous Saturday
-      # in that week
-      dplyr::filter(if (max(date) < max(sat_date)) date <= max(sat_date) - 7 else TRUE) %>%
+      # if the last week is not complete, drop all observations from the
+      # previous Saturday in that week
+      dplyr::filter(
+        if (max(date) < max(sat_date)) date <= max(sat_date) - 7 else TRUE
+      ) %>%
       dplyr::ungroup() %>%
       dplyr::select(-date) %>%
       dplyr::rename(date = sat_date) %>%
