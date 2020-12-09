@@ -5,7 +5,8 @@ testthat::context("load_jhu_data-impute_and_redistribute")
 data <- covidData::load_jhu_data(
   spatial_resolution = 'state',
   temporal_resolution = 'daily',
-  measure = 'deaths', replace_negatives = TRUE,
+  measure = 'deaths',
+  replace_negatives = TRUE,
   adjustment_cases = 'none')
 
 before_adjustment_data <- dplyr::filter(data, location == '08')

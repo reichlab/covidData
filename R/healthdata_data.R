@@ -99,19 +99,18 @@ load_healthdata_data <- function(
     `[[`(1)
 
   # drop results for irrelevant locations
+  all_locations <- unique(healthdata_data$location)
+  locations_to_keep <- NULL
   if ("state" %in% spatial_resolution) {
-    results <- healthdata_data %>%
-      dplyr::filter(location != "US")
-  } else {
-    results <- NULL
+    locations_to_keep <- all_locations[all_locations != "US"]
   }
 
   if ("national" %in% spatial_resolution) {
-    results <- dplyr::bind_rows(
-      results,
-      results %>% dplyr::filter(location == "US")
-    )
+    locations_to_keep <- c(locations_to_keep, "US")
   }
+
+  results <- healthdata_data %>%
+    dplyr::filter(location %in% locations_to_keep)
 
   # aggregate daily incidence to weekly incidence
   if (temporal_resolution == "weekly") {
