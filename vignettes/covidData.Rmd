@@ -24,27 +24,31 @@ For more details about how these data are computed and what sources they come fr
 
 ```{r message=FALSE}
 library(dplyr)
+library(forcats)
 library(ggplot2)
 library(covidData)
 ```
 
 ```{r message=FALSE}
-# Load incident cases, hospitalizations, and deaths data at state level
+# Load incident cases, hospitalizations, and deaths data at state and national level
 combined_data <- dplyr::bind_rows(
   load_jhu_data(
     issue_date = "2020-12-02",
+    spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "cases"
   ) %>%
     dplyr::mutate(measure = "cases"),
   load_jhu_data(
     issue_date = "2020-12-02",
+    spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "deaths"
   ) %>%
     dplyr::mutate(measure = "deaths"),
   load_healthdata_data(
     issue_date = "2020-12-02",
+    spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "hospitalizations"
   ) %>%
@@ -53,11 +57,15 @@ combined_data <- dplyr::bind_rows(
 ```
 
 ```{r}
-# Add more human readable location names
+# Add more human readable location names,
+# set location abbreviation as a factor with US first
 combined_data <- combined_data %>%
   dplyr::left_join(
     covidData::fips_codes,
     by = "location"
+  ) %>%
+  dplyr::mutate(
+    abbreviation = forcats::fct_relevel(factor(abbreviation), "US")
   )
 ```
 
