@@ -37,9 +37,9 @@ load_jhu_data <- function(
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c("cases", "deaths"))
   if (measure == "cases") {
-    jhu_data <- jhu_cases_data
+    jhu_data <- covidData::jhu_cases_data
   } else if (measure == "deaths") {
-    jhu_data <- jhu_deaths_data
+    jhu_data <- covidData::jhu_deaths_data
   }
 
   # validate issue_date and as_of
