@@ -6,6 +6,10 @@ library(here)
 # after this the working directory should be covidData
 setwd(here())
 
+# read in fips codes data -- need to do this instead of referencing
+# covidData::fips_codes because the covidData package may not be installed yet!
+load("data/fips_codes.rdata")
+
 #' pull data from a timeseries update or build data intermediate between time
 #' series updates by augmenting with daily values
 build_data <- function(
@@ -72,7 +76,7 @@ build_data <- function(
   # add location column, remove abbreviation
   result$data[[1]] %>%
     dplyr::left_join(
-      covidData::fips_codes %>% dplyr::select(location, abbreviation),
+      fips_codes %>% dplyr::select(location, abbreviation),
       by = "abbreviation"
     ) %>%
     dplyr::select(-abbreviation)

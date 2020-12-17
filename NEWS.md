@@ -1,4 +1,4 @@
-## covidData 0.1
+## covidData 0.1.1
 
 This is the first version of the package with a 0.x release.
 
@@ -11,3 +11,7 @@ This is the first version of the package with a 0.x release.
 
 ## v 0.1
  - initial release: functionality for loading data for cases, deaths, and hospitalizations
+
+### v 0.1.1
+ - fix bug where assemble-historical-healthdata.R tried to access data in the package,
+  which resulted in errors for first-time package installation.
