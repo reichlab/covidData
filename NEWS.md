@@ -1,4 +1,4 @@
-## covidData 0.1.1
+## covidData 0.1.2
 
 This is the first version of the package with a 0.x release.
 
@@ -15,3 +15,8 @@ This is the first version of the package with a 0.x release.
 ### v 0.1.1
  - fix bug where assemble-historical-healthdata.R tried to access data in the package,
   which resulted in errors for first-time package installation.
+
+### v 0.1.2
+ - handle formatting inconsistencies in posting data to healthdata.gov
+ - data posted on healthdata.gov on a certain date are no longer returned as part of issue dates before that date
+ - refactor healthdata data processing
