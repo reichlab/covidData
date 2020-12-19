@@ -33,21 +33,21 @@ library(covidData)
 # Load incident cases, hospitalizations, and deaths data at state and national level
 combined_data <- dplyr::bind_rows(
   load_jhu_data(
-    issue_date = "2020-12-02",
+    issue_date = "2020-12-05",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "cases"
   ) %>%
     dplyr::mutate(measure = "cases"),
   load_jhu_data(
-    issue_date = "2020-12-02",
+    issue_date = "2020-12-05",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "deaths"
   ) %>%
     dplyr::mutate(measure = "deaths"),
   load_healthdata_data(
-    issue_date = "2020-12-02",
+    issue_date = "2020-12-05",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "hospitalizations"

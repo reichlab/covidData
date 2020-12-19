@@ -146,3 +146,118 @@ load_healthdata_data <- function(
 
   return(results)
 }
+
+
+#' Construct a merged healthdata data set for a single issue date by pulling
+#' from a timeseries update if one is available, or by augmenting the last time
+#' series update on or before the issue date with daily updates that were made
+#' after the last time series update and on or before the issue date
+#' 
+#' @param issue_date issue date
+#' @param healthdata_hosp_data_ts tibble of issue_date and data reported that
+#' date
+#' @param healthdata_hosp_data_daily tibble of issue_date, date, and data
+#' reported
+#' 
+#' @return tibble of issue_date and data reported on or by that date
+build_healthdata_data <- function(
+  issue_date,
+  healthdata_hosp_data_ts,
+  healthdata_hosp_data_daily
+  ) {
+  if (issue_date %in% healthdata_hosp_data_ts$issue_date) {
+    result <- healthdata_hosp_data_ts %>%
+      dplyr::filter(issue_date == UQ(issue_date))
+  } else if (issue_date %in% healthdata_hosp_data_daily$issue_date) {
+    healthdata_hosp_data_daily <- healthdata_hosp_data_daily %>%
+      dplyr::filter(issue_date <= UQ(issue_date))
+    
+    last_weekly <- healthdata_hosp_data_ts %>%
+      dplyr::filter(issue_date <= UQ(issue_date)) %>%
+      dplyr::slice_max(issue_date)
+    
+    last_weekly$issue_date <- issue_date
+    last_date <- lubridate::ymd(max(last_weekly$data[[1]]$date))
+    max_date <- lubridate::ymd(max(healthdata_hosp_data_daily$date))
+    num_dates_to_add <- max_date - last_date
+
+    for (i in seq_len(num_dates_to_add)) {
+      new_date <- last_date + i
+      if (as.character(new_date) %in% healthdata_hosp_data_daily$date) {
+        # if daily data for new_date is available, append it by pulling
+        # from the largest issue_date for that day.
+        last_weekly$data[[1]] <- dplyr::bind_rows(
+          last_weekly$data[[1]],
+          healthdata_hosp_data_daily %>%
+            dplyr::filter(date == as.character(new_date)) %>%
+            dplyr::slice_max(issue_date) %>%
+            dplyr::pull(data) %>%
+            `[[`(1) %>%
+            dplyr::mutate(date = new_date)
+        )
+      } else {
+        required_locations <- unique(last_weekly$data[[1]]$state)
+        last_weekly$data[[1]] <- dplyr::bind_rows(
+          last_weekly$data[[1]],
+          tidyr::expand_grid(
+            state = required_locations,
+            date = new_date,
+            previous_day_admission_adult_covid_confirmed = NA_real_,
+            previous_day_admission_pediatric_covid_confirmed = NA_real_
+          )
+        )
+      }
+    }
+
+    result <- last_weekly
+  } else {
+    # neither time series nor daily data were released on this issue date
+    result <- NULL
+  }
+
+  return(result)
+}
+
+
+#' Preprocess healthdata data set, calculating incidence, adjusting date, and
+#' calculating national incidence.
+#' 
+#' @param raw_healthdata_data tibble one row and columns issue_date and data
+#' The data column should be a list of data frames, with column names
+#' date, state, previous_day_admission_adult_covid_confirmed, and
+#' previous_day_admission_pediatric_covid_confirmed
+#' 
+#' @return a result of similar format to raw_healthdata_data, but columns
+#' date, location, and inc
+preprocess_healthdata_data <- function(raw_healthdata_data, fips_codes) {
+  result <- raw_healthdata_data
+
+  # calculate incidence column, change date to previous day, and
+  # rename state to abbreviation
+  result$data[[1]] <- result$data[[1]] %>%
+    dplyr::transmute(
+      abbreviation = state,
+      date = date - 1,
+      inc = previous_day_admission_adult_covid_confirmed +
+        previous_day_admission_pediatric_covid_confirmed
+    )
+
+  # add US location by summing across all others
+  result$data[[1]] <- dplyr::bind_rows(
+    result$data[[1]],
+    result$data[[1]] %>%
+      dplyr::group_by(date) %>%
+      dplyr::summarise(inc = sum(inc)) %>%
+      dplyr::mutate(abbreviation = "US")
+  )
+
+  # add location column, remove abbreviation
+  result$data[[1]] <- result$data[[1]] %>%
+    dplyr::left_join(
+      fips_codes %>% dplyr::select(location, abbreviation),
+      by = "abbreviation"
+    ) %>%
+    dplyr::select(-abbreviation)
+  
+  return(result)
+}
