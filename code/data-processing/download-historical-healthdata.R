@@ -15,7 +15,7 @@ get_file_link <- function(link) {
   target_html <- xml2::read_html(httr::GET(link,config = httr::config(ssl_verifypeer = FALSE)))
 
   # this pattern works if the link was to an html page
-  result <- target_html %>%h
+  result <- target_html %>%
     xml2::xml_find_all("//div[contains(@class, 'download')]") %>%
     html_children() %>%
     html_attr("href")
@@ -201,7 +201,9 @@ for (i in seq_len(nrow(timeseries_revisions_meta))) {
 
   if (!file.exists(destination_path)) {
     data <- suppressMessages(readr::read_csv(
-      timeseries_revisions_meta$file_link[i],
+      timeseries_revisions_meta$file_link[i]%>%
+        httr::GET(config = httr::config(ssl_verifypeer = FALSE))%>% 
+        content(as="text"),
       col_types = cols_only(
         state = col_character(),
         date = col_date(format = "%Y-%m-%d"),
@@ -225,7 +227,9 @@ for (i in seq_len(nrow(daily_revisions_meta))) {
   if (!file.exists(destination_path)) {
     data <- suppressMessages(
       readr::read_csv(
-        daily_revisions_meta$file_link[i],
+        daily_revisions_meta$file_link[i]%>%
+          httr::GET(config = httr::config(ssl_verifypeer = FALSE))%>% 
+          content(as="text"),
         col_types = cols_only(
           state = col_character(),
           previous_day_admission_adult_covid_confirmed = col_integer(),
