@@ -227,7 +227,7 @@ for (i in seq_len(nrow(daily_revisions_meta))) {
   if (!file.exists(destination_path)) {
     data <- suppressMessages(
       readr::read_csv(
-        daily_revisions_meta$file_link[i]%>%
+        daily_revisions_meta$file_link[i] %>%
           httr::GET(config = httr::config(ssl_verifypeer = FALSE))%>% 
           content(as="text"),
         col_types = cols_only(
