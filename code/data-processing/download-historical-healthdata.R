@@ -201,7 +201,7 @@ for (i in seq_len(nrow(timeseries_revisions_meta))) {
 
   if (!file.exists(destination_path)) {
     data <- suppressMessages(readr::read_csv(
-      timeseries_revisions_meta$file_link[i]%>%
+      timeseries_revisions_meta$file_link[i] %>%
         httr::GET(config = httr::config(ssl_verifypeer = FALSE)) %>% 
         content(as = "text"),
       col_types = cols_only(
