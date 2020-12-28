@@ -12,7 +12,7 @@ setwd(here())
 #' page
 get_file_link <- function(link) {
   message(link)
-  target_html <- xml2::read_html(httr::GET(link))
+  target_html <- xml2::read_html(httr::GET(link, config = httr::config(ssl_verifypeer = FALSE)))
 
   # this pattern works if the link was to an html page
   result <- target_html %>%
@@ -38,7 +38,7 @@ get_file_link <- function(link) {
 #' html page with a table listing revisions
 get_revisions_metadata <- function(revisions_page) {
   # load html for page listing revisions
-  revisions_html <- xml2::read_html(httr::GET(revisions_page))
+  revisions_html <- xml2::read_html(httr::GET(revisions_page, config = httr::config(ssl_verifypeer = FALSE)))
 
   all_revisions_pages <- revisions_page
 
@@ -53,16 +53,16 @@ get_revisions_metadata <- function(revisions_page) {
   if (length(pages) > 0) {
     all_revisions_pages <- c(
       all_revisions_pages,
-      paste0("https://healthdata.gov", pages)
+      paste0("http://healthdata.gov", pages)
     )
   }
 
   results <- purrr::map_dfr(all_revisions_pages, get_revisions_metadata_one_page)
 
   # one-off manual adjustment for daily data
-  if (revisions_page == "https://healthdata.gov/node/3281086/revisions") {
+  if (revisions_page == "http://healthdata.gov/node/3281086/revisions") {
     results$file_link[results$issue_date == "2020-11-03"] <-
-      "https://healthdata.gov/sites/default/files/reported_hospital_utilization_20201103_2139.csv"
+      "http://healthdata.gov/sites/default/files/reported_hospital_utilization_20201103_2139.csv"
   }
 
   return(results)
@@ -71,7 +71,7 @@ get_revisions_metadata <- function(revisions_page) {
 #' utility function to get metadata about available revisions
 get_revisions_metadata_one_page <- function(revisions_page) {
   # load html for page listing revisions
-  revisions_html <- xml2::read_html(httr::GET(revisions_page))
+  revisions_html <- xml2::read_html(httr::GET(revisions_page, config = httr::config(ssl_verifypeer = FALSE)))
 
   # extract table rows with links to revised data
   # note the first row is just a table header
@@ -91,7 +91,7 @@ get_revisions_metadata_one_page <- function(revisions_page) {
         html_children() %>%
         `[[`(1) %>%
         html_attr("href") %>%
-        (function(rel_link) { paste0("https://healthdata.gov", rel_link) })
+        (function(rel_link) { paste0("http://healthdata.gov", rel_link) })
       
       file_link <- get_file_link(link)
       if (length(file_link) == 0) {
@@ -99,11 +99,11 @@ get_revisions_metadata_one_page <- function(revisions_page) {
         if (grepl("revision-published", node %>% html_attr("class"))) {
           # link to currently published data file sometimes fails;
           # we can access it by manually constructing the link
-          json_description <- httr::GET(link) %>%
+          json_description <- httr::GET(link, config = httr::config(ssl_verifypeer = FALSE)) %>%
             as.character() %>%
             jsonlite::fromJSON()
           new_link <- paste0(
-            "https://healthdata.gov/node/",
+            "http://healthdata.gov/node/",
             json_description$nid,
             "/revisions/",
             json_description$vid,
@@ -150,7 +150,7 @@ get_revisions_metadata_one_page <- function(revisions_page) {
 
 # get issue date and link to file for each data revision
 timeseries_revisions_meta <-
-  get_revisions_metadata("https://healthdata.gov/node/3565481/revisions") %>%
+  get_revisions_metadata("http://healthdata.gov/node/3565481/revisions") %>%
   # filter to issue dates at least as large as Nov. 15, 2020
   # This is the first date that the previous_day_admission_adult_covid_confirmed
   # and previous_day_admission_pediatric_covid_confirmed fields are recorded
@@ -167,7 +167,7 @@ timeseries_revisions_meta <-
   as.data.frame()
 
 daily_revisions_meta <-
-  get_revisions_metadata("https://healthdata.gov/node/3281086/revisions") %>%
+  get_revisions_metadata("http://healthdata.gov/node/3281086/revisions") %>%
   # filter to issue dates at least as large as Nov. 15, 2020
   # This is the first date that the previous_day_admission_adult_covid_confirmed
   # and previous_day_admission_pediatric_covid_confirmed fields are recorded
@@ -201,7 +201,9 @@ for (i in seq_len(nrow(timeseries_revisions_meta))) {
 
   if (!file.exists(destination_path)) {
     data <- suppressMessages(readr::read_csv(
-      timeseries_revisions_meta$file_link[i],
+      timeseries_revisions_meta$file_link[i] %>%
+        httr::GET(config = httr::config(ssl_verifypeer = FALSE)) %>% 
+        content(as = "text"),
       col_types = cols_only(
         state = col_character(),
         date = col_date(format = "%Y-%m-%d"),
@@ -225,7 +227,9 @@ for (i in seq_len(nrow(daily_revisions_meta))) {
   if (!file.exists(destination_path)) {
     data <- suppressMessages(
       readr::read_csv(
-        daily_revisions_meta$file_link[i],
+        daily_revisions_meta$file_link[i] %>%
+          httr::GET(config = httr::config(ssl_verifypeer = FALSE)) %>% 
+          content(as = "text"),
         col_types = cols_only(
           state = col_character(),
           previous_day_admission_adult_covid_confirmed = col_integer(),
