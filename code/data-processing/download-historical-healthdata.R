@@ -12,7 +12,7 @@ setwd(here())
 #' page
 get_file_link <- function(link) {
   message(link)
-  target_html <- xml2::read_html(httr::GET(link,config = httr::config(ssl_verifypeer = FALSE)))
+  target_html <- xml2::read_html(httr::GET(link, config = httr::config(ssl_verifypeer = FALSE)))
 
   # this pattern works if the link was to an html page
   result <- target_html %>%
