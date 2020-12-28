@@ -140,7 +140,8 @@ get_revisions_metadata_one_page <- function(revisions_page) {
       return(data.frame(
         date = date,
         issue_date = issue_date,
-        file_link = file_link
+        file_link = file_link,
+        stringsAsFactors = FALSE
       ))
     }
   )
@@ -164,6 +165,11 @@ timeseries_revisions_meta <-
   # issue date for that file
   dplyr::group_by(file_link) %>%
   dplyr::slice_min(issue_date) %>%
+  # issue dates are sometimes recorded incorrectly on the website
+  # set to date if reported issue date is less than date
+  dplyr::mutate(
+    issue_date = pmax(issue_date, date)
+  ) %>%
   as.data.frame()
 
 daily_revisions_meta <-
@@ -181,6 +187,11 @@ daily_revisions_meta <-
   # issue date for that file
   dplyr::group_by(file_link) %>%
   dplyr::slice_min(issue_date) %>%
+  # issue dates are sometimes recorded incorrectly on the website
+  # set to date if reported issue date is less than date
+  dplyr::mutate(
+    issue_date = pmax(issue_date, date)
+  ) %>%
   as.data.frame()
 
 # download the actual csvs
