@@ -229,7 +229,7 @@ for (i in seq_len(nrow(daily_revisions_meta))) {
       readr::read_csv(
         daily_revisions_meta$file_link[i] %>%
           httr::GET(config = httr::config(ssl_verifypeer = FALSE))%>% 
-          content(as="text"),
+          content(as = "text"),
         col_types = cols_only(
           state = col_character(),
           previous_day_admission_adult_covid_confirmed = col_integer(),
