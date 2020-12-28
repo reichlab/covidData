@@ -38,7 +38,7 @@ get_file_link <- function(link) {
 #' html page with a table listing revisions
 get_revisions_metadata <- function(revisions_page) {
   # load html for page listing revisions
-  revisions_html <- xml2::read_html(httr::GET(revisions_page,config = httr::config(ssl_verifypeer = FALSE)))
+  revisions_html <- xml2::read_html(httr::GET(revisions_page, config = httr::config(ssl_verifypeer = FALSE)))
 
   all_revisions_pages <- revisions_page
 
