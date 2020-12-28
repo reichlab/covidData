@@ -71,7 +71,7 @@ get_revisions_metadata <- function(revisions_page) {
 #' utility function to get metadata about available revisions
 get_revisions_metadata_one_page <- function(revisions_page) {
   # load html for page listing revisions
-  revisions_html <- xml2::read_html(httr::GET(revisions_page,config = httr::config(ssl_verifypeer = FALSE)))
+  revisions_html <- xml2::read_html(httr::GET(revisions_page, config = httr::config(ssl_verifypeer = FALSE)))
 
   # extract table rows with links to revised data
   # note the first row is just a table header
