@@ -99,7 +99,7 @@ get_revisions_metadata_one_page <- function(revisions_page) {
         if (grepl("revision-published", node %>% html_attr("class"))) {
           # link to currently published data file sometimes fails;
           # we can access it by manually constructing the link
-          json_description <- httr::GET(link,config = httr::config(ssl_verifypeer = FALSE)) %>%
+          json_description <- httr::GET(link, config = httr::config(ssl_verifypeer = FALSE)) %>%
             as.character() %>%
             jsonlite::fromJSON()
           new_link <- paste0(
