@@ -1,4 +1,4 @@
-## covidData 0.1.2
+## covidData 0.1.3
 
 This is the first version of the package with a 0.x release.
 
@@ -20,3 +20,7 @@ This is the first version of the package with a 0.x release.
  - handle formatting inconsistencies in posting data to healthdata.gov
  - data posted on healthdata.gov on a certain date are no longer returned as part of issue dates before that date
  - refactor healthdata data processing
+
+### v 0.1.3
+ - handle errors about SSL certificates expired when pulling data from HealthData.gov
+ - handle the fact that HealthData.gov posted data with upload date of 12/21 and going through 12/28 (since corrected on their site).  We now manually force the issue date (based on the upload date) to be at least as large as the last date in the data file.
