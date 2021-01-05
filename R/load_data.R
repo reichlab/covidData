@@ -14,7 +14,7 @@
 #' @param temporal_resolution string specifying temporal resolution
 #' to include: one of 'daily' or 'weekly'
 #' @param measure string specifying measure of covid dynamics:
-#' one of 'deaths', 'cases', or hospitalizations
+#' one of 'deaths', 'cases', or 'hospitalizations'
 #' @param source string specifying data source.  Currently supported sources are
 #' "jhu" for the "deaths" or "cases" measures or "healthdata" for the "hospitalizations"
 #' measure.
