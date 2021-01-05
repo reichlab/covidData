@@ -88,7 +88,7 @@ load_data <- function(
     )
   }
   if (measure == "hospitalizations" && source != "healthdata") {
-    stop("Source must be 'healthdata' when measure is 'hosptitalization'.")
+    stop("Source must be 'healthdata' when measure is 'hospitalizations'.")
   }
   if (measure != "hospitalizations" && source == "healthdata") {
     stop("Source must be 'jhu' when measure is 'cases' or 'deaths'.")
