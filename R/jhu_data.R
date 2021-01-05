@@ -146,7 +146,7 @@ load_jhu_data <- function(
       dplyr::mutate(inc = diff(c(0, cum))) %>%
       dplyr::ungroup() %>%
       dplyr::left_join(
-        fips_codes %>% dplyr::filter(nchar(location) == 2),
+        covidData::fips_codes %>% dplyr::filter(nchar(location) == 2),
         by = "location_name"
       ) %>%
       dplyr::select(location, date, cum, inc)
@@ -183,7 +183,7 @@ load_jhu_data <- function(
     adjustment_dates <- sub("^.*?-", "", adjustment_cases)
     adjustment_state_fips <- purrr::map_chr(
       adjustment_states, function(x) {
-        fips_codes[which(fips_codes$abbreviation == x), ]$location
+        covidData::fips_codes[which(covidData::fips_codes$abbreviation == x), ]$location
       }
     )
     adjustments <- data.frame(
