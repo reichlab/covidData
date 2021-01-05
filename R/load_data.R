@@ -97,8 +97,7 @@ load_data <- function(
   # validate issues and as_of
   if (!missing(issues) && !missing(as_of) &&
     !is.null(issues) && !is.null(as_of)) {
-    warning("Cannot provide both arguments issues and as_of to load_data.
-            issues is now NULL.")
+    warning("Cannot provide both arguments issues and as_of to load_data. Ignoring the issues argument.")
     issues <- NULL
   }
 
