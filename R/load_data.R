@@ -121,8 +121,6 @@ load_data <- function(
     purrr::map_dfr(as_of, 
         function_call,
         issue_date = issues,
-        spatial_resolution,
-        temporal_resolution,
         spatial_resolution = spatial_resolution,
         temporal_resolution = temporal_resolution,
         measure = measure
