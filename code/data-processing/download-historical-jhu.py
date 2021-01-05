@@ -18,7 +18,7 @@ base_files = [
 for base_file in base_files:
     # retrieve information about all commits that modified the file we want
     all_commits = []
-
+    
     page = 0
     while True:
         page += 1
@@ -34,19 +34,18 @@ for base_file in base_files:
             break
         
         all_commits += json.loads(r.text or r.content)
-
-
+    
     # date of each commit
     commit_dates = [
         commit['commit']['author']['date'][0:10] for commit in all_commits
     ]
-
+    
     # sha for the last commit made each day
     commit_shas_to_get = {}
     for index, commit_date in enumerate(commit_dates):
         # location in which to save file
         result_path =  '../../data-raw/JHU/' + commit_date + '_' + base_file
-
+        
         # delete file if it was downloaded on the commit date since it may not
         # be the last commit that day
         if os.path.isfile(result_path):
@@ -57,7 +56,7 @@ for base_file in base_files:
             )
             if creation_date == commit_date:
                 os.remove(result_path)
-
+        
         # record as a sha to download if applicable
         if (commit_date not in commit_shas_to_get) and (not os.path.isfile(result_path)):
             commit_shas_to_get[commit_date] = all_commits[index]['sha']
