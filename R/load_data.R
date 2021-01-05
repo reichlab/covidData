@@ -110,14 +110,13 @@ load_data <- function(
 
   # return results
   if (!is.null(issues)) {
-    purrr::map_dfr(issues, function(.x) {
-      return(function_call(
-        issue_date = .x, as_of,
-        spatial_resolution,
-        temporal_resolution,
-        measure
-      ))
-    })
+    purrr::map_dfr(issues,
+      function_call,
+      as_of = as_of,
+      spatial_resolution = spatial_resolution,
+      temporal_resolution = temporal_resolution,
+      measure = measure
+    )
   } else if (!is.null(as_of)) {
     purrr::map_dfr(as_of, function(.x) {
       return(function_call(
