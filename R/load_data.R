@@ -1,4 +1,4 @@
-#' Assemble a data frame of incident and cumulative deaths or cases due to
+#' Assemble a data frame of incident and cumulative cases, deaths or hospitalizations due to
 #' COVID-19 as they were available as of one or more past dates.
 #'
 #' @param issues vector of issue dates (i.e. report dates) to use for querying data,
