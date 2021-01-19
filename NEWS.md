@@ -7,7 +7,7 @@ This is the first version of the package with a 0.x release.
 - current key features include `load_data` function to load versioned counts of cases, deaths, and hospitalizations due to COVID-19
 
 ### package updates
-- details on other changes will be listed here for future updates
+- pre process the data from JHU (cases and deaths) to be in long format and store incidence cases/deaths over cumulative
 
 ## v 0.1
  - initial release: functionality for loading data for cases, deaths, and hospitalizations

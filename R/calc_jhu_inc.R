@@ -8,16 +8,20 @@
 #'
 #' @examples
 
-calc_jhu_inc <- function(jhu_data){
+calc_jhu_inc <- function(jhu_data) {
+  jhu_data[,-c(1:13)] <-
+    t(apply(jhu_data[,-c(1:12)],1,diff))
+  
   jhu_data <- jhu_data %>% 
     tidyr::pivot_longer(
       matches("^\\d{1,2}\\/\\d{1,2}\\/\\d{2,4}$"),
       names_to = "date",
-      values_to = "cum"
+      values_to = "inc"
     ) %>%
     dplyr::mutate(
       date = as.character(lubridate::mdy(date))
     )
+  
   
   # summarized results for county level
   results <- NULL
@@ -26,12 +30,9 @@ calc_jhu_inc <- function(jhu_data){
     dplyr::mutate(
       location = sprintf("%05d", FIPS)
     ) %>%
-    dplyr::filter(location < "80001") %>%
-    dplyr::group_by(location) %>%
-    dplyr::mutate(inc = diff(c(0, cum))) %>%
-    dplyr::select(location, date, inc) %>%
-    dplyr::ungroup()
-    
+    dplyr::filter(location < "80001") %>% 
+    dplyr::select(location, date, inc)
+  
   results <- dplyr::bind_rows(results, county_results)
   
   
@@ -55,9 +56,7 @@ calc_jhu_inc <- function(jhu_data){
     dplyr::filter(Province_State %in% states_to_keep) %>%
     dplyr::mutate(location_name = Province_State) %>%
     dplyr::group_by(location_name, date) %>%
-    dplyr::summarize(cum = sum(cum)) %>%
-    dplyr::group_by(location_name) %>%
-    dplyr::mutate(inc = diff(c(0, cum))) %>%
+    dplyr::summarize(inc = sum(inc)) %>%
     dplyr::ungroup() %>%
     dplyr::left_join(
       covidData::fips_codes %>% dplyr::filter(nchar(location) == 2),
@@ -73,16 +72,12 @@ calc_jhu_inc <- function(jhu_data){
   # of 3 deaths attributed to Diamond Princess.
   national_results <- jhu_data %>%
     dplyr::group_by(date) %>%
-    dplyr::summarize(cum = sum(cum)) %>%
+    dplyr::summarize(inc = sum(inc)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(
-      inc = diff(c(0, cum)),
-      location = "US"
-    ) %>%
+    dplyr::mutate(location = "US") %>%
     dplyr::select(location, date, inc)
   
   results <- dplyr::bind_rows(results, national_results)
   
   return(results)
-  
 }
