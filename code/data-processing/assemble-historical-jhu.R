@@ -6,6 +6,11 @@ library(here)
 # after this your working directory should be covidData
 setwd(here())
 
+# load preprocessing functions in R/calc_jhu_inc.R
+# they are defined there so they can be unit tested, but loaded manually here
+# so that data can be processed if the covidData package is not installed yet.
+source("R/calc_jhu_inc.R")
+
 # deaths
 files <- Sys.glob("data-raw/JHU/*deaths_US.csv")
 
@@ -20,8 +25,6 @@ jhu_deaths_data <- tibble::tibble(
                                           calc_jhu_inc())
   )
 )
-
-
 
 save(jhu_deaths_data, file = "data/jhu_deaths_data.rdata")
 
