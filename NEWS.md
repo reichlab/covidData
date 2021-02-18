@@ -1,4 +1,4 @@
-## covidData 0.1.3
+## covidData 0.1.4
 
 This is the first version of the package with a 0.x release.
 
@@ -24,3 +24,6 @@ This is the first version of the package with a 0.x release.
 ### v 0.1.3
  - handle errors about SSL certificates expired when pulling data from HealthData.gov
  - handle the fact that HealthData.gov posted data with upload date of 12/21 and going through 12/28 (since corrected on their site).  We now manually force the issue date (based on the upload date) to be at least as large as the last date in the data file.
+
+### v 0.1.4
+ - temporary fix to download only JHU data files from Sundays, Mondays, and the most recent week within the build date.
