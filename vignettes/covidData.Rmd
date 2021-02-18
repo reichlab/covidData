@@ -1,12 +1,15 @@
 ---
 title: "covidData"
-author: "Evan Ray"
-date: "12/3/2020"
+author: "Evan Ray, Ariane Stark"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output: html_document
 ---
 
+<!-- code to run rmarkdown::render(input="./vignettes/covidData.Rmd") 
+-->
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
 
@@ -16,6 +19,16 @@ To use the `covidData` package, you must first do some set-up to install the pac
 It is not as straight-forward as installing a normal R package.
 The latest instructions on how to install the package can be found on the package's [GitHub page](https://github.com/reichlab/covidData/).
 
+## Overview of Package Functionality
+
+This R package provides versioned time series data for COVID-19 hospitalizations, cases, and deaths (`measure`).
+
+* `issues` is a vector of dates that pertains to data that was reported or updated exactly on the specified date(s) 
+* `as_of` is a vector of dates that pertains to the latest data that was reported or updated on or before the specified date(s) 
+* `spatial_resolution` refers to the spatial unit and is county, state, or national (hospitalizations does not support county spatial unit)
+* `temporal_resolution` is daily or weekly 
+
+There will be examples using these parameters to follow.
 
 ## Code to retrieve and plot data
 
@@ -29,34 +42,64 @@ library(ggplot2)
 library(covidData)
 ```
 
-```{r message=FALSE}
+#### Daily incident cases, hospitalizations and deaths at the state and national level
+
+Data shown are the incident cases, deaths, or hospitalizations per day at the state and national levels, as reported on December 2, 2020. A single call to `load_data` retrieves data for one of these measures. 
+
+```{r}
 # Load incident cases, hospitalizations, and deaths data at state and national level
-combined_data <- dplyr::bind_rows(
-  load_jhu_data(
-    issue_date = "2020-12-05",
+uncombined_cases <- load_data(
+    issues = "2020-12-02",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "cases"
-  ) %>%
-    dplyr::mutate(measure = "cases"),
-  load_jhu_data(
-    issue_date = "2020-12-05",
+  )
+
+uncombined_deaths <- load_data(
+    issues = "2020-12-02",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "deaths"
-  ) %>%
-    dplyr::mutate(measure = "deaths"),
-  load_healthdata_data(
-    issue_date = "2020-12-05",
+  )
+
+uncombined_hospitalizations <- load_data(
+    issues = "2020-12-02",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "hospitalizations"
-  ) %>%
+  ) 
+```
+
+```{r}
+# View the separate data frames
+
+tail(uncombined_cases)
+tail(uncombined_deaths)
+tail(uncombined_hospitalizations)
+```
+
+
+So we bind the results of three separate calls together to create a unified data frame to use for the plot. The columns in the resulting data frame are date, which represents which day the data corresponds to. The column cum, which represents the cumulative incidence of the measure, and another column inc, which represents the daily/weekly incidence of the measure. The measure columns states whether the data represents cases, deaths, or hospitalizations. The location column in the output from `load_data` represents locations using their FIPS codes, which are alpha-numeric codes uniquely identifying locations. More human-readable representations of the location names are contained in the fips_codes data frame provided by the `covidData` package and are joined with the data set.
+
+```{r message=FALSE}
+# Bind incident cases, hospitalizations, and deaths data at state and national level
+combined_data <- dplyr::bind_rows(
+  uncombined_cases %>%
+    dplyr::mutate(measure = "cases"),
+  uncombined_deaths %>%
+    dplyr::mutate(measure = "deaths"),
+  uncombined_hospitalizations %>%
     dplyr::mutate(measure = "hospitalizations")
 )
 ```
 
 ```{r}
+head(combined_data)
+```
+
+
+
+```{r message=FALSE}
 # Add more human readable location names,
 # set location abbreviation as a factor with US first
 combined_data <- combined_data %>%
@@ -69,16 +112,207 @@ combined_data <- combined_data %>%
   )
 ```
 
+```{r}
+head(combined_data)
+```
+The results of `load_data` are then passed in to a `ggplot` call and produce the below graph showing cases, deaths, and hospitalizations nationally and individually for each state.
+
 ```{r message=FALSE, fig.width=10, fig.height=32}
 # Plot the data
 ggplot(
-    data = combined_data,
-    #data = filter(combined_data, abbreviation %in% c("MA", "SD", "TX")),
-    mapping = aes(x = date, y = inc, color = measure)) +
-  geom_smooth(se=FALSE, span=.25) +
-  geom_point(alpha=.2) +
-  facet_wrap( ~ abbreviation, ncol = 3, scales = "free_y") +
+  data = combined_data,
+  # data = filter(combined_data, abbreviation %in% c("MA", "SD", "TX")),
+  mapping = aes(x = date, y = inc, color = measure)
+) +
+  geom_smooth(se = FALSE, span = .25) +
+  geom_point(alpha = .2) +
+  facet_wrap(~abbreviation, ncol = 3, scales = "free_y") +
   scale_y_log10() +
-  #scale_x_date(limits=c(as.Date("2020-07-01"), Sys.Date())) +
+  # scale_x_date(limits=c(as.Date("2020-07-01"), Sys.Date())) +
+  theme_bw()
+```
+
+#### Daily cummulative deaths for national and select states
+
+Using the same data set as above we can also look at cumulative deaths at the state and national level. The data set was filtered to only include the entries that correspond to deaths and using the abbreviation was filtered to only include the national data and state data for Georgia, New York, and Massachusetts. Since we are interested in cumulative deaths we are plotting results from the cum column.
+
+```{r message=FALSE}
+# Plot cumulative deaths at the state and national level
+combined_data %>%
+  filter(measure == "deaths") %>%
+  filter(abbreviation %in% c("US", "NY", "GA", "MA")) %>%
+  ggplot(
+    mapping = aes(x = date, y = cum)
+  ) +
+  geom_point(alpha = .2) +
+  facet_wrap(~abbreviation, ncol = 2, scales = "free_y") +
+  #scale_y_log10() +
+  theme_bw()
+```
+
+#### County level incident cases and deaths for the 14 counties in Massachusetts
+
+Data shown are the incident cases and deaths, per day at the county levels, as reported on January 1, 2021. We do not have county level hospitalization data so this data set only receives data from JHU CSSE.
+
+Note JHU does not report data for Nantucket County or Dukes County in Massachusetts so the plots corresponding to these counties will be empty despite having some cases.
+
+```{r message=FALSE}
+# Load incident cases, and deaths data at county level
+county_data <- dplyr::bind_rows(
+  load_data(
+    issues = "2021-01-01",
+    spatial_resolution = "county",
+    temporal_resolution = "daily",
+    measure = "cases"
+  ) %>%
+    dplyr::mutate(measure = "cases"),
+  load_data(
+    issues = "2021-01-01",
+    spatial_resolution = "county",
+    temporal_resolution = "daily",
+    measure = "deaths"
+  ) %>%
+    dplyr::mutate(measure = "deaths")
+)
+```
+
+```{r message=FALSE}
+# Add more human readable location names,
+# set location abbreviation as a factor with US first
+county_data <- county_data %>%
+  dplyr::left_join(
+    covidData::fips_codes,
+    by = "location"
+  ) %>%
+  dplyr::mutate(
+    abbreviation = forcats::fct_relevel(factor(abbreviation), "US")
+  )
+```
+
+All counties in Massachusetts are prefaced by 25 and then 3 digits for the county in their FIPS code, so our data is filtered to only include counties with FIPS codes in the 25000's.
+
+```{r fig.height=8, fig.width=10, message=FALSE}
+# Look at county level data for Massachusetts
+county_data %>%
+  dplyr::filter(location > 25000 & location < 26000) %>% # FIPS codes for MA
+  ggplot(
+    mapping = aes(x = date, y = inc, color = measure)
+  ) +
+  geom_smooth(se = FALSE, span = .25) +
+  geom_point(alpha = .2) +
+  facet_wrap(~location_name, ncol = 3, scales = "free_y") +
+  scale_y_log10() +
+  theme_bw()
+```
+
+#### Weekly incidents cases, hospitalizations, and deaths for select states
+
+Data shown are the incident cases, deaths, or hospitalizations per week at the state level (can look at national as well), as reported on December 31, 2020. Using the weekly data decreases the noise in the graphs.
+
+```{r message=FALSE}
+# Load weekly incident cases, hospitalizations, and deaths data at state level
+weekly_data <- dplyr::bind_rows(
+  load_data(
+    issues = "2020-12-31",
+    spatial_resolution = c("state"),
+    temporal_resolution = "weekly",
+    measure = "cases"
+  ) %>%
+    dplyr::mutate(measure = "cases"),
+  load_data(
+    issues = "2020-12-31",
+    spatial_resolution = c("state"),
+    temporal_resolution = "weekly",
+    measure = "deaths"
+  ) %>%
+    dplyr::mutate(measure = "deaths"),
+  load_data(
+    issues = "2020-12-31",
+    spatial_resolution = c("state"),
+    temporal_resolution = "weekly",
+    measure = "hospitalizations"
+  ) %>%
+    dplyr::mutate(measure = "hospitalizations")
+)
+```
+
+
+```{r message=FALSE}
+# Add more human readable location names,
+# set location abbreviation as a factor 
+weekly_data <- weekly_data %>%
+  dplyr::left_join(
+    covidData::fips_codes,
+    by = "location"
+  ) %>%
+  dplyr::mutate(
+    abbreviation = forcats::fct_relevel(factor(abbreviation))
+  )
+```
+
+The weekly data set is filtered to show only the data for Maine, Maryland, Massachusetts, and Michigan in the plot.
+
+```{r  message=FALSE, warning=FALSE}
+# Plot the data
+ggplot(
+  data = filter(weekly_data, abbreviation %in% c("ME", "MD", "MA", "MI")),
+  mapping = aes(x = date, y = inc, color = measure)
+) +
+  geom_smooth(se = FALSE, span = .25) +
+  geom_point(alpha = .2) +
+  facet_wrap(~location_name, ncol = 2, scales = "free_y") +
+  scale_y_log10() +
+  theme_bw()
+```
+
+#### View discrepancies between incident deaths in New Jersey
+On August 2, 2020 New Jersey updated their prior incident deaths. Therefore, we can use different `as_of` dates to see the differing values. `as_of` dates used are August 1, 2020 and August 2, 2020. The data was loaded via `load_data` with a data frame per issue date and filtered to only include the daily deaths for New Jersey. An extra column was added to the data sets called issue_date which for all entries states the issue date for that entry. Both individual data sets are combined into one bigger data set which will be plotted from and why the additional issue_date column is important as it identifies what data comes from each issue date.
+
+```{r message=FALSE}
+# Comparison of incident deaths reported in NJ between
+# "2020-08-01" and "2020-08-02"
+
+
+NJ_issue_day_1 <- load_data(
+  issues = "2020-08-01",
+  spatial_resolution = c("state"),
+  temporal_resolution = "daily",
+  measure = "deaths"
+) %>%
+  dplyr::left_join(
+    covidData::fips_codes,
+    by = "location"
+  ) %>%
+  dplyr::filter(abbreviation == "NJ") %>%
+  dplyr::mutate(issue_date = "2020-08-01")
+
+NJ_issue_day_2 <- load_data(
+  issues = "2020-08-02",
+  spatial_resolution = c("state"),
+  temporal_resolution = "daily",
+  measure = "deaths"
+) %>%
+  dplyr::left_join(
+    covidData::fips_codes,
+    by = "location"
+  ) %>%
+  dplyr::filter(abbreviation == "NJ") %>%
+  dplyr::mutate(issue_date = "2020-08-02")
+
+NJ_issue_date_comparison <- dplyr::full_join(NJ_issue_day_1, NJ_issue_day_2)
+```
+
+To illustrate the importance of issue date and difference in daily deaths on these two consecutive issue dates in New Jersey the daily incidence death data is plotted for each issue date.
+
+
+```{r message=FALSE}
+# Plot the differences in daily incidence between 2 consecutive issue dates in New Jersey
+ggplot(
+  data = NJ_issue_date_comparison,
+  mapping = aes(x = date, y = inc, color = issue_date)
+) +
+  geom_smooth(se = FALSE, span = .25) +
+  geom_point(alpha = .2) +
+  scale_y_log10() +
   theme_bw()
 ```
