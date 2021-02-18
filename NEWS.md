@@ -1,10 +1,10 @@
-## covidData 0.1.3
+## covidData 0.1.4
 
 This is the first version of the package with a 0.x release.
 
 ### Feature updates
 - details on new features will be listed here for future updates
-- current key features include `load_jhu_data` and `load_healthdata_data` functions to load versioned counts of cases, deaths, and hospitalizations due to COVID-19
+- current key features include `load_data` function to load versioned counts of cases, deaths, and hospitalizations due to COVID-19
 
 ### package updates
 - details on other changes will be listed here for future updates
@@ -24,3 +24,6 @@ This is the first version of the package with a 0.x release.
 ### v 0.1.3
  - handle errors about SSL certificates expired when pulling data from HealthData.gov
  - handle the fact that HealthData.gov posted data with upload date of 12/21 and going through 12/28 (since corrected on their site).  We now manually force the issue date (based on the upload date) to be at least as large as the last date in the data file.
+ 
+### v 0.1.4
+ - create `load_data` function to replace functions `load_jhu_data` and `load_healthdata_data`
