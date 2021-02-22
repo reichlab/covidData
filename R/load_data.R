@@ -39,8 +39,7 @@
 #' results for the most recent available \code{as_of} date are returned.
 #'
 #' @export
-load_data <- function(
-                      issues = NULL,
+load_data <- function(issues = NULL,
                       as_of = NULL,
                       spatial_resolution = "state",
                       temporal_resolution = "weekly",
@@ -83,14 +82,18 @@ load_data <- function(
   } else {
     source <- match.arg(
       source,
-      choices = c("healthdata", "jhu"),
+      choices = c("healthdata", "jhu", "covidcast"),
       several.ok = FALSE
     )
   }
-  if (measure == "hospitalizations" && source != "healthdata") {
-    stop("Source must be 'healthdata' when measure is 'hospitalizations'.")
+  
+  # or covidcast
+  if (measure == "hospitalizations" && 
+      !source %in% c ("healthdata", "covidcast")) {
+    stop("Source must be 'healthdata' or 'covidcast' when measure is 'hospitalizations'.")
   }
-  if (measure != "hospitalizations" && source == "healthdata") {
+  if (measure != "hospitalizations" && 
+      source %in% c("healthdata", "covidcast")) {
     stop("Source must be 'jhu' when measure is 'cases' or 'deaths'.")
   }
 
@@ -102,9 +105,11 @@ load_data <- function(
   }
 
   # source proper function
-  if (measure == "hospitalizations") {
+  if (source == "healthdata"){
     function_call <- covidData::load_healthdata_data
-  } else {
+  } else if (source == "covidcast"){
+    function_call <- covidData::load_covidcast_data
+  } else if (source == "jhu"){
     function_call <- covidData::load_jhu_data
   }
 
