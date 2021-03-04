@@ -9,6 +9,9 @@ ROOTDIR = ../../../
 # Define the full make
 all: install assemble download
 
+# Define the full make using only recent data
+recent_data: assemble_recent download_recent
+
 # Install R package with updated data
 install: assemble download
 	R CMD INSTALL ../../../covidData
@@ -21,4 +24,14 @@ assemble: download
 # Download data from JHU CSSE GitHub repo
 download:
 	python3 download-historical-jhu.py
+	Rscript download-historical-healthdata.R
+ 
+# Assemble recent csv files into R data object
+assemble_recent: download_recent
+	Rscript assemble-historical-jhu.R
+	Rscript assemble-historical-healthdata.R
+
+# Download most recent data from JHU CSSE GitHub repo
+download_recent:
+	python3 download-historical-jhu.py --recent
 	Rscript download-historical-healthdata.R
