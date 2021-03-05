@@ -36,6 +36,8 @@ load_jhu_data <- function(
     adjustment_method = "none") {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c("cases", "deaths"))
+  
+  ####
   if (measure == "cases") {
     jhu_data <- covidData::jhu_cases_data
   } else if (measure == "deaths") {
@@ -68,6 +70,7 @@ load_jhu_data <- function(
       paste0(jhu_data$issue_date, collapse = ", ")
     ))
   }
+  ####
 
   # validate spatial_resolution
   spatial_resolution <- match.arg(
@@ -282,4 +285,57 @@ load_jhu_data <- function(
     )
 
   return(results)
+}
+
+
+#' Create a tibble of incident and cumulative deaths or cases based on a
+#' specified issue date and measure. This function will also download a
+#' specified time series data set if issue_date is not available in pre-built
+#' data object.
+#' 
+#' @param issue_date character issue date (i.e. report date) to use for
+#' constructing truths in format 'yyyy-mm-dd'
+#' @param measure character vector specifying measure of covid prevalence:
+#' 'deaths' or 'cases'
+#' 
+#' @return tibble with issue_date and data
+#' 
+preprocess_jhu_data <- function(issue_date, measure){
+  
+  issue_date <- as.Date(issue_date)
+  
+  if (measure == "deaths"){
+    links <- covidData::jhu_deaths_data_links
+    jhu_data <- covidData::jhu_deaths_data
+    base_file_name <- "time_series_covid19_deaths_US.csv"
+  } else if (measure == "cases"){
+    links <- covidData::jhu_cases_data_links
+    jhu_data <- covidData::jhu_cases_data
+    base_file_name <- "time_series_covid19_confirmed_US.csv"
+  }
+  
+  if (issue_date %in% jhu_data$issue_date){
+    jhu_data <- jhu_data %>%
+      dplyr::filter(issue_date == UQ(issue_date))
+  } else {
+    if(!issue_date %in% links$date){
+      # query Github API to get the first page of results
+      links <- get_time_series_data_link(measure, first_page_only = TRUE)
+      if (!issue_date %in% links$date){
+        stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
+      }
+    } 
+    
+    link <- links[links$date == issue_date,]$file_link
+    time_series_data <- read.csv(link)
+    destination_path <- file.path(
+      "data-raw/JHU_test", paste0(issue_date, "_",base_file_name)
+    )
+    readr::write_csv(time_series_data, destination_path)
+    jhu_data <- tibble::tibble(
+      issue_date = list(as.character(issue_date)),
+      data = list(suppressMessages(readr::read_csv(destination_path))))
+  }
+  
+  return (jhu_data)
 }

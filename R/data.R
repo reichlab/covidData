@@ -35,3 +35,14 @@
 #' measure ('cases') and inc
 "jhu_cases_imputed_data"
 
+
+#' data frame for JHU deaths time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_deaths_data_links"
+
+
+#' data frame for JHU cases time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_cases_data_links"
