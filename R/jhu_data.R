@@ -37,40 +37,8 @@ load_jhu_data <- function(
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c("cases", "deaths"))
   
-  ####
-  if (measure == "cases") {
-    jhu_data <- covidData::jhu_cases_data
-  } else if (measure == "deaths") {
-    jhu_data <- covidData::jhu_deaths_data
-  }
-
-  # validate issue_date and as_of
-  if (!missing(issue_date) && !missing(as_of) &&
-      !is.null(issue_date) && !is.null(as_of)) {
-    stop("Cannot provide both arguments issue_date and as_of to load_jhu_data.")
-  } else if (is.null(issue_date) && is.null(as_of)) {
-    issue_date <- max(jhu_data$issue_date)
-  } else if (!is.null(as_of)) {
-    avail_issues <- jhu_data$issue_date[
-        jhu_data$issue_date <= as.character(as_of)
-      ]
-
-    if (length(avail_issues) == 0) {
-      stop("Provided as_of date is earlier than all available issue dates.")
-    } else {
-      issue_date <- max(avail_issues)
-    }
-  } else {
-    issue_date <- as.character(lubridate::ymd(issue_date))
-  }
-
-  if (!(issue_date %in% jhu_data$issue_date)) {
-    stop(paste0(
-      "Invalid issue date; must be one of: ",
-      paste0(jhu_data$issue_date, collapse = ", ")
-    ))
-  }
-  ####
+  # validate issue_date and as_of and load preprocessed data
+  jhu_data <- preprocess_jhu_data(issue_date, as_of, measure)
 
   # validate spatial_resolution
   spatial_resolution <- match.arg(
@@ -94,7 +62,7 @@ load_jhu_data <- function(
 
   # get report for specified issue date
   jhu_data <- jhu_data %>%
-    dplyr::filter(issue_date == UQ(issue_date)) %>%
+    #dplyr::filter(issue_date == UQ(issue_date)) %>%
     dplyr::pull(data) %>%
     `[[`(1) %>%
     tidyr::pivot_longer(
@@ -249,9 +217,6 @@ load_jhu_data <- function(
     }
   }
 
-
-
-
   # aggregate daily incidence to weekly incidence
   if (temporal_resolution == "weekly") {
     results <- results %>%
@@ -295,14 +260,14 @@ load_jhu_data <- function(
 #' 
 #' @param issue_date character issue date (i.e. report date) to use for
 #' constructing truths in format 'yyyy-mm-dd'
+#' @param as_of character issue date (i.e. report date) to use for
+#' constructing truths published as of this date in format 'yyyy-mm-dd'
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
 #' 
 #' @return tibble with issue_date and data
 #' 
-preprocess_jhu_data <- function(issue_date, measure){
-  
-  issue_date <- as.Date(issue_date)
+preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deaths"){
   
   if (measure == "deaths"){
     links <- covidData::jhu_deaths_data_links
@@ -314,6 +279,29 @@ preprocess_jhu_data <- function(issue_date, measure){
     base_file_name <- "time_series_covid19_confirmed_US.csv"
   }
   
+  # validate issue_date and as_of
+  if (!missing(issue_date) && !missing(as_of) &&
+      !is.null(issue_date) && !is.null(as_of)) {
+    stop("Cannot provide both arguments issue_date and as_of to load_jhu_data.")
+  } else if (is.null(issue_date) && is.null(as_of)) {
+    issue_date <- max(jhu_data$issue_date)
+  } else if (!is.null(as_of)) {
+    avail_issues <- jhu_data$issue_date[
+      jhu_data$issue_date <= as.character(as_of)
+    ]
+    
+    if (length(avail_issues) == 0) {
+      stop("Provided as_of date is earlier than all available issue dates.")
+    } else {
+      issue_date <- max(avail_issues)
+    }
+  } else {
+    issue_date <- as.character(lubridate::ymd(issue_date))
+  }
+  
+  #issue_date <- as.Date(issue_date)
+  
+  # subset jhu_data based on issue_date
   if (issue_date %in% jhu_data$issue_date){
     jhu_data <- jhu_data %>%
       dplyr::filter(issue_date == UQ(issue_date))
@@ -327,14 +315,9 @@ preprocess_jhu_data <- function(issue_date, measure){
     } 
     
     link <- links[links$date == issue_date,]$file_link
-    time_series_data <- read.csv(link)
-    destination_path <- file.path(
-      "data-raw/JHU_test", paste0(issue_date, "_",base_file_name)
-    )
-    readr::write_csv(time_series_data, destination_path)
     jhu_data <- tibble::tibble(
       issue_date = list(as.character(issue_date)),
-      data = list(suppressMessages(readr::read_csv(destination_path))))
+      data = list(suppressMessages(readr::read_csv(link))))
   }
   
   return (jhu_data)
