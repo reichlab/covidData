@@ -20,5 +20,5 @@ assemble: download
 
 # Download data from JHU CSSE GitHub repo
 download:
-	python3 download-historical-jhu.py
+	python3 download-historical-jhu.R
 	Rscript download-historical-healthdata.R

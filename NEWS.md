@@ -1,3 +1,7 @@
+## Changes since last release
+
+- Refactor process for pacakge building and maintaining links to data files on JHU
+
 ## covidData 0.1.4
 
 This is the first version of the package with a 0.x release.
