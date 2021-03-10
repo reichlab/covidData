@@ -75,18 +75,13 @@ for base_file in base_files:
                 int(commit_date[5:7]),
                 int(commit_date[8:10]))
         commit_weekday = commit_date_as_date.weekday()
-        if only_download_most_recent:
-            if (commit_date not in commit_shas_to_get) and \
-                (not os.path.isfile(result_path)) and \
-                (datetime.datetime.today().date() - commit_date_as_date < datetime.timedelta(7)):
-                commit_shas_to_get[commit_date] = all_commits[index]['sha']
+        if (commit_date not in commit_shas_to_get) and \
+            (not os.path.isfile(result_path)) and \
+            (commit_weekday == 0 or commit_weekday == 6 or
+                datetime.datetime.today().date() - commit_date_as_date < datetime.timedelta(7)):
+            commit_shas_to_get[commit_date] = all_commits[index]['sha']
+            if only_download_most_recent:
                 break
-        else:
-            if (commit_date not in commit_shas_to_get) and \
-                (not os.path.isfile(result_path)) and \
-                (commit_weekday == 0 or commit_weekday == 6 or
-                    datetime.datetime.today().date() - commit_date_as_date < datetime.timedelta(7)):
-                commit_shas_to_get[commit_date] = all_commits[index]['sha']
     
     # download and save the csvs
     for commit_date, commit_sha in commit_shas_to_get.items():
