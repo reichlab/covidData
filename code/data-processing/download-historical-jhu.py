@@ -4,7 +4,16 @@ import json
 import os
 import time
 import datetime
+import argparse
 
+# optional commandline argument to only download most recent history
+parser = argparse.ArgumentParser()
+parser.add_argument("-r","--recent", help="download only most recent history", action="store_true")
+args = parser.parse_args()
+only_download_most_recent = False
+if args.recent:
+    only_download_most_recent = True
+    
 # create directory to save files if it doesn't already exist
 if (not os.path.isdir('../../data-raw/JHU/')):
     os.mkdir('../../data-raw/JHU/')
@@ -71,6 +80,8 @@ for base_file in base_files:
             (commit_weekday == 0 or commit_weekday == 6 or
                 datetime.datetime.today().date() - commit_date_as_date < datetime.timedelta(7)):
             commit_shas_to_get[commit_date] = all_commits[index]['sha']
+            if only_download_most_recent:
+                break
     
     # download and save the csvs
     for commit_date, commit_sha in commit_shas_to_get.items():
