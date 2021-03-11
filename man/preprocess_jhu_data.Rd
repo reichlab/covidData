@@ -7,11 +7,14 @@ specified issue date and measure. This function will also download a
 specified time series data set if issue_date is not available in pre-built
 data object.}
 \usage{
-preprocess_jhu_data(issue_date, measure)
+preprocess_jhu_data(issue_date = NULL, as_of = NULL, measure = "deaths")
 }
 \arguments{
 \item{issue_date}{character issue date (i.e. report date) to use for
 constructing truths in format 'yyyy-mm-dd'}
+
+\item{as_of}{character issue date (i.e. report date) to use for
+constructing truths published as of this date in format 'yyyy-mm-dd'}
 
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths' or 'cases'}
