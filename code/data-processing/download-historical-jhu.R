@@ -4,7 +4,7 @@ library(here)
 library(covidData)
 
 setwd(here())
-# scape all links to the data series files and download data in the most recent week 
+# scrape all links to the data series files and download data in the most recent week 
 get_time_series_data_link <- function(measure, first_page_only = FALSE){
   if (measure == "deaths"){
     base_file <- "time_series_covid19_deaths_US.csv"
