@@ -21,7 +21,8 @@ temp <- httr::GET(
 timeseries_revisions_meta <- data.frame(
   issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
   issue_datetime = temp$update_date,
-  file_link = temp$archive_link$url
+  file_link = temp$archive_link$url,
+  stringsAsFactors = FALSE
 ) %>%
   dplyr::filter(
     !(substr(file_link, nchar(file_link) - 3, nchar(file_link)) == "zip"),
@@ -44,7 +45,8 @@ daily_revisions_meta <- data.frame(
   issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
   date = lubridate::ymd(substr(temp$update_date, 1, 10)),
   issue_datetime = temp$update_date,
-  file_link = temp$archive_link$url
+  file_link = temp$archive_link$url,
+  stringsAsFactors = FALSE
 ) %>%
   dplyr::filter(
     !(substr(file_link, nchar(file_link) - 3, nchar(file_link)) == "zip"),
