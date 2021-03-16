@@ -284,7 +284,7 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
       !is.null(issue_date) && !is.null(as_of)) {
     stop("Cannot provide both arguments issue_date and as_of to load_jhu_data.")
   } else if (is.null(issue_date) && is.null(as_of)) {
-    issue_date <- max(jhu_data$issue_date)
+    issue_date <- Sys.Date()
   } else if (!is.null(as_of)) {
     avail_issues <- jhu_data$issue_date[
       jhu_data$issue_date <= as.character(as_of)
@@ -293,13 +293,11 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
     if (length(avail_issues) == 0) {
       stop("Provided as_of date is earlier than all available issue dates.")
     } else {
-      issue_date <- max(avail_issues)
+      issue_date <- Sys.Date()
     }
   } else {
-    issue_date <- as.character(lubridate::ymd(issue_date))
+    issue_date <- lubridate::ymd(issue_date)
   }
-  
-  #issue_date <- as.Date(issue_date)
   
   # subset jhu_data based on issue_date
   if (issue_date %in% jhu_data$issue_date){
