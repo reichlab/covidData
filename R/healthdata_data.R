@@ -129,8 +129,7 @@ load_healthdata_data <- function(
       dplyr::select(-date) %>%
       dplyr::rename(date = sat_date) %>%
       dplyr::group_by(location, date) %>%
-      dplyr::summarize(inc = sum(inc, na.rm = FALSE)) %>%
-      dplyr::ungroup()
+      dplyr::summarize(inc = sum(inc, na.rm = FALSE), .groups = "drop")
   }
 
   # aggregate inc to get the correct cum
@@ -247,7 +246,7 @@ preprocess_healthdata_data <- function(raw_healthdata_data, fips_codes) {
     result$data[[1]],
     result$data[[1]] %>%
       dplyr::group_by(date) %>%
-      dplyr::summarise(inc = sum(inc)) %>%
+      dplyr::summarise(inc = sum(inc), .groups = "drop") %>%
       dplyr::mutate(abbreviation = "US")
   )
 

@@ -38,25 +38,25 @@ timeseries_revisions_meta <- data.frame(
 
 # temporarily commenting out collection of new daily updates --
 # the resource is not available to the public as of 2021-03-29
-# temp <- httr::GET(
-#     "https://healthdata.gov/resource/4cnb-m4rz.json",
-#     config = httr::config(ssl_verifypeer = FALSE)) %>%
-#   as.character() %>%
-#   jsonlite::fromJSON()
+temp <- httr::GET(
+    "https://healthdata.gov/resource/4cnb-m4rz.json",
+    config = httr::config(ssl_verifypeer = FALSE)) %>%
+  as.character() %>%
+  jsonlite::fromJSON()
 
-# daily_revisions_meta <- data.frame(
-#   issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
-#   date = lubridate::ymd(substr(temp$update_date, 1, 10)),
-#   issue_datetime = temp$update_date,
-#   file_link = temp$archive_link$url,
-#   stringsAsFactors = FALSE
-# ) %>%
-#   dplyr::filter(
-#     !(substr(file_link, nchar(file_link) - 3, nchar(file_link)) == "zip"),
-#     issue_date > "2021-03-12" # last date we have archived from before udpates
-#   ) %>%
-#   dplyr::group_by(issue_date) %>%
-#   dplyr::slice_max(issue_datetime)
+daily_revisions_meta <- data.frame(
+  issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
+  date = lubridate::ymd(substr(temp$update_date, 1, 10)),
+  issue_datetime = temp$update_date,
+  file_link = temp$archive_link$url,
+  stringsAsFactors = FALSE
+) %>%
+  dplyr::filter(
+    !(substr(file_link, nchar(file_link) - 3, nchar(file_link)) == "zip"),
+    issue_date > "2021-03-12" # last date we have archived from before udpates
+  ) %>%
+  dplyr::group_by(issue_date) %>%
+  dplyr::slice_max(issue_datetime)
 
 
 # download the actual csvs
@@ -97,29 +97,29 @@ for (i in seq_len(nrow(timeseries_revisions_meta))) {
   }
 }
 
-# for (i in seq_len(nrow(daily_revisions_meta))) {
-#   destination_path <- file.path(
-#     "./data-raw/healthdata/daily",
-#     paste0(daily_revisions_meta$issue_date[i],
-#       "_", daily_revisions_meta$date[i],
-#       "_daily_covid19_hospitalizations_US.csv")
-#   )
+for (i in seq_len(nrow(daily_revisions_meta))) {
+  destination_path <- file.path(
+    "./data-raw/healthdata/daily",
+    paste0(daily_revisions_meta$issue_date[i],
+      "_", daily_revisions_meta$date[i],
+      "_daily_covid19_hospitalizations_US.csv")
+  )
 
-#   if (!file.exists(destination_path)) {
-#     data <- suppressMessages(
-#       readr::read_csv(
-#         daily_revisions_meta$file_link[i] %>%
-#           httr::GET(config = httr::config(ssl_verifypeer = FALSE)) %>% 
-#           content(as = "text"),
-#         col_types = cols_only(
-#           state = col_character(),
-#           previous_day_admission_adult_covid_confirmed = col_integer(),
-#           previous_day_admission_pediatric_covid_confirmed = col_integer()
-#         )
-#       ) %>%
-#         dplyr::mutate(date = daily_revisions_meta$date[i])
-#     )
+  if (!file.exists(destination_path)) {
+    data <- suppressMessages(
+      readr::read_csv(
+        daily_revisions_meta$file_link[i] %>%
+          httr::GET(config = httr::config(ssl_verifypeer = FALSE)) %>% 
+          content(as = "text"),
+        col_types = cols_only(
+          state = col_character(),
+          previous_day_admission_adult_covid_confirmed = col_integer(),
+          previous_day_admission_pediatric_covid_confirmed = col_integer()
+        )
+      ) %>%
+        dplyr::mutate(date = daily_revisions_meta$date[i])
+    )
 
-#     readr::write_csv(data, destination_path)
-#   }
-# }
+    readr::write_csv(data, destination_path)
+  }
+}
