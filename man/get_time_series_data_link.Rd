@@ -19,7 +19,8 @@ one of 'deaths' or 'cases'}
 the first page of github repo. Default to FALSE that scrapes all history}
 
 \item{download_recent}{boolean specify whether to download the most
-recent truth file only. Default to TRUE}
+recent truth file only or all truth files in the most recent week.
+Default to TRUE to download the most recent file.}
 }
 \value{
 a data frame with columns date and file_links

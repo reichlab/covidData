@@ -23,7 +23,7 @@ assemble: download
 
 # Download data from JHU CSSE GitHub repo
 download:
-	Rscript download-historical-jhu.R
+	Rscript download-historical-jhu.R FALSE
 	Rscript download-historical-healthdata.R
 
 # Install R package with most recent data
@@ -32,10 +32,10 @@ install_recent: assemble_recent download_recent
 
 # Assemble recent csv files into R data object
 assemble_recent: download_recent
-	Rscript assemble-historical-jhu.R
+	Rscript assemble-historical-jhu.R 
 	Rscript assemble-historical-healthdata.R
 
 # Download most recent data from JHU CSSE GitHub repo
 download_recent:
-	python3 download-historical-jhu.py --recent
+	Rscript download-historical-jhu.R TRUE
 	Rscript download-historical-healthdata.R
