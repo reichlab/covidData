@@ -5,13 +5,16 @@
 #' one of 'deaths' or 'cases'
 #' @param first_page_only boolean specify whether to only scrape 
 #' the first page of github repo. Default to FALSE that scrapes all history
+#' @param download_files boolean specify whether to download truth files after
+#' scraping file links. Default to FALSE
 #' @param download_recent boolean specify whether to download the most 
 #' recent truth file only or all truth files in the most recent week. 
 #' Default to TRUE to download the most recent file. 
 #' 
 #' @return a data frame with columns date and file_links
 get_time_series_data_link <- function(measure, 
-                                      first_page_only = FALSE, 
+                                      first_page_only = FALSE,
+                                      download_files = FALSE,
                                       download_recent = TRUE){
   if (measure == "deaths"){
     base_file <- "time_series_covid19_deaths_US.csv"
@@ -110,26 +113,35 @@ get_time_series_data_link <- function(measure,
   # sort data frame by dates
   links <- links[order(links$date, decreasing = TRUE), ]
   
-  # select issue dates to download
-  if (download_recent){
-    download_dates <- links$date[1]
-  } else{
-    #download the data in the most recent week
-    download_dates <- links$date[1:7]
-  }
-  
-  for (date in as.character(download_dates)){
-    date <- as.Date(date)
+  if (download_files){
+    # select issue dates to download
+    if (download_recent){
+      download_dates <- links$date[1]
+    } else{
+      #download the data in the most recent week
+      download_dates <- links$date[1:7]
+    }
     
-    destination_path <- file.path(
-      "data-raw/JHU", paste0(as.character(date), "_",base_file)
-    )
+    dir <- file.path("data-raw", "JHU")
     
-    # if file has not been downloaded or the current date is the most recent date
-    if (!file.exists(destination_path) || date == max(links$date)) {
-      link <- links[links$date == date,]$file_link
-      time_series_data <- suppressMessages(readr::read_csv(link))
-      readr::write_csv(time_series_data, destination_path)
+    # create data-raw/JHU folder if it does not exist
+    if(!dir.exists(dir)){
+      dir.create(dir)
+    }
+    
+    for (date in as.character(download_dates)){
+      date <- as.Date(date)
+      
+      destination_path <- file.path(
+        dir, paste0(as.character(date), "_",base_file)
+      )
+      
+      # if file has not been downloaded or the current date is the most recent date
+      if (!file.exists(destination_path) || date == max(links$date)) {
+        link <- links[links$date == date,]$file_link
+        time_series_data <- suppressMessages(readr::read_csv(link))
+        readr::write_csv(time_series_data, destination_path)
+      }
     }
   }
   

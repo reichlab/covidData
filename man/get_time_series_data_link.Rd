@@ -8,6 +8,7 @@ download truth data issued in the most recent week/day.}
 get_time_series_data_link(
   measure,
   first_page_only = FALSE,
+  download_files = FALSE,
   download_recent = TRUE
 )
 }
@@ -17,6 +18,9 @@ one of 'deaths' or 'cases'}
 
 \item{first_page_only}{boolean specify whether to only scrape
 the first page of github repo. Default to FALSE that scrapes all history}
+
+\item{download_files}{boolean specify whether to download truth files after
+scraping file links. Default to FALSE}
 
 \item{download_recent}{boolean specify whether to download the most
 recent truth file only or all truth files in the most recent week.
