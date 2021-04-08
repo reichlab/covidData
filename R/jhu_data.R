@@ -286,14 +286,18 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
   } else if (is.null(issue_date) && is.null(as_of)) {
     issue_date <- Sys.Date()
   } else if (!is.null(as_of)) {
-    avail_issues <- jhu_data$issue_date[
-      jhu_data$issue_date <= as.character(as_of)
-    ]
-    
-    if (length(avail_issues) == 0) {
+    # case0: as_of < min(links$date) --> error
+    # case1: as_of >= min(links$date) 
+    #      a. as_of <= max --> get largest_issue_date <= as_of
+    #      b. as_of > max --> get the latest links, get largest_issue_date <= as_of
+    if (as_of < min(links$date)){
       stop("Provided as_of date is earlier than all available issue dates.")
     } else {
-      issue_date <- Sys.Date()
+      if (as_of > max(links$date)){
+        # query Github API to get the first page of results
+        links <- get_time_series_data_link(measure, first_page_only = TRUE)
+      }
+      issue_date <- max(links$date[links$date <= as.character(as_of)])
     }
   } else {
     issue_date <- lubridate::ymd(issue_date)
@@ -311,7 +315,7 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
         stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
       }
     } 
-    
+    # download data from link
     link <- links[links$date == issue_date,]$file_link
     jhu_data <- tibble::tibble(
       issue_date = list(as.character(issue_date)),
