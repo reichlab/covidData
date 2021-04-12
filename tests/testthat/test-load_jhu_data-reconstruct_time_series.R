@@ -4,7 +4,7 @@ testthat::context("load_jhu_data-reconstruct_time_series")
 
 
 test_that("reconstruct time series data for cumulative deaths count",{
-  expected <- readr::read_csv("test data/2021-01-13_time_series_covid19_deaths_US.csv") %>%
+  expected <- readr::read_csv("test data/2021-01-11_time_series_covid19_deaths_US.csv") %>%
     # filter fips 
     dplyr::filter(FIPS > 100 & FIPS < 80001)
   
@@ -14,7 +14,7 @@ test_that("reconstruct time series data for cumulative deaths count",{
     measure = 'deaths',
     replace_negatives = FALSE,
     adjustment_cases = 'none',
-    as_of = '2021-01-13') %>%
+    as_of = '2021-01-11') %>%
     # take out leading 0 in location 
     dplyr::mutate(location = sub("^0+", "", location))
   
@@ -39,7 +39,7 @@ test_that("reconstruct time series data for cumulative deaths count",{
 
 
 test_that("reconstruct time series data for cumulative cases count",{
-  expected <- readr::read_csv("test data/2021-01-13_time_series_covid19_confirmed_US.csv") %>%
+  expected <- readr::read_csv("test data/2021-01-11_time_series_covid19_confirmed_US.csv") %>%
     # filter fips 
     dplyr::filter(FIPS > 100 & FIPS < 80001)
   

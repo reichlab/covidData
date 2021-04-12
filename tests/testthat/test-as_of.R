@@ -3,7 +3,7 @@ testthat::context("as_of")
 
 test_that("load_jhu_data as_of: as_of existing issue_date", {
   issue_date_data <- covidData::load_jhu_data(
-    issue_date = "2020-11-02",
+    issue_date = "2020-04-06",
     spatial_resolution = "state",
     temporal_resolution = "daily",
     measure = "deaths",
@@ -11,7 +11,7 @@ test_that("load_jhu_data as_of: as_of existing issue_date", {
     adjustment_cases = "none")
 
   as_of_data <- covidData::load_jhu_data(
-    as_of = "2020-11-02",
+    as_of = "2020-04-06",
     spatial_resolution = "state",
     temporal_resolution = "daily",
     measure = "deaths",
@@ -23,7 +23,7 @@ test_that("load_jhu_data as_of: as_of existing issue_date", {
 
 test_that("load_jhu_data as_of: as_of non-existant issue_date", {
   issue_date_data <- covidData::load_jhu_data(
-    issue_date = "2020-03-31",
+    issue_date = "2020-04-06",
     spatial_resolution = "state",
     temporal_resolution = "daily",
     measure = "deaths",
@@ -31,7 +31,7 @@ test_that("load_jhu_data as_of: as_of non-existant issue_date", {
     adjustment_cases = "none")
 
   as_of_data <- covidData::load_jhu_data(
-    as_of = "2020-04-01",
+    as_of = "2020-04-07",
     spatial_resolution = "state",
     temporal_resolution = "daily",
     measure = "deaths",
@@ -42,7 +42,7 @@ test_that("load_jhu_data as_of: as_of non-existant issue_date", {
 })
 test_that("load_healthdata_data as_of: as_of existing issue_date", {
   issue_date_data <- covidData::load_healthdata_data(
-    issue_date = "2020-12-02",
+    issue_date = "2020-12-01",
     spatial_resolution = "state",
     temporal_resolution = "daily",
     measure = "hospitalizations",
@@ -50,7 +50,7 @@ test_that("load_healthdata_data as_of: as_of existing issue_date", {
     adjustment_cases = "none")
 
   as_of_data <- covidData::load_healthdata_data(
-    as_of = "2020-12-02",
+    as_of = "2020-12-01",
     spatial_resolution = "state",
     temporal_resolution = "daily",
     measure = "hospitalizations",
