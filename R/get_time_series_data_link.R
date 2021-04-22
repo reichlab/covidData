@@ -83,7 +83,6 @@ get_time_series_data_link <- function(measure,
               "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/",
               sha,"/",query_base_file)
             
-            print("Loaded all links. Breaking now")
             stop = TRUE
             break
           }
