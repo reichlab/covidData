@@ -62,7 +62,6 @@ load_jhu_data <- function(
 
   # get report for specified issue date
   jhu_data <- jhu_data %>%
-    #dplyr::filter(issue_date == UQ(issue_date)) %>%
     dplyr::pull(data) %>%
     `[[`(1) %>%
     tidyr::pivot_longer(
