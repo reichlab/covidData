@@ -309,7 +309,7 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
   } else {
     if(!issue_date %in% links$date){
       # query Github API to get the first page of results
-      links <- get_time_series_data_link(measure, first_page_only = TRUE)
+      links <- get_time_series_data_link(measure, first_page_only = FALSE)
       if (!issue_date %in% links$date){
         stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
       }
