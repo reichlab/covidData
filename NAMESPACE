@@ -3,6 +3,7 @@
 export(adjust_daily_incidence)
 export(fill_na)
 export(get_negative_cases)
+export(identify_outliers)
 export(impute_daily_incidence)
 export(load_data)
 export(load_healthdata_data)
