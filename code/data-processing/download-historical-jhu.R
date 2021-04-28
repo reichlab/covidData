@@ -9,12 +9,25 @@ source("R/get_time_series_data_link.R")
 # parse argument for download_recent parameter in get_time_series_data_link
 args <- (commandArgs(TRUE))
 download_recent <- args[1]
-
-jhu_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
-                                                   download_files = TRUE,
-                                                   download_recent = download_recent)
-save(jhu_deaths_data_links, file = "data/jhu_deaths_data_links.rdata") 
-jhu_cases_data_links <- get_time_series_data_link(measure = "cases",
-                                                  download_files = TRUE,
-                                                  download_recent = download_recent)
-save(jhu_cases_data_links, file = "data/jhu_cases_data_links.rdata")
+# get US data links
+jhu_us_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
+                                                      hub = c("US", "ECDC"),
+                                                      download_files = TRUE,
+                                                      download_recent = download_recent)
+save(jhu_us_deaths_data_links, file = "data/jhu_us_deaths_data_links.rdata") 
+jhu_us_cases_data_links <- get_time_series_data_link(measure = "cases",
+                                                     hub = c("US", "ECDC"),
+                                                     download_files = TRUE,
+                                                     download_recent = download_recent)
+save(jhu_us_cases_data_links, file = "data/jhu_us_cases_data_links.rdata")
+# get ECDC data links
+jhu_ecdc_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
+                                                        hub = c("ECDC", "US"),
+                                                        download_files = TRUE,
+                                                        download_recent = download_recent)
+save(jhu_ecdc_deaths_data_links, file = "data/jhu_ecdc_deaths_data_links.rdata") 
+jhu_ecdc_cases_data_links <- get_time_series_data_link(measure = "cases",
+                                                       hub =  c("ECDC", "US"),
+                                                       download_files = TRUE,
+                                                       download_recent = download_recent)
+save(jhu_ecdc_cases_data_links, file = "data/jhu_ecdc_cases_data_links.rdata")

@@ -7,6 +7,7 @@ download truth data issued in the most recent week/day.}
 \usage{
 get_time_series_data_link(
   measure,
+  hub = c("US", "ECDC"),
   first_page_only = FALSE,
   download_files = FALSE,
   download_recent = TRUE
@@ -15,6 +16,9 @@ get_time_series_data_link(
 \arguments{
 \item{measure}{string specifying measure of covid dynamics:
 one of 'deaths' or 'cases'}
+
+\item{hub}{character, which hub to use. Default is "US", other option is
+"ECDC"}
 
 \item{first_page_only}{boolean specify whether to only scrape
 the first page of github repo. Default to FALSE that scrapes all history}

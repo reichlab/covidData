@@ -4,6 +4,18 @@
 #' and two-letter abbreviations of states and territories of the US
 "fips_codes"
 
+#' Available locations in the ECDC Hub
+#'
+#' Data set with available locations for the EDCD hub
+#'
+#' @format A data frame with 32 rows and 3 columns:
+#' \describe{
+#'   \item{location_name}{Name of the location}
+#'   \item{location}{Location abbreviation}
+#'   \item{population}{Location population}
+#' }
+"ecdc_locations"
+
 
 #' JHU data for the US and its states and territories with counts of deaths
 #'
@@ -36,13 +48,22 @@
 "jhu_cases_imputed_data"
 
 
-#' data frame for JHU deaths time series data links
+#' data frame for JHU US deaths time series data links
 #'
 #' @format A data.frame with date and file_link
-"jhu_deaths_data_links"
+"jhu_us_deaths_data_links"
 
-
-#' data frame for JHU cases time series data links
+#' data frame for JHU US cases time series data links
 #'
 #' @format A data.frame with date and file_link
-"jhu_cases_data_links"
+"jhu_us_cases_data_links"
+
+#' data frame for JHU global deaths time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_ecdc_deaths_data_links"
+
+#' data frame for JHU global cases time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_ecdc_cases_data_links"

@@ -3,6 +3,8 @@
 #' 
 #' @param measure string specifying measure of covid dynamics: 
 #' one of 'deaths' or 'cases'
+#' @param hub character, which hub to use. Default is "US", other option is
+#' "ECDC"
 #' @param first_page_only boolean specify whether to only scrape 
 #' the first page of github repo. Default to FALSE that scrapes all history
 #' @param download_files boolean specify whether to download truth files after
@@ -13,29 +15,36 @@
 #' 
 #' @return a data frame with columns date and file_links
 get_time_series_data_link <- function(measure, 
+                                      hub = c("US", "ECDC"),
                                       first_page_only = FALSE,
                                       download_files = FALSE,
                                       download_recent = TRUE){
   if (measure == "deaths"){
-    base_file <- "time_series_covid19_deaths_US.csv"
-    if (file.exists("data/jhu_deaths_data_links.rdata")){
-      links <- covidData::jhu_deaths_data_links
-      head <- max(links$date)
-    } else {
-      links <- data.frame()
-      head <- NULL
+    if (hub[1] == "US"){
+      base_file <- "time_series_covid19_deaths_US.csv"
+      links_file_path = file.path(paste0("data/", "jhu_us_deaths_data_links",".rdata"))
+    } else if (hub[1] == "ECDC"){
+      base_file <- "time_series_covid19_deaths_global.csv"
+      links_file_path = file.path(paste0("data/", "jhu_ecdc_deaths_data_links",".rdata"))
     }
   } else if (measure == "cases") {
-    base_file <- "time_series_covid19_confirmed_US.csv"
-    if (file.exists("data/jhu_cases_data_links.rdata")){
-      links <- covidData::jhu_cases_data_links
-      head <- max(links$date)
-    } else {
-      links <- data.frame()
-      head <- NULL
+    if (hub[1] == "US"){
+      base_file <- "time_series_covid19_confirmed_US.csv"
+      links_file_path = file.path(paste0("data/", "jhu_us_cases_data_links",".rdata"))
+    } else if (hub[1] == "ECDC"){
+      base_file <- "time_series_covid19_confirmed_global.csv"
+      links_file_path = file.path(paste0("data/", "jhu_ecdc_cases_data_links",".rdata"))
     }
   }
-  
+    
+  if (file.exists(links_file_path)){
+    links <- load(links_file_path)
+    head <- max(links$date)
+  } else {
+    links <- data.frame()
+    head <- NULL
+  }
+
   query_base_file <- paste0("csse_covid_19_data/csse_covid_19_time_series/", base_file)
   page = 1
   stop = FALSE
