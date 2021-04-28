@@ -47,7 +47,6 @@ get_time_series_data_link <- function(measure,
                    sort = "author-date",
                    page = as.character(page)))
     if (request$status_code > 400 || stop) {
-      print("breaking")
       break
     }
     content <- httr::content(request)
@@ -83,7 +82,6 @@ get_time_series_data_link <- function(measure,
               "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/",
               sha,"/",query_base_file)
             
-            print("Loaded all links. Breaking now")
             stop = TRUE
             break
           }

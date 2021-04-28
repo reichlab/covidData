@@ -62,7 +62,6 @@ load_jhu_data <- function(
 
   # get report for specified issue date
   jhu_data <- jhu_data %>%
-    #dplyr::filter(issue_date == UQ(issue_date)) %>%
     dplyr::pull(data) %>%
     `[[`(1) %>%
     tidyr::pivot_longer(
@@ -310,7 +309,7 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
   } else {
     if(!issue_date %in% links$date){
       # query Github API to get the first page of results
-      links <- get_time_series_data_link(measure, first_page_only = TRUE)
+      links <- get_time_series_data_link(measure, first_page_only = FALSE)
       if (!issue_date %in% links$date){
         stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
       }
@@ -323,4 +322,23 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
   }
   
   return (jhu_data)
+}
+
+#' Get all available truth data issue dates
+#' 
+#' @param measure character vector specifying measure of covid prevalence:
+#' 'deaths', 'cases' or 'hospitalizations'
+#' 
+#' @return date vector of all available issue_date
+#' 
+available_issue_dates <- function(measure){
+  if (measure == "hospitalizations"){
+    return (covidData::healthdata_hosp_data$issue_date)
+  } else if (measure == "deaths"){
+    links <- get_time_series_data_link(measure)
+    return (links$date)
+  } else if (measure == "cases"){
+    links <- get_time_series_data_link(measure)
+    return (links$date)
+  }
 }
