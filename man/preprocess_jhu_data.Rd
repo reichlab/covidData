@@ -7,7 +7,12 @@ specified issue date and measure. This function will also download a
 specified time series data set if issue_date is not available in pre-built
 data object.}
 \usage{
-preprocess_jhu_data(issue_date = NULL, as_of = NULL, measure = "deaths")
+preprocess_jhu_data(
+  issue_date = NULL,
+  as_of = NULL,
+  measure = "deaths",
+  hub = c("US", "ECDC")
+)
 }
 \arguments{
 \item{issue_date}{character issue date (i.e. report date) to use for
@@ -18,6 +23,9 @@ constructing truths published as of this date in format 'yyyy-mm-dd'}
 
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths' or 'cases'}
+
+\item{hub}{character, which hub to use. Default is "US", other option is
+"ECDC"}
 }
 \value{
 tibble with issue_date and data

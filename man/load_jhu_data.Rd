@@ -8,9 +8,11 @@ COVID-19 as they were available as of a specified issue date.}
 load_jhu_data(
   issue_date = NULL,
   as_of = NULL,
+  location_code = NULL,
   spatial_resolution = "state",
   temporal_resolution = "weekly",
   measure = "deaths",
+  hub = c("US", "ECDC"),
   replace_negatives = FALSE,
   adjustment_cases = "none",
   adjustment_method = "none"
@@ -20,14 +22,22 @@ load_jhu_data(
 \item{issue_date}{character issue date (i.e. report date) to use for
 constructing truths in format 'yyyy-mm-dd'}
 
+\item{location_code}{character vector of location codes. Default to NULL.
+For US locations, this should be a list of FIPS code.
+For ECDC locations, this should be a list of country name abbreviation.}
+
 \item{spatial_resolution}{character vector specifying spatial unit types to
-include: 'county', 'state' and/or 'national'}
+include: 'county', 'state' and/or 'national'.
+This parameter will be ignored if location_code is provided.}
 
 \item{temporal_resolution}{character vector specifying temporal resolution
 to include: 'daily' or 'weekly'}
 
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths' or 'cases'}
+
+\item{hub}{character, which hub to use. Default is "US", other option is
+"ECDC"}
 
 \item{replace_negatives}{boolean to replace negative incs with imputed data}
 

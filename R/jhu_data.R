@@ -3,12 +3,18 @@
 #'
 #' @param issue_date character issue date (i.e. report date) to use for
 #' constructing truths in format 'yyyy-mm-dd'
+#' @param location_code character vector of location codes. Default to NULL.
+#' For US locations, this should be a list of FIPS code. 
+#' For ECDC locations, this should be a list of country name abbreviation.
 #' @param spatial_resolution character vector specifying spatial unit types to
-#' include: 'county', 'state' and/or 'national'
+#' include: 'county', 'state' and/or 'national'.
+#' This parameter will be ignored if location_code is provided.
 #' @param temporal_resolution character vector specifying temporal resolution
 #' to include: 'daily' or 'weekly'
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
+#' @param hub character, which hub to use. Default is "US", other option is
+#' "ECDC"
 #' @param replace_negatives boolean to replace negative incs with imputed data
 #' @param adjustment_cases character vector specifying times and locations with
 #' reporting anomalies to adjust.  Either 'none' (the default) or one or more
@@ -28,9 +34,11 @@
 load_jhu_data <- function(
     issue_date = NULL,
     as_of = NULL,
+    location_code = NULL,
     spatial_resolution = "state",
     temporal_resolution = "weekly",
     measure = "deaths",
+    hub = c("US", "ECDC"),
     replace_negatives = FALSE,
     adjustment_cases = "none",
     adjustment_method = "none") {
@@ -38,14 +46,31 @@ load_jhu_data <- function(
   measure <- match.arg(measure, choices = c("cases", "deaths"))
   
   # validate issue_date and as_of and load preprocessed data
-  jhu_data <- preprocess_jhu_data(issue_date, as_of, measure)
-
-  # validate spatial_resolution
-  spatial_resolution <- match.arg(
-    spatial_resolution,
-    choices = c("county", "state", "national"),
-    several.ok = TRUE
-  )
+  jhu_data <- preprocess_jhu_data(issue_date, as_of, measure, hub)
+  
+  # validate location_code
+  if (!is.null(location_code)){
+    if (hub[1] == "US"){
+      valid_locations <- covidData::fips_codes
+    } else if (hub[1] == "ECDC"){
+      valid_locations <- covidData::ecdc_locations
+    }
+    
+    location_code <- match.arg(
+      location_code, 
+      choices = valid_locations$location, 
+      several.ok = TRUE)
+    
+    # ignore spatial_resolution
+    spatial_resolution <- NULL
+  } else {
+    # validate spatial_resolution
+    spatial_resolution <- match.arg(
+      spatial_resolution,
+      choices = c("county", "state", "national"),
+      several.ok = TRUE
+    )
+  }
 
   # validate temporal_resolution
   temporal_resolution <- match.arg(
@@ -53,12 +78,14 @@ load_jhu_data <- function(
     choices = c("daily", "weekly"),
     several.ok = FALSE
   )
-
+  
+  # validate adjustment_method
   adjustment_method <- match.arg(
     adjustment_method,
     choices = c("fill_na", "impute_and_redistribute", "none"),
     several.ok = FALSE
   )
+  
 
   # get report for specified issue date
   jhu_data <- jhu_data %>%
@@ -72,73 +99,115 @@ load_jhu_data <- function(
     dplyr::mutate(
       date = as.character(lubridate::mdy(date))
     )
-
-  # summarized results for county level
-  results <- NULL
-  if ("county" %in% spatial_resolution) {
-    county_results <- jhu_data %>%
-      dplyr::filter(FIPS > 100) %>%
-      dplyr::mutate(
-        location = sprintf("%05d", FIPS)
-      ) %>%
-      dplyr::filter(location < "80001") %>%
+  
+  # use location_code or spatial_resolution
+  if (!is.null(location_code)){
+    if (hub[1] == "US"){
+      results <- jhu_data %>%
+        dplyr::mutate(location = FIPS) %>%
+        # filter locatioins
+        # !!!!!!!!!
+        # THIS FILTER DOES NOT WORK
+        # MIGHT NEED TO AGGREGATE FIRST AND THEN FILTER
+        dplyr::filter(location %in% location_code) 
+    } else if (hub[1] == "ECDC"){
+      # get corresponding country names
+      country_names <- valid_locations %>%
+        dplyr::filter(location %in% location_code) %>%
+        dplyr::pull(location_name)
+      
+      results <- jhu_data %>%
+        dplyr::rename(location = `Country/Region`) %>%
+        # filter locatioins and add inc column
+        dplyr::filter(location %in% country_names)
+    }
+    
+    # add inc column
+    results <- results %>%
       dplyr::group_by(location) %>%
       dplyr::mutate(inc = diff(c(0, cum))) %>%
-      dplyr::select(location, date, cum, inc) %>%
-      dplyr::ungroup()
-
-    results <- dplyr::bind_rows(results, county_results)
-  }
-
-  # summarized results for state level
-  if ("state" %in% spatial_resolution) {
-    states_to_keep <- c(
-      "Alabama", "Alaska", "American Samoa", "Arizona", "Arkansas",
-      "California", "Colorado", "Connecticut", "Delaware",
-      "District of Columbia", "Florida", "Georgia", "Guam", "Hawaii", "Idaho",
-      "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine",
-      "Maryland", "Massachusetts", "Michigan", "Minnesota",
-      "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
-      "New Hampshire", "New Jersey", "New Mexico", "New York",
-      "North Carolina", "North Dakota", "Northern Mariana Islands",
-      "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
-      "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
-      "Texas", "Utah", "Vermont", "Virgin Islands", "Virginia",
-      "Washington", "West Virginia", "Wisconsin", "Wyoming"
-    )
-
-    state_results <- jhu_data %>%
-      dplyr::filter(Province_State %in% states_to_keep) %>%
-      dplyr::mutate(location_name = Province_State) %>%
-      dplyr::group_by(location_name, date) %>%
-      dplyr::summarize(cum = sum(cum)) %>%
-      dplyr::group_by(location_name) %>%
-      dplyr::mutate(inc = diff(c(0, cum))) %>%
       dplyr::ungroup() %>%
-      dplyr::left_join(
-        covidData::fips_codes %>% dplyr::filter(nchar(location) == 2),
-        by = "location_name"
-      ) %>%
       dplyr::select(location, date, cum, inc)
-
-    results <- dplyr::bind_rows(results, state_results)
-  }
-
-  # summarized results for national level
-  if ("national" %in% spatial_resolution) {
-    # because we don't filter on states_to_keep as above, we are off by a total
-    # of 3 deaths attributed to Diamond Princess.
-    national_results <- jhu_data %>%
-      dplyr::group_by(date) %>%
-      dplyr::summarize(cum = sum(cum)) %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(
-        inc = diff(c(0, cum)),
-        location = "US"
-      ) %>%
-      dplyr::select(location, date, cum, inc)
-
-    results <- dplyr::bind_rows(results, national_results)
+      
+  } else {
+    # apply spatial resolution to US data
+    if (hub[1] == "US"){
+      # summarized results for county level
+      results <- NULL
+      
+      if ("county" %in% spatial_resolution) {
+        county_results <- jhu_data %>%
+          dplyr::filter(FIPS > 100) %>%
+          dplyr::mutate(
+            location = sprintf("%05d", FIPS)
+          ) %>%
+          dplyr::filter(location < "80001") %>%
+          dplyr::group_by(location) %>%
+          dplyr::mutate(inc = diff(c(0, cum))) %>%
+          dplyr::select(location, date, cum, inc) %>%
+          dplyr::ungroup()
+        
+        results <- dplyr::bind_rows(results, county_results)
+      }
+      
+      # summarized results for state level
+      if ("state" %in% spatial_resolution) {
+        states_to_keep <- c(
+          "Alabama", "Alaska", "American Samoa", "Arizona", "Arkansas",
+          "California", "Colorado", "Connecticut", "Delaware",
+          "District of Columbia", "Florida", "Georgia", "Guam", "Hawaii", "Idaho",
+          "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine",
+          "Maryland", "Massachusetts", "Michigan", "Minnesota",
+          "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+          "New Hampshire", "New Jersey", "New Mexico", "New York",
+          "North Carolina", "North Dakota", "Northern Mariana Islands",
+          "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
+          "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
+          "Texas", "Utah", "Vermont", "Virgin Islands", "Virginia",
+          "Washington", "West Virginia", "Wisconsin", "Wyoming"
+        )
+        
+        state_results <- jhu_data %>%
+          dplyr::filter(Province_State %in% states_to_keep) %>%
+          dplyr::mutate(location_name = Province_State) %>%
+          dplyr::group_by(location_name, date) %>%
+          dplyr::summarize(cum = sum(cum)) %>%
+          dplyr::group_by(location_name) %>%
+          dplyr::mutate(inc = diff(c(0, cum))) %>%
+          dplyr::ungroup() %>%
+          dplyr::left_join(
+            valid_locations %>% dplyr::filter(nchar(location) == 2),
+            by = "location_name"
+          ) %>%
+          dplyr::select(location, date, cum, inc)
+        
+        results <- dplyr::bind_rows(results, state_results)
+      }
+      
+      # summarized results for national level
+      if ("national" %in% spatial_resolution) {
+        # because we don't filter on states_to_keep as above, we are off by a total
+        # of 3 deaths attributed to Diamond Princess.
+        national_results <- jhu_data %>%
+          dplyr::group_by(date) %>%
+          dplyr::summarize(cum = sum(cum)) %>%
+          dplyr::ungroup() %>%
+          dplyr::mutate(
+            inc = diff(c(0, cum)),
+            location = "US"
+          ) %>%
+          dplyr::select(location, date, cum, inc)
+        
+        results <- dplyr::bind_rows(results, national_results)
+      }
+    } else if (hub[1] == "ECDC"){
+      results <- jhu_data %>%
+        dplyr::rename(location = `Country/Region`) %>%
+        dplyr::group_by(location) %>%
+        dplyr::mutate(inc = diff(c(0, cum))) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(location, date, cum, inc)
+    } 
   }
 
   # replace negative incidence with imputed data. Residuals will be
@@ -149,15 +218,20 @@ load_jhu_data <- function(
 
   if (adjustment_cases != "none" & length(adjustment_cases) > 0) {
     # create a data frame with adjustment location fips code and adjustment date
-    adjustment_states <- sub("-.*", "", adjustment_cases)
+    adjustment_locations <- sub("-.*", "", adjustment_cases)
     adjustment_dates <- sub("^.*?-", "", adjustment_cases)
-    adjustment_state_fips <- purrr::map_chr(
-      adjustment_states, function(x) {
-        covidData::fips_codes[which(covidData::fips_codes$abbreviation == x), ]$location
+    adjustment_locations_code <- purrr::map_chr(
+      adjustment_locations, function(x) {
+        if (hub[1] == "US"){
+          # get corresponding fips code
+          valid_locations[which(valid_locations$abbreviation == x), ]$location
+        } else if (hub[1] == "ECDC"){
+          x
+        }
       }
     )
     adjustments <- data.frame(
-      location = adjustment_state_fips,
+      location = adjustment_locations_code,
       date = as.Date(adjustment_dates)
     )
 
@@ -188,19 +262,22 @@ load_jhu_data <- function(
        }
 
       for (i in seq_len(nrow(adjustments))) {
-        adjustment_location <- adjustments[i, ]$location
+        adjustment_location_code <- adjustments[i, ]$location
         adjustment_date <- as.Date(adjustments[i, ]$date)
 
         # get state, counties and national observations for an adjustment case
         location_data <- results %>%
           dplyr::filter(
-            stringr::str_sub(location, start = 1, end = 2) %in%
-              adjustment_location |
-            location == "US" | location == adjustment_location)
+            stringr::str_sub(
+              # include counties in adjustment state
+              location, start = 1, end = 2) %in% adjustment_location_code |
+              location == "US" | 
+              # US states or ECDC countries
+              location == adjustment_location_code)
 
         # for each location in data, get imputed data
-        for (fips in unique(location_data$location)) {
-          d <- location_data[location_data$location == fips, ]
+        for (a_location in unique(location_data$location)) {
+          d <- location_data[location_data$location == a_location, ]
 
           # get adjusted inc column
           imputed_inc <- adjust_daily_incidence(
@@ -210,7 +287,7 @@ load_jhu_data <- function(
           )
 
           # put imputed data back to results
-          results[which(results$location == fips), ]$inc <- imputed_inc
+          results[which(results$location == a_location), ]$inc <- imputed_inc
         }
       }
     }
@@ -263,19 +340,36 @@ load_jhu_data <- function(
 #' constructing truths published as of this date in format 'yyyy-mm-dd'
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
+#' @param hub character, which hub to use. Default is "US", other option is
+#' "ECDC"
 #' 
 #' @return tibble with issue_date and data
 #' 
-preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deaths"){
+preprocess_jhu_data <- function(issue_date = NULL, 
+                                as_of = NULL, 
+                                measure = "deaths",
+                                hub = c("US", "ECDC")){
   
   if (measure == "deaths"){
-    links <- covidData::jhu_deaths_data_links
-    jhu_data <- covidData::jhu_deaths_data
-    base_file_name <- "time_series_covid19_deaths_US.csv"
+    if (hub[1] == "US"){
+      links <- covidData::jhu_us_deaths_data_links
+      jhu_data <- covidData::jhu_us_deaths_data
+      base_file_name <- "time_series_covid19_deaths_US.csv"
+    } else if (hub[1] == "ECDC"){
+      links <- covidData::jhu_global_deaths_data_links
+      jhu_data <- covidData::jhu_global_deaths_data
+      base_file_name <- "time_series_covid19_deaths_global.csv"
+    }
   } else if (measure == "cases"){
-    links <- covidData::jhu_cases_data_links
-    jhu_data <- covidData::jhu_cases_data
-    base_file_name <- "time_series_covid19_confirmed_US.csv"
+    if (hub[1] == "US"){
+      links <- covidData::jhu_us_cases_data_links
+      jhu_data <- covidData::jhu_us_cases_data
+      base_file_name <- "time_series_covid19_confirmed_US.csv"
+    } else if (hub[1] == "ECDC"){
+      links <- covidData::jhu_global_cases_data_links
+      jhu_data <- covidData::jhu_global_cases_data
+      base_file_name <- "time_series_covid19_confirmed_global.csv"
+    }
   }
   
   # validate issue_date and as_of
@@ -294,7 +388,7 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
     } else {
       if (as_of > max(links$date)){
         # query Github API to get the first page of results
-        links <- get_time_series_data_link(measure, first_page_only = TRUE)
+        links <- get_time_series_data_link(measure, first_page_only = TRUE, hub)
       }
       issue_date <- max(links$date[links$date <= as.character(as_of)])
     }
@@ -309,7 +403,7 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
   } else {
     if(!issue_date %in% links$date){
       # query Github API to get the first page of results
-      links <- get_time_series_data_link(measure, first_page_only = FALSE)
+      links <- get_time_series_data_link(measure, first_page_only = FALSE, hub)
       if (!issue_date %in% links$date){
         stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
       }
@@ -328,17 +422,19 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
 #' 
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths', 'cases' or 'hospitalizations'
+#' @param hub character, which hub to use. Default is "US", other option is
+#' "ECDC"
 #' 
 #' @return date vector of all available issue_date
 #' 
-available_issue_dates <- function(measure){
+available_issue_dates <- function(measure,  hub = c("US", "ECDC")){
   if (measure == "hospitalizations"){
     return (covidData::healthdata_hosp_data$issue_date)
   } else if (measure == "deaths"){
-    links <- get_time_series_data_link(measure)
+    links <- get_time_series_data_link(measure, hub)
     return (links$date)
   } else if (measure == "cases"){
-    links <- get_time_series_data_link(measure)
+    links <- get_time_series_data_link(measure, hub)
     return (links$date)
   }
 }

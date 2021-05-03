@@ -4,11 +4,14 @@
 \alias{available_issue_dates}
 \title{Get all available truth data issue dates}
 \usage{
-available_issue_dates(measure)
+available_issue_dates(measure, hub = c("US", "ECDC"))
 }
 \arguments{
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths', 'cases' or 'hospitalizations'}
+
+\item{hub}{character, which hub to use. Default is "US", other option is
+"ECDC"}
 }
 \value{
 date vector of all available issue_date

@@ -61,9 +61,9 @@
 #' data frame for JHU global deaths time series data links
 #'
 #' @format A data.frame with date and file_link
-"jhu_ecdc_deaths_data_links"
+"jhu_global_deaths_data_links"
 
 #' data frame for JHU global cases time series data links
 #'
 #' @format A data.frame with date and file_link
-"jhu_ecdc_cases_data_links"
+"jhu_global_cases_data_links"
