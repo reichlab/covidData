@@ -23,7 +23,7 @@ load_jhu_data(
 constructing truths in format 'yyyy-mm-dd'}
 
 \item{location_code}{character vector of location codes. Default to NULL.
-For US locations, this should be a list of FIPS code.
+For US locations, this should be a list of FIPS code or 'US'
 For ECDC locations, this should be a list of country name abbreviation.}
 
 \item{spatial_resolution}{character vector specifying spatial unit types to

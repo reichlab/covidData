@@ -4,11 +4,11 @@
 #' @param issue_date character issue date (i.e. report date) to use for
 #' constructing truths in format 'yyyy-mm-dd'
 #' @param location_code character vector of location codes. Default to NULL.
-#' For US locations, this should be a list of FIPS code. 
+#' For US locations, this should be a list of FIPS code or 'US' 
 #' For ECDC locations, this should be a list of country name abbreviation.
 #' @param spatial_resolution character vector specifying spatial unit types to
 #' include: 'county', 'state' and/or 'national'.
-#' This parameter will be ignored if location_code is provided.
+#' This parameter will be ignored if location_code is provided or hub is "ECDC".
 #' @param temporal_resolution character vector specifying temporal resolution
 #' to include: 'daily' or 'weekly'
 #' @param measure character vector specifying measure of covid prevalence:
@@ -48,14 +48,14 @@ load_jhu_data <- function(
   # validate issue_date and as_of and load preprocessed data
   jhu_data <- preprocess_jhu_data(issue_date, as_of, measure, hub)
   
+  if (hub[1] == "US"){
+    valid_locations <- covidData::fips_codes
+  } else if (hub[1] == "ECDC"){
+    valid_locations <- covidData::ecdc_locations
+  }
+  
   # validate location_code
   if (!is.null(location_code)){
-    if (hub[1] == "US"){
-      valid_locations <- covidData::fips_codes
-    } else if (hub[1] == "ECDC"){
-      valid_locations <- covidData::ecdc_locations
-    }
-    
     location_code <- match.arg(
       location_code, 
       choices = valid_locations$location, 
@@ -100,58 +100,62 @@ load_jhu_data <- function(
       date = as.character(lubridate::mdy(date))
     )
   
-  # use location_code or spatial_resolution
+  selected_counties <- NULL
+  selected_states <- NULL
+  selected_us <- NULL
+  country_names <- NULL
+  
+  # create location filters based on location_code and hub parameters
   if (!is.null(location_code)){
     if (hub[1] == "US"){
-      results <- jhu_data %>%
-        dplyr::mutate(location = FIPS) %>%
-        # filter locatioins
-        # !!!!!!!!!
-        # THIS FILTER DOES NOT WORK
-        # MIGHT NEED TO AGGREGATE FIRST AND THEN FILTER
-        dplyr::filter(location %in% location_code) 
+      # create sublists based on location_code
+      selected_counties <- location_code[lapply(location_code, nchar) == 5]
+      selected_states <- location_code[lapply(location_code, nchar) == 2]
+      if ("US" %in% selected_states) {
+        selected_states[selected_states != "US"]
+        selected_us <- c("US")
+      }
+      
     } else if (hub[1] == "ECDC"){
       # get corresponding country names
       country_names <- valid_locations %>%
         dplyr::filter(location %in% location_code) %>%
         dplyr::pull(location_name)
-      
-      results <- jhu_data %>%
-        dplyr::rename(location = `Country/Region`) %>%
-        # filter locatioins and add inc column
-        dplyr::filter(location %in% country_names)
     }
-    
-    # add inc column
-    results <- results %>%
-      dplyr::group_by(location) %>%
-      dplyr::mutate(inc = diff(c(0, cum))) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(location, date, cum, inc)
+  }
+  
+  # aggregate and filter based on hub parameter
+  if (hub[1] == "US"){
+    # summarized results for county level
+    results <- NULL
       
-  } else {
-    # apply spatial resolution to US data
-    if (hub[1] == "US"){
-      # summarized results for county level
-      results <- NULL
-      
-      if ("county" %in% spatial_resolution) {
-        county_results <- jhu_data %>%
-          dplyr::filter(FIPS > 100) %>%
-          dplyr::mutate(
-            location = sprintf("%05d", FIPS)
-          ) %>%
+    if ("county" %in% spatial_resolution | length(selected_counties) > 0) {
+      county_results <- jhu_data %>%
+        dplyr::filter(FIPS > 100) %>%
+        dplyr::mutate(
+          location = sprintf("%05d", FIPS)) %>%
           dplyr::filter(location < "80001") %>%
           dplyr::group_by(location) %>%
           dplyr::mutate(inc = diff(c(0, cum))) %>%
           dplyr::select(location, date, cum, inc) %>%
           dplyr::ungroup()
         
+        if (length(selected_counties) > 0) {
+          county_results <- county_results %>%
+            dplyr::filter(location %in% selected_counties)
+        }
+        
         results <- dplyr::bind_rows(results, county_results)
       }
       
-      # summarized results for state level
-      if ("state" %in% spatial_resolution) {
+    # summarized results for state level
+    if ("state" %in% spatial_resolution | length(selected_states) > 0 ) {
+      if (length(selected_states) > 0) {
+          # pull state names from fips code
+          states_to_keep <- valid_locations %>%
+            dplyr::filter(location %in% selected_states) %>%
+            dplyr::pull(location_name)
+      } else {
         states_to_keep <- c(
           "Alabama", "Alaska", "American Samoa", "Arizona", "Arkansas",
           "California", "Colorado", "Connecticut", "Delaware",
@@ -164,51 +168,54 @@ load_jhu_data <- function(
           "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
           "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
           "Texas", "Utah", "Vermont", "Virgin Islands", "Virginia",
-          "Washington", "West Virginia", "Wisconsin", "Wyoming"
-        )
-        
-        state_results <- jhu_data %>%
-          dplyr::filter(Province_State %in% states_to_keep) %>%
-          dplyr::mutate(location_name = Province_State) %>%
-          dplyr::group_by(location_name, date) %>%
-          dplyr::summarize(cum = sum(cum)) %>%
-          dplyr::group_by(location_name) %>%
-          dplyr::mutate(inc = diff(c(0, cum))) %>%
-          dplyr::ungroup() %>%
-          dplyr::left_join(
-            valid_locations %>% dplyr::filter(nchar(location) == 2),
-            by = "location_name"
-          ) %>%
-          dplyr::select(location, date, cum, inc)
-        
-        results <- dplyr::bind_rows(results, state_results)
+          "Washington", "West Virginia", "Wisconsin", "Wyoming")
       }
+        
+      state_results <- jhu_data %>%
+        dplyr::filter(Province_State %in% states_to_keep) %>%
+        dplyr::mutate(location_name = Province_State) %>%
+        dplyr::group_by(location_name, date) %>%
+        dplyr::summarize(cum = sum(cum)) %>%
+        dplyr::group_by(location_name) %>%
+        dplyr::mutate(inc = diff(c(0, cum))) %>%
+        dplyr::ungroup() %>%
+        dplyr::left_join(
+          valid_locations %>% dplyr::filter(nchar(location) == 2),
+          by = "location_name") %>%
+        dplyr::select(location, date, cum, inc)
+        
+      results <- dplyr::bind_rows(results, state_results)
+    }
       
-      # summarized results for national level
-      if ("national" %in% spatial_resolution) {
-        # because we don't filter on states_to_keep as above, we are off by a total
-        # of 3 deaths attributed to Diamond Princess.
-        national_results <- jhu_data %>%
-          dplyr::group_by(date) %>%
-          dplyr::summarize(cum = sum(cum)) %>%
-          dplyr::ungroup() %>%
-          dplyr::mutate(
-            inc = diff(c(0, cum)),
-            location = "US"
-          ) %>%
-          dplyr::select(location, date, cum, inc)
+    # summarized results for national level
+    if ("national" %in% spatial_resolution | length(selected_us) == 1) {
+      # because we don't filter on states_to_keep as above, we are off by a total
+      # of 3 deaths attributed to Diamond Princess.
+      national_results <- jhu_data %>%
+        dplyr::group_by(date) %>%
+        dplyr::summarize(cum = sum(cum)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(
+          inc = diff(c(0, cum)),
+          location = "US") %>%
+        dplyr::select(location, date, cum, inc)
         
-        results <- dplyr::bind_rows(results, national_results)
-      }
-    } else if (hub[1] == "ECDC"){
+      results <- dplyr::bind_rows(results, national_results)
+    }
+  } else if (hub[1] == "ECDC"){
       results <- jhu_data %>%
         dplyr::rename(location = `Country/Region`) %>%
         dplyr::group_by(location) %>%
         dplyr::mutate(inc = diff(c(0, cum))) %>%
         dplyr::ungroup() %>%
         dplyr::select(location, date, cum, inc)
-    } 
-  }
+    
+      if (length(country_names) > 0){
+      results <- results %>%
+        dplyr::filter(location %in% country_names)
+      }
+  } 
+  
 
   # replace negative incidence with imputed data. Residuals will be
   # redistributed to related observations.
