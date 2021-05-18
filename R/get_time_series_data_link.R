@@ -107,6 +107,10 @@ get_time_series_data_link <- function(measure,
     }
   }
   
+  if (nrow(links) == 0){
+    stop("Error in get_time_series_data_link: Scraping failed because 
+         GitHub API allows limited queries in a period of time. Please try again later.")
+  }
   
   # sort data frame by dates
   links <- links[order(links$date, decreasing = TRUE), ]
