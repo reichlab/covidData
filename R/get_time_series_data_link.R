@@ -18,7 +18,8 @@ get_time_series_data_link <- function(measure,
                                       download_recent = TRUE){
   if (measure == "deaths"){
     base_file <- "time_series_covid19_deaths_US.csv"
-    if (file.exists("data/jhu_deaths_data_links.rdata")){
+    if (file.exists("data/jhu_deaths_data_links.rdata") 
+        & exists("jhu_deaths_data_links")){
       links <- covidData::jhu_deaths_data_links
       head <- max(links$date)
     } else {
@@ -27,7 +28,8 @@ get_time_series_data_link <- function(measure,
     }
   } else if (measure == "cases") {
     base_file <- "time_series_covid19_confirmed_US.csv"
-    if (file.exists("data/jhu_cases_data_links.rdata")){
+    if (file.exists("data/jhu_cases_data_links.rdata") 
+        & exists("jhu_cases_data_links")){
       links <- covidData::jhu_cases_data_links
       head <- max(links$date)
     } else {
