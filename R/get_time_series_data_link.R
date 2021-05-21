@@ -1,38 +1,62 @@
-#' Assemble a data frame that stores all likes to JHU data series files and 
+#' Assemble a data frame that stores all links to JHU data series files and
 #' download truth data issued in the most recent week/day.
 #' 
-#' @param measure string specifying measure of covid dynamics: 
+#' @param measure string specifying measure of covid dynamics:
 #' one of 'deaths' or 'cases'
-#' @param first_page_only boolean specify whether to only scrape 
+#' @param first_page_only boolean specify whether to only scrape
 #' the first page of github repo. Default to FALSE that scrapes all history
 #' @param download_files boolean specify whether to download truth files after
 #' scraping file links. Default to FALSE
-#' @param download_recent boolean specify whether to download the most 
-#' recent truth file only or all truth files in the most recent week. 
-#' Default to TRUE to download the most recent file. 
+#' @param download_recent boolean specify whether to download the most
+#' recent truth file only or all truth files in the most recent week.
+#' Default to TRUE to download the most recent file.
 #' 
 #' @return a data frame with columns date and file_links
 get_time_series_data_link <- function(measure, 
                                       first_page_only = FALSE,
                                       download_files = FALSE,
-                                      download_recent = TRUE){
-  if (measure == "deaths"){
+                                      download_recent = TRUE) {
+  if (measure == "deaths") {
     base_file <- "time_series_covid19_deaths_US.csv"
-    if (file.exists("data/jhu_deaths_data_links.rdata")){
-      links <- covidData::jhu_deaths_data_links
+    if (file.exists("data/jhu_deaths_data_links.rdata")) {
+      # we are within the covidData folder -- likely doing a manual installation
+      load("data/jhu_deaths_data_links.rdata")
+      links <- jhu_deaths_data_links
       head <- max(links$date)
     } else {
-      links <- data.frame()
-      head <- NULL
+      # attempt to attach covidData namespace in case the package is installed
+      # but it's not already attached
+      attach_result <- tryCatch(attachNamespace("covidData"),
+                                error = function(e) e)
+
+      if (exists("jhu_deaths_data_links", where = asNamespace("covidData"))) {
+        links <- covidData::jhu_deaths_data_links
+        head <- max(links$date)
+      } else  {
+        links <- data.frame()
+        head <- NULL
+      }
     }
   } else if (measure == "cases") {
     base_file <- "time_series_covid19_confirmed_US.csv"
-    if (file.exists("data/jhu_cases_data_links.rdata")){
-      links <- covidData::jhu_cases_data_links
+    if (file.exists("data/jhu_cases_data_links.rdata")) {
+      # we are within the covidData folder -- likely doing a manual installation
+      load("data/jhu_cases_data_links.rdata")
+      links <- jhu_cases_data_links
       head <- max(links$date)
     } else {
-      links <- data.frame()
-      head <- NULL
+      # attempt to attach covidData namespace in case the package is installed
+      # but it's not already attached
+      attach_result <- tryCatch(attachNamespace("covidData"),
+                                error = function(e) e)
+
+      if (exists("jhu_cases_data_links", where = asNamespace("covidData"))) {
+        links <- covidData::jhu_cases_data_links
+        head <- max(links$date)
+      } else  {
+        links <- data.frame()
+        head <- NULL
+      }
     }
   }
   
@@ -107,6 +131,10 @@ get_time_series_data_link <- function(measure,
     }
   }
   
+  if (nrow(links) == 0){
+    stop("Error in get_time_series_data_link: Scraping failed because 
+         GitHub API allows limited queries in a period of time. Please try again later.")
+  }
   
   # sort data frame by dates
   links <- links[order(links$date, decreasing = TRUE), ]

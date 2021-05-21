@@ -266,16 +266,15 @@ load_jhu_data <- function(
 #' 
 #' @return tibble with issue_date and data
 #' 
-preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deaths"){
-  
-  if (measure == "deaths"){
+preprocess_jhu_data <- function(issue_date = NULL,
+                                as_of = NULL,
+                                measure = "deaths") {
+  if (measure == "deaths") {
     links <- covidData::jhu_deaths_data_links
     jhu_data <- covidData::jhu_deaths_data
-    base_file_name <- "time_series_covid19_deaths_US.csv"
-  } else if (measure == "cases"){
+  } else if (measure == "cases") {
     links <- covidData::jhu_cases_data_links
     jhu_data <- covidData::jhu_cases_data
-    base_file_name <- "time_series_covid19_confirmed_US.csv"
   }
   
   # validate issue_date and as_of
@@ -289,12 +288,12 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
     # case1: as_of >= min(links$date) 
     #      a. as_of <= max --> get largest_issue_date <= as_of
     #      b. as_of > max --> get the latest links, get largest_issue_date <= as_of
-    if (as_of < min(links$date)){
+    if (as_of < min(links$date)) {
       stop("Provided as_of date is earlier than all available issue dates.")
     } else {
-      if (as_of > max(links$date)){
+      if (as_of > max(links$date)) {
         # query Github API to get the first page of results
-        links <- get_time_series_data_link(measure, first_page_only = TRUE)
+        links <- get_time_series_data_link(measure, first_page_only = FALSE)
       }
       issue_date <- max(links$date[links$date <= as.character(as_of)])
     }
@@ -303,11 +302,11 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
   }
   
   # subset jhu_data based on issue_date
-  if (issue_date %in% jhu_data$issue_date){
+  if (issue_date %in% jhu_data$issue_date) {
     jhu_data <- jhu_data %>%
       dplyr::filter(issue_date == UQ(issue_date))
   } else {
-    if(!issue_date %in% links$date){
+    if (!issue_date %in% links$date) {
       # query Github API to get the first page of results
       links <- get_time_series_data_link(measure, first_page_only = FALSE)
       if (!issue_date %in% links$date){
@@ -321,7 +320,7 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
       data = list(suppressMessages(readr::read_csv(link))))
   }
   
-  return (jhu_data)
+  return(jhu_data)
 }
 
 #' Get all available truth data issue dates
@@ -331,14 +330,14 @@ preprocess_jhu_data <- function(issue_date = NULL, as_of = NULL, measure = "deat
 #' 
 #' @return date vector of all available issue_date
 #' 
-available_issue_dates <- function(measure){
-  if (measure == "hospitalizations"){
-    return (covidData::healthdata_hosp_data$issue_date)
-  } else if (measure == "deaths"){
+available_issue_dates <- function(measure) {
+  if (measure == "hospitalizations") {
+    return(covidData::healthdata_hosp_data$issue_date)
+  } else if (measure == "deaths") {
     links <- get_time_series_data_link(measure)
-    return (links$date)
-  } else if (measure == "cases"){
+    return(links$date)
+  } else if (measure == "cases") {
     links <- get_time_series_data_link(measure)
-    return (links$date)
+    return(links$date)
   }
 }
