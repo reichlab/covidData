@@ -49,7 +49,7 @@ test_that("reconstruct time series data for cumulative cases count",{
     measure = 'cases',
     replace_negatives = FALSE,
     adjustment_cases = 'none',
-    as_of = '2021-01-13') %>%
+    as_of = '2021-01-11') %>%
     # take out leading 0 in location 
     dplyr::mutate(location = sub("^0+", "", location))
   
