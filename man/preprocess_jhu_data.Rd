@@ -11,7 +11,7 @@ preprocess_jhu_data(
   issue_date = NULL,
   as_of = NULL,
   measure = "deaths",
-  hub = c("US", "ECDC")
+  geography = c("US", "global")
 )
 }
 \arguments{
@@ -24,8 +24,8 @@ constructing truths published as of this date in format 'yyyy-mm-dd'}
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths' or 'cases'}
 
-\item{hub}{character, which hub to use. Default is "US", other option is
-"ECDC"}
+\item{geography}{character, which data to read. Default is "US", other option is
+"global"}
 }
 \value{
 tibble with issue_date and data

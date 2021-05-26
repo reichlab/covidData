@@ -3,8 +3,8 @@
 #' 
 #' @param measure string specifying measure of covid dynamics: 
 #' one of 'deaths' or 'cases'
-#' @param hub character, which hub to use. Default is "US", other option is
-#' "ECDC"
+#' @param geography character, which data to read. Default is "US", other option is
+#' "global"
 #' @param first_page_only boolean specify whether to only scrape 
 #' the first page of github repo. Default to FALSE that scrapes all history
 #' @param download_files boolean specify whether to download truth files after
@@ -15,12 +15,12 @@
 #' 
 #' @return a data frame with columns date and file_links
 get_time_series_data_link <- function(measure, 
-                                      hub = c("US", "ECDC"),
+                                      geography = c("US", "global"),
                                       first_page_only = FALSE,
                                       download_files = FALSE,
                                       download_recent = TRUE){
   if (measure == "deaths"){
-    if (hub[1] == "US"){
+    if (geography[1] == "US"){
       base_file <- "time_series_covid19_deaths_US.csv"
       if (file.exists("data/jhu_us_deaths_data_links.rdata")){
         links <- covidData::jhu_us_deaths_data_links
@@ -29,7 +29,7 @@ get_time_series_data_link <- function(measure,
         links <- data.frame()
         head <- NULL
       }
-    } else if (hub[1] == "ECDC"){
+    } else if (geography[1] == "global"){
       base_file <- "time_series_covid19_deaths_global.csv"
       if (file.exists("data/jhu_global_deaths_data_links.rdata")){
         links <- covidData::jhu_global_deaths_data_links
@@ -40,7 +40,7 @@ get_time_series_data_link <- function(measure,
       }
     }
   } else if (measure == "cases") {
-    if (hub[1] == "US"){
+    if (geography[1] == "US"){
       base_file <- "time_series_covid19_confirmed_US.csv"
       if (file.exists("data/jhu_us_cases_data_links.rdata")){
         links <- covidData::jhu_us_cases_data_links
@@ -49,7 +49,7 @@ get_time_series_data_link <- function(measure,
         links <- data.frame()
         head <- NULL
       }
-    } else if (hub[1] == "ECDC"){
+    } else if (geography[1] == "global"){
       base_file <- "time_series_covid19_confirmed_global.csv"
       if (file.exists("data/jhu_global_cases_data_links.rdata")){
         links <- covidData::jhu_global_cases_data_links

@@ -72,3 +72,53 @@ test_that("reconstruct time series data for cumulative cases count",{
   
 })
 
+test_that("reconstruct time series data for cumulative cases count in global locations",{
+  expected <- readr::read_csv("test data/2021-05-25_time_series_covid19_confirmed_global.csv") %>%
+    calc_jhu_global_cum()
+  
+  data <- covidData::load_jhu_data(
+    temporal_resolution = 'daily',
+    measure = 'cases',
+    replace_negatives = FALSE,
+    adjustment_cases = 'none',
+    as_of = '2021-05-25',
+    geography = c("global"))
+  
+  actual <- data %>%
+    # format date
+    dplyr::mutate(date = gsub('(?<=\\/)0|^0', '', 
+                              format(date, "%m/%d/%y"),
+                              perl=TRUE)) %>%
+    dplyr::select(-inc) %>%
+    dplyr::rename(`Country/Region` = location) %>%
+    tidyr::pivot_wider(names_from = date, values_from = cum)
+  
+  expect_identical(actual, expected)
+  
+})
+
+test_that("reconstruct time series data for cumulative death count in global locations",{
+  expected <- readr::read_csv("test data/2021-05-25_time_series_covid19_deaths_global.csv") %>%
+    calc_jhu_global_cum()
+  
+  data <- covidData::load_jhu_data(
+    temporal_resolution = 'daily',
+    measure = 'deaths',
+    replace_negatives = FALSE,
+    adjustment_cases = 'none',
+    as_of = '2021-05-25',
+    geography = c("global"))
+  
+  actual <- data %>%
+    # format date
+    dplyr::mutate(date = gsub('(?<=\\/)0|^0', '', 
+                              format(date, "%m/%d/%y"),
+                              perl=TRUE)) %>%
+    dplyr::select(-inc) %>%
+    dplyr::rename(`Country/Region` = location) %>%
+    tidyr::pivot_wider(names_from = date, values_from = cum)
+  
+  expect_identical(actual, expected)
+  
+})
+

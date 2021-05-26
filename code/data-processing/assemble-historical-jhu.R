@@ -2,6 +2,7 @@ library(readr)
 library(purrr)
 library(tibble)
 library(here)
+library(covidData)
 
 # after this your working directory should be covidData
 setwd(here())
@@ -43,7 +44,8 @@ jhu_global_deaths_data <- tibble::tibble(
     function(x) substr(x[3], 1, 10)),
   data = purrr::map(
     files,
-    function(filename) suppressMessages(readr::read_csv(filename)))
+    function(filename) suppressMessages(readr::read_csv(filename) %>%
+                                          calc_jhu_global_cum()))
 )
 
 save(jhu_global_deaths_data, file = "data/jhu_global_deaths_data.rdata")
@@ -57,7 +59,8 @@ jhu_global_cases_data <- tibble::tibble(
     function(x) substr(x[3], 1, 10)),
   data = purrr::map(
     files,
-    function(filename) suppressMessages(readr::read_csv(filename)))
+    function(filename) suppressMessages(readr::read_csv(filename) %>%
+                                          calc_jhu_global_cum()))
 )
 
 save(jhu_global_cases_data, file = "data/jhu_global_cases_data.rdata")

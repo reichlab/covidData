@@ -12,7 +12,7 @@ load_jhu_data(
   spatial_resolution = "state",
   temporal_resolution = "weekly",
   measure = "deaths",
-  hub = c("US", "ECDC"),
+  geography = c("US", "global"),
   replace_negatives = FALSE,
   adjustment_cases = "none",
   adjustment_method = "none"
@@ -28,7 +28,7 @@ For ECDC locations, this should be a list of country name abbreviation.}
 
 \item{spatial_resolution}{character vector specifying spatial unit types to
 include: 'county', 'state' and/or 'national'.
-This parameter will be ignored if location_code is provided.}
+This parameter will be ignored if location_code is provided or geography is "global".}
 
 \item{temporal_resolution}{character vector specifying temporal resolution
 to include: 'daily' or 'weekly'}
@@ -36,8 +36,8 @@ to include: 'daily' or 'weekly'}
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths' or 'cases'}
 
-\item{hub}{character, which hub to use. Default is "US", other option is
-"ECDC"}
+\item{geography}{character, which data to read. Default is "US", other option is
+"global"}
 
 \item{replace_negatives}{boolean to replace negative incs with imputed data}
 

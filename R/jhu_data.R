@@ -8,13 +8,13 @@
 #' For ECDC locations, this should be a list of country name abbreviation.
 #' @param spatial_resolution character vector specifying spatial unit types to
 #' include: 'county', 'state' and/or 'national'.
-#' This parameter will be ignored if location_code is provided or hub is "ECDC".
+#' This parameter will be ignored if location_code is provided or geography is "global".
 #' @param temporal_resolution character vector specifying temporal resolution
 #' to include: 'daily' or 'weekly'
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
-#' @param hub character, which hub to use. Default is "US", other option is
-#' "ECDC"
+#' @param geography character, which data to read. Default is "US", other option is
+#' "global"
 #' @param replace_negatives boolean to replace negative incs with imputed data
 #' @param adjustment_cases character vector specifying times and locations with
 #' reporting anomalies to adjust.  Either 'none' (the default) or one or more
@@ -38,7 +38,7 @@ load_jhu_data <- function(
     spatial_resolution = "state",
     temporal_resolution = "weekly",
     measure = "deaths",
-    hub = c("US", "ECDC"),
+    geography = c("US", "global"),
     replace_negatives = FALSE,
     adjustment_cases = "none",
     adjustment_method = "none") {
@@ -46,12 +46,12 @@ load_jhu_data <- function(
   measure <- match.arg(measure, choices = c("cases", "deaths"))
   
   # validate issue_date and as_of and load preprocessed data
-  jhu_data <- preprocess_jhu_data(issue_date, as_of, measure, hub)
+  jhu_data <- covidData:::preprocess_jhu_data(issue_date, as_of, measure, geography)
   
-  if (hub[1] == "US"){
+  if (geography[1] == "US"){
     valid_locations <- covidData::fips_codes
-  } else if (hub[1] == "ECDC"){
-    valid_locations <- covidData::ecdc_locations
+  } else if (geography[1] == "global"){
+    valid_locations <- covidData::global_locations
   }
   
   # validate location_code
@@ -105,9 +105,9 @@ load_jhu_data <- function(
   selected_us <- NULL
   country_names <- NULL
   
-  # create location filters based on location_code and hub parameters
+  # create location filters based on location_code and geography parameters
   if (!is.null(location_code)){
-    if (hub[1] == "US"){
+    if (geography[1] == "US"){
       # create sublists based on location_code
       selected_counties <- location_code[lapply(location_code, nchar) == 5]
       selected_states <- location_code[lapply(location_code, nchar) == 2]
@@ -116,7 +116,7 @@ load_jhu_data <- function(
         selected_us <- c("US")
       }
       
-    } else if (hub[1] == "ECDC"){
+    } else if (geography[1] == "global"){
       # get corresponding country names
       country_names <- valid_locations %>%
         dplyr::filter(location %in% location_code) %>%
@@ -124,8 +124,8 @@ load_jhu_data <- function(
     }
   }
   
-  # aggregate and filter based on hub parameter
-  if (hub[1] == "US"){
+  # aggregate and filter based on geography parameter
+  if (geography[1] == "US"){
     # summarized results for county level
     results <- NULL
       
@@ -202,7 +202,7 @@ load_jhu_data <- function(
         
       results <- dplyr::bind_rows(results, national_results)
     }
-  } else if (hub[1] == "ECDC"){
+  } else if (geography[1] == "global"){
       results <- jhu_data %>%
         dplyr::rename(location = `Country/Region`) %>%
         dplyr::group_by(location) %>%
@@ -229,10 +229,10 @@ load_jhu_data <- function(
     adjustment_dates <- sub("^.*?-", "", adjustment_cases)
     adjustment_locations_code <- purrr::map_chr(
       adjustment_locations, function(x) {
-        if (hub[1] == "US"){
+        if (geography[1] == "US"){
           # get corresponding fips code
           valid_locations[which(valid_locations$abbreviation == x), ]$location
-        } else if (hub[1] == "ECDC"){
+        } else if (geography[1] == "global"){
           x
         }
       }
@@ -347,32 +347,32 @@ load_jhu_data <- function(
 #' constructing truths published as of this date in format 'yyyy-mm-dd'
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths' or 'cases'
-#' @param hub character, which hub to use. Default is "US", other option is
-#' "ECDC"
+#' @param geography character, which data to read. Default is "US", other option is
+#' "global"
 #' 
 #' @return tibble with issue_date and data
 #' 
 preprocess_jhu_data <- function(issue_date = NULL, 
                                 as_of = NULL, 
                                 measure = "deaths",
-                                hub = c("US", "ECDC")){
+                                geography = c("US", "global")){
   
   if (measure == "deaths"){
-    if (hub[1] == "US"){
+    if (geography[1] == "US"){
       links <- covidData::jhu_us_deaths_data_links
       jhu_data <- covidData::jhu_us_deaths_data
       base_file_name <- "time_series_covid19_deaths_US.csv"
-    } else if (hub[1] == "ECDC"){
+    } else if (geography[1] == "global"){
       links <- covidData::jhu_global_deaths_data_links
       jhu_data <- covidData::jhu_global_deaths_data
       base_file_name <- "time_series_covid19_deaths_global.csv"
     }
   } else if (measure == "cases"){
-    if (hub[1] == "US"){
+    if (geography[1] == "US"){
       links <- covidData::jhu_us_cases_data_links
       jhu_data <- covidData::jhu_us_cases_data
       base_file_name <- "time_series_covid19_confirmed_US.csv"
-    } else if (hub[1] == "ECDC"){
+    } else if (geography[1] == "global"){
       links <- covidData::jhu_global_cases_data_links
       jhu_data <- covidData::jhu_global_cases_data
       base_file_name <- "time_series_covid19_confirmed_global.csv"
@@ -395,7 +395,7 @@ preprocess_jhu_data <- function(issue_date = NULL,
     } else {
       if (as_of > max(links$date)){
         # query Github API to get the first page of results
-        links <- get_time_series_data_link(measure, first_page_only = TRUE, hub)
+        links <- get_time_series_data_link(measure, first_page_only = TRUE, geography)
       }
       issue_date <- max(links$date[links$date <= as.character(as_of)])
     }
@@ -404,22 +404,28 @@ preprocess_jhu_data <- function(issue_date = NULL,
   }
   
   # subset jhu_data based on issue_date
-  if (issue_date %in% jhu_data$issue_date){
+  if (issue_date %in% as.Date(jhu_data$issue_date)){
     jhu_data <- jhu_data %>%
       dplyr::filter(issue_date == UQ(issue_date))
   } else {
     if(!issue_date %in% links$date){
       # query Github API to get the first page of results
-      links <- get_time_series_data_link(measure, first_page_only = FALSE, hub)
+      links <- get_time_series_data_link(measure, first_page_only = FALSE, geography)
       if (!issue_date %in% links$date){
         stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
       }
     } 
     # download data from link
     link <- links[links$date == issue_date,]$file_link
+    
+    data <- suppressMessages(readr::read_csv(link))
+    if (geography[1] == "global"){
+      data <- calc_jhu_global_cum(data)
+    }
+    
     jhu_data <- tibble::tibble(
       issue_date = list(as.character(issue_date)),
-      data = list(suppressMessages(readr::read_csv(link))))
+      data = list(data))
   }
   
   return (jhu_data)
@@ -429,19 +435,19 @@ preprocess_jhu_data <- function(issue_date = NULL,
 #' 
 #' @param measure character vector specifying measure of covid prevalence:
 #' 'deaths', 'cases' or 'hospitalizations'
-#' @param hub character, which hub to use. Default is "US", other option is
-#' "ECDC"
+#' @param geography character, which data to read. Default is "US", other option is
+#' "global"
 #' 
 #' @return date vector of all available issue_date
 #' 
-available_issue_dates <- function(measure,  hub = c("US", "ECDC")){
+available_issue_dates <- function(measure,  geography = c("US", "global")){
   if (measure == "hospitalizations"){
     return (covidData::healthdata_hosp_data$issue_date)
   } else if (measure == "deaths"){
-    links <- get_time_series_data_link(measure, hub)
+    links <- get_time_series_data_link(measure, geography)
     return (links$date)
   } else if (measure == "cases"){
-    links <- get_time_series_data_link(measure, hub)
+    links <- get_time_series_data_link(measure, geography)
     return (links$date)
   }
 }

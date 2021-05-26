@@ -4,18 +4,16 @@
 #' and two-letter abbreviations of states and territories of the US
 "fips_codes"
 
-#' Available locations in the ECDC Hub
+#' Available global locations in JHU 
+#' 
+#' Location abbreviations are from https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 #'
-#' Data set with available locations for the EDCD hub
-#'
-#' @format A data frame with 32 rows and 3 columns:
+#' @format A data frame with 190 rows and 2 columns:
 #' \describe{
 #'   \item{location_name}{Name of the location}
 #'   \item{location}{Location abbreviation}
-#'   \item{population}{Location population}
 #' }
-"ecdc_locations"
-
+"global_locations"
 
 #' JHU data for the US and its states and territories with counts of deaths
 #'
