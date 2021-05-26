@@ -356,26 +356,21 @@ preprocess_jhu_data <- function(issue_date = NULL,
                                 as_of = NULL, 
                                 measure = "deaths",
                                 geography = c("US", "global")){
-  
   if (measure == "deaths"){
     if (geography[1] == "US"){
       links <- covidData::jhu_us_deaths_data_links
       jhu_data <- covidData::jhu_us_deaths_data
-      base_file_name <- "time_series_covid19_deaths_US.csv"
     } else if (geography[1] == "global"){
       links <- covidData::jhu_global_deaths_data_links
       jhu_data <- covidData::jhu_global_deaths_data
-      base_file_name <- "time_series_covid19_deaths_global.csv"
     }
   } else if (measure == "cases"){
     if (geography[1] == "US"){
       links <- covidData::jhu_us_cases_data_links
       jhu_data <- covidData::jhu_us_cases_data
-      base_file_name <- "time_series_covid19_confirmed_US.csv"
     } else if (geography[1] == "global"){
       links <- covidData::jhu_global_cases_data_links
       jhu_data <- covidData::jhu_global_cases_data
-      base_file_name <- "time_series_covid19_confirmed_global.csv"
     }
   }
   
@@ -390,12 +385,12 @@ preprocess_jhu_data <- function(issue_date = NULL,
     # case1: as_of >= min(links$date) 
     #      a. as_of <= max --> get largest_issue_date <= as_of
     #      b. as_of > max --> get the latest links, get largest_issue_date <= as_of
-    if (as_of < min(links$date)){
+    if (as_of < min(links$date)) {
       stop("Provided as_of date is earlier than all available issue dates.")
     } else {
-      if (as_of > max(links$date)){
+      if (as_of > max(links$date)) {
         # query Github API to get the first page of results
-        links <- get_time_series_data_link(measure, first_page_only = TRUE, geography)
+        links <- get_time_series_data_link(measure, first_page_only = FALSE, geography)
       }
       issue_date <- max(links$date[links$date <= as.character(as_of)])
     }
@@ -408,7 +403,7 @@ preprocess_jhu_data <- function(issue_date = NULL,
     jhu_data <- jhu_data %>%
       dplyr::filter(issue_date == UQ(issue_date))
   } else {
-    if(!issue_date %in% links$date){
+    if (!issue_date %in% links$date) {
       # query Github API to get the first page of results
       links <- get_time_series_data_link(measure, first_page_only = FALSE, geography)
       if (!issue_date %in% links$date){
@@ -428,7 +423,7 @@ preprocess_jhu_data <- function(issue_date = NULL,
       data = list(data))
   }
   
-  return (jhu_data)
+  return(jhu_data)
 }
 
 #' Get all available truth data issue dates

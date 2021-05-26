@@ -1,7 +1,6 @@
 library(httr)
 library(dplyr)
 library(here)
-library(covidData)
 
 setwd(here())
 source("R/get_time_series_data_link.R")

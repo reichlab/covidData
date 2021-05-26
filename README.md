@@ -20,7 +20,9 @@ pip3 install requests
 ```
 
 ## installation using `make`
-We recommend using `make` to simplify the updating of data. To do this, you must complete the following steps once you have cloned the repository:
+We recommend using `make` to simplify the updating of data. However, some Windows operating systems do not allow for easy use of the command `make`, so manual installation should be used if `make` does not work. 
+
+To use `make`, you must complete the following steps once you have cloned the repository:
 
 1. In a terminal/shell window, navigate to `code/data-processing`.
 2. Run `make all`. (This runs the steps below.)
