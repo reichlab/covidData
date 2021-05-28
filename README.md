@@ -39,3 +39,6 @@ If make does not work for you, you may run the following steps by hand. To updat
 1. Whenever you have done this, you will need to re-install the package.  To avoid unnecessary duplication and copying of files, we recommend installing the package from the terminal by `R CMD INSTALL covidData`.
 
 Note: If you want to only download the most recent JHU data files, for step 2. instead run `python download-historical-jhu.py --recent`
+
+## data disclaimer
+*The names of locations included on the Website correspond with the official designations used by the U.S. Department of State. The presentation of material therein does not imply the expression of any opinion whatsoever on the part of JHU concerning the legal status of any country, area or territory or of its authorities. The depiction and use of boundaries, geographic names and related data shown on maps and included in lists, tables, documents, and databases on this website are not warranted to be error free nor do they necessarily imply official endorsement or acceptance by JHU.

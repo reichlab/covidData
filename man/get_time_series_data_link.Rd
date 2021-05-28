@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_time_series_data_link.R
 \name{get_time_series_data_link}
 \alias{get_time_series_data_link}
-\title{Assemble a data frame that stores all likes to JHU data series files and
+\title{Assemble a data frame that stores all links to JHU data series files and
 download truth data issued in the most recent week/day.}
 \usage{
 get_time_series_data_link(
@@ -34,6 +34,6 @@ Default to TRUE to download the most recent file.}
 a data frame with columns date and file_links
 }
 \description{
-Assemble a data frame that stores all likes to JHU data series files and
+Assemble a data frame that stores all links to JHU data series files and
 download truth data issued in the most recent week/day.
 }

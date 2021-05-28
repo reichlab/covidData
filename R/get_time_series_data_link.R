@@ -19,89 +19,29 @@ get_time_series_data_link <- function(measure,
                                       first_page_only = FALSE,
                                       download_files = FALSE,
                                       download_recent = TRUE){
-  if (measure == "deaths"){
-    if (geography[1] == "US"){
-      base_file <- "time_series_covid19_deaths_US.csv"
-      if (file.exists("data/jhu_us_deaths_data_links.rdata")){
-        load("data/jhu_us_deaths_data_links.rdata")
-        links <- jhu_us_deaths_data_links
-        head <- max(links$date)
-      } else {
-        # attempt to attach covidData namespace in case the package is installed
-        # but it's not already attached
-        attach_result <- tryCatch(attachNamespace("covidData"),
-                                  error = function(e) e)
-        
-        if (exists("jhu_us_deaths_data_links", where = asNamespace("covidData"))) {
-          links <- covidData::jhu_us_deaths_data_links
-          head <- max(links$date)
-        } else  {
-          links <- data.frame()
-          head <- NULL
-        }
-      }
-    } else if (geography[1] == "global"){
-      base_file <- "time_series_covid19_deaths_global.csv"
-      if (file.exists("data/jhu_global_deaths_data_links.rdata")){
-        load("data/jhu_global_deaths_data_links.rdata")
-        links <- covidData::jhu_global_deaths_data_links
-        head <- max(links$date)
-      } else {
-        # attempt to attach covidData namespace in case the package is installed
-        # but it's not already attached
-        attach_result <- tryCatch(attachNamespace("covidData"),
-                                  error = function(e) e)
-        
-        if (exists("jhu_global_deaths_data_links", where = asNamespace("covidData"))) {
-          links <- covidData::jhu_global_deaths_data_links
-          head <- max(links$date)
-        } else  {
-          links <- data.frame()
-          head <- NULL
-        }
-      }
-    }
-  } else if (measure == "cases") {
-    if (geography[1] == "US"){
-      base_file <- "time_series_covid19_confirmed_US.csv"
-      if (file.exists("data/jhu_us_cases_data_links.rdata")){
-        load("data/jhu_us_cases_data_links.rdata")
-        links <- jhu_us_cases_data_links
-        head <- max(links$date)
-      } else {
-        # attempt to attach covidData namespace in case the package is installed
-        # but it's not already attached
-        attach_result <- tryCatch(attachNamespace("covidData"),
-                                  error = function(e) e)
-        
-        if (exists("jhu_us_cases_data_links", where = asNamespace("covidData"))) {
-          links <- covidData::jhu_us_cases_data_links
-          head <- max(links$date)
-        } else  {
-          links <- data.frame()
-          head <- NULL
-        }
-      }
-    } else if (geography[1] == "global"){
-      base_file <- "time_series_covid19_confirmed_global.csv"
-      if (file.exists("data/jhu_global_cases_data_links.rdata")){
-        load("data/jhu_global_cases_data_links.rdata")
-        links <- covidData::jhu_global_cases_data_links
-        head <- max(links$date)
-      } else {
-        # attempt to attach covidData namespace in case the package is installed
-        # but it's not already attached
-        attach_result <- tryCatch(attachNamespace("covidData"),
-                                  error = function(e) e)
-        
-        if (exists("jhu_global_cases_data_links", where = asNamespace("covidData"))) {
-          links <- covidData::jhu_global_cases_data_links
-          head <- max(links$date)
-        } else  {
-          links <- data.frame()
-          head <- NULL
-        }
-      }
+  if (measure == "cases") {
+    base_file_measure = "confirmed"
+  } else if (measure == "deaths") {
+    base_file_measure = "deaths"
+  }
+  
+  base_file <- paste0("time_series_covid19_", base_file_measure, "_", geography[1], ".csv")
+  data_object_name <- paste0("jhu_", tolower(geography[1]), "_", measure, "_data_links")
+  
+  if (file.exists(file.path("data",paste0(data_object_name,".rdata")))) {
+    links <- get(load(file.path("data",paste0(data_object_name,".rdata"))))
+    head <- max(links$date)
+  } else {
+    # attempt to attach covidData namespace in case the package is installed
+    # but it's not already attached
+    attach_result <- tryCatch(attachNamespace("covidData"),
+                              error = function(e) e)
+    if (exists(data_object_name, where = asNamespace("covidData"))) {
+      links <- get(data_object_name)
+      head <- max(links$date)
+    } else  {
+      links <- data.frame()
+      head <- NULL
     }
   }
 
