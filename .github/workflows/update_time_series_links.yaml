@@ -26,7 +26,7 @@ jobs:
         working-directory: ./covidData/code/data-processing
 
       - name: Commit changes
-        - uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v7
         with: 
           add: 
             - "data/jhu_cases_data_links.rdata"
