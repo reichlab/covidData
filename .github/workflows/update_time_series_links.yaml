@@ -1,0 +1,37 @@
+name: Update time series links
+on:
+  schedule:
+  - cron: "0 0 * * *"
+
+jobs:
+  update_time_series_links
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout covidData repo
+        uses: actions/checkout@v2
+        with: 
+          path: covidData
+      
+      - name: Setup R 
+        uses: r-lib/actions/setup-r@v1
+      
+      - name: Install dependencies
+        run: |
+          install.packages(c("remotes","devtools"))
+          remotes::install_deps(dependencies = NA)
+        shell: Rscript {0}
+
+      - name: Install covidData
+        run: make recent_datta
+        working-directory: ./covidData/code/data-processing
+
+      - name: Commit changes
+        - uses: EndBug/add-and-commit@v7
+        with: 
+          add: 
+            - "data/jhu_cases_data_links.rdata"
+            - "data/jhu_deaths_data_links.rdata"
+          message: "update time series data links"
+          default_author: github_actions
+          push: true
+
