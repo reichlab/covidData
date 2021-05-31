@@ -4,7 +4,7 @@ on:
   - cron: "0 0 * * *"
 
 jobs:
-  update_time_series_links
+  update_time_series_links:
     runs-on: macOS-latest
     steps:
       - name: Checkout covidData repo
