@@ -1,5 +1,10 @@
 name: Update time series links
 on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Update time series data links'
+        required: false
   schedule:
   - cron: "0 0 * * *"
 
@@ -22,7 +27,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Install covidData
-        run: make recent_datta
+        run: make recent_data
         working-directory: ./covidData/code/data-processing
 
       - name: Commit changes
@@ -31,7 +36,7 @@ jobs:
           add: 
             - "data/jhu_cases_data_links.rdata"
             - "data/jhu_deaths_data_links.rdata"
-          message: "update time series data links"
+          message: "Update time series data links"
           default_author: github_actions
           push: true
 
