@@ -28,11 +28,11 @@ jobs:
 
       - name: Install covidData
         run: make recent_data
-        working-directory: ./covidData/code/data-processing
+        working-directory: ./code/data-processing
 
       - name: Update time series
         run: Rscript download-historical-jhu.R FALSE
-        working-directory: ./covidData/code/data-processing
+        working-directory: ./code/data-processing
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
