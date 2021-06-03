@@ -21,7 +21,7 @@ jhu_us_cases_data_links <- get_time_series_data_link(measure = "cases",
 save(jhu_us_cases_data_links, file = "data/jhu_us_cases_data_links.rdata")
 # get global data links
 jhu_global_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
-                                                          geography = c("global", "US"),
+                                                          geography = "global",
                                                           download_files = TRUE,
                                                           download_recent = download_recent)
 save(jhu_global_deaths_data_links, file = "data/jhu_global_deaths_data_links.rdata") 
