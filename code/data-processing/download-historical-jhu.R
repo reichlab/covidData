@@ -10,7 +10,7 @@ args <- (commandArgs(TRUE))
 download_recent <- args[1]
 # get US data links
 jhu_us_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
-                                                      geography = c("US", "global"),
+                                                      geography = "US",
                                                       download_files = TRUE,
                                                       download_recent = download_recent)
 save(jhu_us_deaths_data_links, file = "data/jhu_us_deaths_data_links.rdata") 
