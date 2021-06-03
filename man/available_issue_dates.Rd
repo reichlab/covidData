@@ -4,11 +4,14 @@
 \alias{available_issue_dates}
 \title{Get all available truth data issue dates}
 \usage{
-available_issue_dates(measure)
+available_issue_dates(measure, geography = c("US", "global"))
 }
 \arguments{
 \item{measure}{character vector specifying measure of covid prevalence:
 'deaths', 'cases' or 'hospitalizations'}
+
+\item{geography}{character, which data to read. Default is "US", other option is
+"global"}
 }
 \value{
 date vector of all available issue_date
