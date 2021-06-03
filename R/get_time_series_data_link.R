@@ -37,7 +37,7 @@ get_time_series_data_link <- function(measure,
     attach_result <- tryCatch(attachNamespace("covidData"),
                               error = function(e) e)
     if (exists(data_object_name, where = asNamespace("covidData"))) {
-      links <- get(data_object_name)
+      links <- get(data_object_name, envir = asNamespace("covidData"))
       head <- max(links$date)
     } else  {
       links <- data.frame()
