@@ -26,10 +26,6 @@ jobs:
           remotes::install_deps(dependencies = NA)
         shell: Rscript {0}
 
-      - name: Install covidData
-        run: make recent_data
-        working-directory: ./code/data-processing
-
       - name: Update time series
         run: Rscript download-historical-jhu.R FALSE
         working-directory: ./code/data-processing
