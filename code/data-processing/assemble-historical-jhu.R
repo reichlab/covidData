@@ -2,7 +2,6 @@ library(readr)
 library(purrr)
 library(tibble)
 library(here)
-library(covidData)
 
 # after this your working directory should be covidData
 setwd(here())
