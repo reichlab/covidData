@@ -15,7 +15,7 @@ jobs:
       - name: Checkout covidData repo
         uses: actions/checkout@v2
         with: 
-          path: covidData
+          fetch-depth: 0
       
       - name: Setup R 
         uses: r-lib/actions/setup-r@v1
