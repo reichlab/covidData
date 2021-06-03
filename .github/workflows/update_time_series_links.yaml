@@ -20,16 +20,9 @@ jobs:
       - name: Setup R 
         uses: r-lib/actions/setup-r@v1
       
-      - name: Cache R packages
-        uses: actions/cache@v1
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: r-${{ hashFiles('DESCRIPTION') }}
-      
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "tidyverse"))
-          remotes::install_deps(dependencies = NA)
+          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here"))
         shell: Rscript {0}
 
       - name: Update time series
