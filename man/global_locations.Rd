@@ -15,6 +15,7 @@ A data frame with 190 rows and 2 columns:
 global_locations
 }
 \description{
+Full list of locations are obtained from CSSEGISandData/COVID-19/csse_covid_19_data
 Location abbreviations are from https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 }
 \keyword{datasets}

@@ -46,7 +46,7 @@ load_jhu_data <- function(
   measure <- match.arg(measure, choices = c("cases", "deaths"))
   
   # validate issue_date and as_of and load preprocessed data
-  jhu_data <- covidData:::preprocess_jhu_data(issue_date, as_of, measure, geography)
+  jhu_data <- preprocess_jhu_data(issue_date, as_of, measure, geography)
   
   if (geography[1] == "US"){
     valid_locations <- covidData::fips_codes
@@ -120,7 +120,7 @@ load_jhu_data <- function(
       # get corresponding country names
       country_names <- valid_locations %>%
         dplyr::filter(location %in% location_code) %>%
-        dplyr::pull(location_name)
+        dplyr::pull(location)
     }
   }
   
@@ -205,9 +205,14 @@ load_jhu_data <- function(
   } else if (geography[1] == "global"){
       results <- jhu_data %>%
         dplyr::rename(location = `Country/Region`) %>%
+        dplyr::filter(!location %in% c("Diamond Princess", "MS Zaandam")) %>%
         dplyr::group_by(location) %>%
         dplyr::mutate(inc = diff(c(0, cum))) %>%
-        dplyr::ungroup() %>%
+        dplyr::ungroup() %>% 
+        dplyr::left_join(y = valid_locations, 
+                         by = c("location" = "location_name")) %>%
+        dplyr::select(-location) %>%
+        dplyr::rename(location = location.y) %>%
         dplyr::select(location, date, cum, inc)
     
       if (length(country_names) > 0){

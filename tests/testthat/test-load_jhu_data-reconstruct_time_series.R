@@ -74,7 +74,8 @@ test_that("reconstruct time series data for cumulative cases count",{
 
 test_that("reconstruct time series data for cumulative cases count in global locations",{
   expected <- readr::read_csv("test data/2021-05-25_time_series_covid19_confirmed_global.csv") %>%
-    calc_jhu_global_cum()
+    calc_jhu_global_cum() %>%
+    dplyr::filter(!`Country/Region` %in% c("Diamond Princess", "MS Zaandam"))
   
   data <- covidData::load_jhu_data(
     temporal_resolution = 'daily',
@@ -82,7 +83,11 @@ test_that("reconstruct time series data for cumulative cases count in global loc
     replace_negatives = FALSE,
     adjustment_cases = 'none',
     as_of = '2021-05-25',
-    geography = c("global"))
+    geography = c("global")) %>%
+    dplyr::left_join(y = covidData::global_locations, 
+                     by = c("location" = "location")) %>%
+    dplyr::select(-location) %>%
+    dplyr::rename(location = location_name)
   
   actual <- data %>%
     # format date
@@ -99,7 +104,8 @@ test_that("reconstruct time series data for cumulative cases count in global loc
 
 test_that("reconstruct time series data for cumulative death count in global locations",{
   expected <- readr::read_csv("test data/2021-05-25_time_series_covid19_deaths_global.csv") %>%
-    calc_jhu_global_cum()
+    calc_jhu_global_cum() %>%
+    dplyr::filter(!`Country/Region` %in% c("Diamond Princess", "MS Zaandam"))
   
   data <- covidData::load_jhu_data(
     temporal_resolution = 'daily',
@@ -107,7 +113,11 @@ test_that("reconstruct time series data for cumulative death count in global loc
     replace_negatives = FALSE,
     adjustment_cases = 'none',
     as_of = '2021-05-25',
-    geography = c("global"))
+    geography = c("global")) %>%
+    dplyr::left_join(y = covidData::global_locations, 
+                     by = c("location" = "location")) %>%
+    dplyr::select(-location) %>%
+    dplyr::rename(location = location_name)
   
   actual <- data %>%
     # format date

@@ -35,8 +35,8 @@ test_that("location code filter works for global locations",{
                                        temporal_resolution = "weekly",
                                        measure = "cases",
                                        geography = c("global")) %>%
-    dplyr::filter(location %in% c("France", "United Kingdom"))
+    dplyr::filter(location %in% location_code)
   
-  expect_true(all(unique(actual$location) == c("France", "United Kingdom")))
+  expect_true(all(unique(actual$location) == location_code))
   expect_identical(actual, expected)
 })
