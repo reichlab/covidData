@@ -12,6 +12,8 @@ preprocess_healthdata_data(raw_healthdata_data, fips_codes)
 The data column should be a list of data frames, with column names
 date, state, previous_day_admission_adult_covid_confirmed, and
 previous_day_admission_pediatric_covid_confirmed}
+
+\item{fips_codes}{covidData::fips_codes data object}
 }
 \value{
 a result of similar format to raw_healthdata_data, but columns

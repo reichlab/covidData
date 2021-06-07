@@ -5,7 +5,7 @@
 #' constructing truths in format 'yyyy-mm-dd'
 #' @param location_code character vector of location codes. Default to NULL.
 #' For US locations, this should be a list of FIPS code or 'US' 
-#' For ECDC locations, this should be a list of country name abbreviation.
+#' For ECDC locations, this should be a list of location name abbreviation.
 #' @param spatial_resolution character vector specifying spatial unit types to
 #' include: 'county', 'state' and/or 'national'.
 #' This parameter will be ignored if location_code is provided or geography is "global".
@@ -380,8 +380,7 @@ preprocess_jhu_data <- function(issue_date = NULL,
   }
   
   # validate issue_date and as_of
-  if (!missing(issue_date) && !missing(as_of) &&
-      !is.null(issue_date) && !is.null(as_of)) {
+  if (!is.null(issue_date) && !is.null(as_of)) {
     stop("Cannot provide both arguments issue_date and as_of to load_jhu_data.")
   } else if (is.null(issue_date) && is.null(as_of)) {
     issue_date <- Sys.Date()
