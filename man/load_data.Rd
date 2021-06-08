@@ -8,9 +8,11 @@ COVID-19 as they were available as of one or more past dates.}
 load_data(
   issues = NULL,
   as_of = NULL,
+  location_code = NULL,
   spatial_resolution = "state",
   temporal_resolution = "weekly",
   measure = "deaths",
+  geography = c("US", "global"),
   source = NULL
 )
 }
@@ -25,6 +27,10 @@ includes the data for all such issue dates.}
 format 'yyyy-mm-dd'. For each spatial unit and temporal reporting unit, the last
 available data with an issue date on or before the given \code{as_of} date are returned.}
 
+\item{location_code}{character vector of location codes. Default to NULL.
+For US locations, this should be a list of FIPS code or 'US'
+For ECDC locations, this should be a list of location name abbreviation.}
+
 \item{spatial_resolution}{character vector specifying spatial unit types to
 include: one or more of 'county', 'state' and/or 'national'.}
 
@@ -33,6 +39,9 @@ to include: one of 'daily' or 'weekly'}
 
 \item{measure}{string specifying measure of covid dynamics:
 one of 'deaths', 'cases', or 'hospitalizations'}
+
+\item{geography}{character, which data to read. Default is "US", other option is
+"global"}
 
 \item{source}{string specifying data source.  Currently supported sources are
 "jhu" for the "deaths" or "cases" measures or "healthdata" for the "hospitalizations"

@@ -27,7 +27,6 @@ assemble: pull download
 
 # Download data from JHU CSSE GitHub repo
 download: pull
-	Rscript download-historical-jhu.R FALSE
 	Rscript download-historical-healthdata.R
 
 # Install R package with most recent data
@@ -41,5 +40,5 @@ assemble_recent: pull download_recent
 
 # Download most recent data from JHU CSSE GitHub repo
 download_recent: pull
-	Rscript download-historical-jhu.R TRUE
 	Rscript download-historical-healthdata.R
+	

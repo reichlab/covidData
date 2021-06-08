@@ -2,11 +2,12 @@
 % Please edit documentation in R/get_time_series_data_link.R
 \name{get_time_series_data_link}
 \alias{get_time_series_data_link}
-\title{Assemble a data frame that stores all likes to JHU data series files and
+\title{Assemble a data frame that stores all links to JHU data series files and
 download truth data issued in the most recent week/day.}
 \usage{
 get_time_series_data_link(
   measure,
+  geography = c("US", "global"),
   first_page_only = FALSE,
   download_files = FALSE,
   download_recent = TRUE
@@ -15,6 +16,9 @@ get_time_series_data_link(
 \arguments{
 \item{measure}{string specifying measure of covid dynamics:
 one of 'deaths' or 'cases'}
+
+\item{geography}{character, which data to read. Default is "US", other option is
+"global"}
 
 \item{first_page_only}{boolean specify whether to only scrape
 the first page of github repo. Default to FALSE that scrapes all history}
@@ -30,6 +34,6 @@ Default to TRUE to download the most recent file.}
 a data frame with columns date and file_links
 }
 \description{
-Assemble a data frame that stores all likes to JHU data series files and
+Assemble a data frame that stores all links to JHU data series files and
 download truth data issued in the most recent week/day.
 }

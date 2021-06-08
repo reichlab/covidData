@@ -8,20 +8,26 @@ COVID-19 as they were available as of a specified issue date.}
 load_healthdata_data(
   issue_date = NULL,
   as_of = NULL,
+  location_code = NULL,
   spatial_resolution = "state",
   temporal_resolution = "weekly",
   measure = "hospitalizations",
   replace_negatives = FALSE,
   adjustment_cases = "none",
-  adjustment_method = "none"
+  adjustment_method = "none",
+  geography = c("US")
 )
 }
 \arguments{
 \item{issue_date}{character issue date (i.e. report date) to use for
 constructing truths in format 'yyyy-mm-dd'}
 
+\item{location_code}{character vector of location codes. Default to NULL
+This should be a list of state FIPS code and/or 'US'.}
+
 \item{spatial_resolution}{character vector specifying spatial unit types to
-include: state' and/or 'national'}
+include: state' and/or 'national'
+This parameter will be ignored if location_code is provided.}
 
 \item{temporal_resolution}{character vector specifying temporal resolution
 to include: 'daily' or 'weekly'}
@@ -37,6 +43,8 @@ reporting anomalies to adjust.  Only the value "none" is currently supported}
 
 \item{adjustment_method}{string specifying how anomalies are adjusted.
 Only the value "none" is currently supported.}
+
+\item{geography}{character, which data to read. Only "US" is supported.}
 }
 \value{
 data frame with columns location (fips code), date, inc, and cum
