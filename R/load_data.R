@@ -109,7 +109,7 @@ load_data <- function(issues = NULL,
   # source proper function
   if (measure == "hospitalizations") {
     function_call <- covidData::load_healthdata_data
-    geography <- c("US")
+    geography <- "US"
   } else {
     function_call <- covidData::load_jhu_data
   }
