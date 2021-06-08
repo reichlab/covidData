@@ -34,7 +34,7 @@ load_healthdata_data <- function(
     replace_negatives = FALSE,
     adjustment_cases = "none",
     adjustment_method = "none",
-    geography = c("US")) {
+    geography = "US") {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c("hospitalizations"))
 
