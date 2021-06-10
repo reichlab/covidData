@@ -2,6 +2,7 @@ library(readr)
 library(purrr)
 library(tibble)
 library(here)
+library(dplyr)
 
 # after this your working directory should be covidData
 setwd(here())

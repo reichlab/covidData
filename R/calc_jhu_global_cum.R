@@ -16,7 +16,7 @@ calc_jhu_global_cum <- function (jhu_data) {
   # aggregate sub-regional counts
   jhu_data <- jhu_data %>%
     dplyr::group_by(`Country/Region`) %>%
-    dplyr:: summarise(across(.cols = 4:(ncol(jhu_data)-1), .fns = sum))
+    dplyr:: summarise(dplyr::across(.cols = 4:(ncol(jhu_data) - 1), .fns = sum))
   
-  return (jhu_data)
+  return(jhu_data)
 }
