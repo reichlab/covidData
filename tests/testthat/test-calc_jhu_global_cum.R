@@ -45,9 +45,11 @@ test_that("Indexing is correct for european countries",{
     as_of = '2021-05-25',
     geography = c("global")) %>%
     # filter to France
-    dplyr::filter(location == 'France') %>%
+    dplyr::filter(location == 'FR') %>%
     # format date
-    dplyr::mutate(date = gsub('(?<=\\/)0|^0', '', 
+    dplyr::mutate(
+      location = "France",
+      date = gsub('(?<=\\/)0|^0', '', 
                               format(date, "%m/%d/%y"),
                               perl=TRUE)) %>%
     dplyr::select(-inc) %>%

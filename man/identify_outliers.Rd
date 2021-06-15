@@ -10,7 +10,9 @@ identify_outliers(
     c("none", "sqrt", "log"), ),
   voting_scheme = "majority",
   max_iter = 100,
-  include_outliers_by_method = TRUE
+  ratio_threshold = 3,
+  include_outliers_by_method = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{

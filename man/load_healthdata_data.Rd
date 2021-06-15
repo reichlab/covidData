@@ -15,7 +15,7 @@ load_healthdata_data(
   replace_negatives = FALSE,
   adjustment_cases = "none",
   adjustment_method = "none",
-  geography = c("US")
+  geography = "US"
 )
 }
 \arguments{
