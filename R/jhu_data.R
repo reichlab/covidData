@@ -439,6 +439,7 @@ preprocess_jhu_data <- function(issue_date = NULL,
 #' 
 #' @return date vector of all available issue_date
 #' 
+#' @export
 available_issue_dates <- function(measure,  geography = c("US", "global")){
   if (measure == "hospitalizations"){
     return (covidData::healthdata_hosp_data$issue_date)
