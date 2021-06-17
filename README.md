@@ -10,14 +10,7 @@ To clone the repository, in a terminal you can run `git clone https://github.com
 
 ## installation prerequisites
 
-You will need Python 3 and R 3.x or 4.x, as well as the packages listed below:
-
-Python packages: `pandas` and `requests`. To install, run the following in a terminal:
-
-```
-pip3 install pandas
-pip3 install requests
-```
+You will need R 3.x or 4.x
 
 ## installation using `make`
 We recommend using `make` to simplify the updating of data. However, some Windows operating systems do not allow for easy use of the command `make`, so manual installation should be used if `make` does not work. 
