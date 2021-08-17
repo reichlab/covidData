@@ -1,4 +1,5 @@
 # covidData
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5208224.svg)](https://doi.org/10.5281/zenodo.5208224)
 
 This is an R package that provides versioned time series data for COVID-19 from the JHU data repository at https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series.
 
