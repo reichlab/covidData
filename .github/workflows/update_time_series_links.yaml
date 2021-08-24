@@ -1,0 +1,66 @@
+name: Update time series links
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Update time series data links'
+        required: false
+  schedule:
+    - cron: "0 0 * * *"
+    - cron: "0 17 * * *"
+
+jobs:
+  update_time_series_links:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout covidData repo
+        uses: actions/checkout@v2
+        with: 
+          fetch-depth: 0
+      
+      - name: Setup R 
+        uses: r-lib/actions/setup-r@v1
+      
+      - name: Install dependencies
+        run: |
+          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here"))
+        shell: Rscript {0}
+
+      - name: Update time series
+        run: |
+          library(httr)
+          library(dplyr)
+          library(here)
+          setwd(here())
+          source("R/get_time_series_data_link.R")
+          # get US data links
+          jhu_us_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
+                                                                geography = "US",
+                                                                download_files = FALSE,
+                                                                download_recent = FALSE)
+          save(jhu_us_deaths_data_links, file = "data/jhu_us_deaths_data_links.rdata") 
+          jhu_us_cases_data_links <- get_time_series_data_link(measure = "cases",
+                                                               geography = "US",
+                                                               download_files = FALSE,
+                                                               download_recent = FALSE)
+          save(jhu_us_cases_data_links, file = "data/jhu_us_cases_data_links.rdata")
+          # get global data links
+          jhu_global_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
+                                                                    geography = "global",
+                                                                    download_files = FALSE,
+                                                                    download_recent = FALSE)
+          save(jhu_global_deaths_data_links, file = "data/jhu_global_deaths_data_links.rdata") 
+          jhu_global_cases_data_links <- get_time_series_data_link(measure = "cases",
+                                                                   geography =  "global",
+                                                                   download_files = FALSE,
+                                                                   download_recent = FALSE)
+          save(jhu_global_cases_data_links, file = "data/jhu_global_cases_data_links.rdata")
+        shell: Rscript {0}
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7
+        with: 
+          add: '["data/jhu_us_cases_data_links.rdata", "data/jhu_us_deaths_data_links.rdata", "data/jhu_global_cases_data_links.rdata", "data/jhu_global_deaths_data_links.rdata"]'
+          message: "Update time series data links"
+          default_author: github_actions
+          push: true

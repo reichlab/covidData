@@ -2,14 +2,15 @@ library(readr)
 library(purrr)
 library(tibble)
 library(here)
+library(dplyr)
 
 # after this your working directory should be covidData
 setwd(here())
-
-# deaths
+source("R/calc_jhu_global_cum.R")
+# US deaths
 files <- Sys.glob("data-raw/JHU/*deaths_US.csv")
 
-jhu_deaths_data <- tibble::tibble(
+jhu_us_deaths_data <- tibble::tibble(
   issue_date = purrr::map_chr(
     strsplit(files, "/"),
     function(x) substr(x[3], 1, 10)),
@@ -18,12 +19,12 @@ jhu_deaths_data <- tibble::tibble(
     function(filename) suppressMessages(readr::read_csv(filename)))
 )
 
-save(jhu_deaths_data, file = "data/jhu_deaths_data.rdata")
+save(jhu_us_deaths_data, file = "data/jhu_us_deaths_data.rdata")
 
-# cases
+# US cases
 files <- Sys.glob("data-raw/JHU/*confirmed_US.csv")
 
-jhu_cases_data <- tibble::tibble(
+jhu_us_cases_data <- tibble::tibble(
   issue_date = purrr::map_chr(
     strsplit(files, "/"),
     function(x) substr(x[3], 1, 10)),
@@ -32,4 +33,34 @@ jhu_cases_data <- tibble::tibble(
     function(filename) suppressMessages(readr::read_csv(filename)))
 )
 
-save(jhu_cases_data, file = "data/jhu_cases_data.rdata")
+save(jhu_us_cases_data, file = "data/jhu_us_cases_data.rdata")
+
+# Global deaths
+files <- Sys.glob("data-raw/JHU/*deaths_global.csv")
+
+jhu_global_deaths_data <- tibble::tibble(
+  issue_date = purrr::map_chr(
+    strsplit(files, "/"),
+    function(x) substr(x[3], 1, 10)),
+  data = purrr::map(
+    files,
+    function(filename) suppressMessages(readr::read_csv(filename) %>%
+                                          calc_jhu_global_cum()))
+)
+
+save(jhu_global_deaths_data, file = "data/jhu_global_deaths_data.rdata")
+
+# Global cases
+files <- Sys.glob("data-raw/JHU/*confirmed_global.csv")
+
+jhu_global_cases_data <- tibble::tibble(
+  issue_date = purrr::map_chr(
+    strsplit(files, "/"),
+    function(x) substr(x[3], 1, 10)),
+  data = purrr::map(
+    files,
+    function(filename) suppressMessages(readr::read_csv(filename) %>%
+                                          calc_jhu_global_cum()))
+)
+
+save(jhu_global_cases_data, file = "data/jhu_global_cases_data.rdata")

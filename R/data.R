@@ -4,6 +4,17 @@
 #' and two-letter abbreviations of states and territories of the US
 "fips_codes"
 
+#' Available global locations in JHU 
+#' 
+#' Full list of locations are obtained from CSSEGISandData/COVID-19/csse_covid_19_data
+#' Location abbreviations are from https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+#'
+#' @format A data frame with 190 rows and 2 columns:
+#' \describe{
+#'   \item{location_name}{Name of the location}
+#'   \item{location}{Location abbreviation}
+#' }
+"global_locations"
 
 #' JHU data for the US and its states and territories with counts of deaths
 #'
@@ -35,3 +46,23 @@
 #' measure ('cases') and inc
 "jhu_cases_imputed_data"
 
+
+#' data frame for JHU US deaths time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_us_deaths_data_links"
+
+#' data frame for JHU US cases time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_us_cases_data_links"
+
+#' data frame for JHU global deaths time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_global_deaths_data_links"
+
+#' data frame for JHU global cases time series data links
+#'
+#' @format A data.frame with date and file_link
+"jhu_global_cases_data_links"

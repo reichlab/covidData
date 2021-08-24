@@ -1,6 +1,6 @@
 Package: covidData
 Title: Versioned Data for COVID-19
-Version: 0.1.3
+Version: 1.0.0
 Authors@R:
     person(given = "First",
            family = "Last",
@@ -10,7 +10,7 @@ Authors@R:
 Description: Versioned Data for COVID-19
 License: MIT
 Imports:
-  dplyr, tibble, tidyr, MMWRweek, lubridate, purrr, magrittr, xml2, rvest, here
+  dplyr, tibble, tidyr, MMWRweek, lubridate, purrr, magrittr, xml2, rvest, here, httr
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
