@@ -21,8 +21,8 @@
 #' @param geography character, which data to read. Default is "US", other option is
 #' "global"
 #' @param source string specifying data source.  Currently supported sources are
-#' "jhu" for the "deaths" or "cases" measures or "healthdata" for the "hospitalizations"
-#' measure.
+#' "jhu" for the "deaths" or "cases" measures;
+#'  "healthdata" or "covidcast" for the "hospitalizations" measure.
 #'
 #' @return data frame with columns location (fips code), date, inc, cum, issue_date, as_of
 #'
@@ -116,6 +116,7 @@ load_data <- function(issues = NULL,
       function_call <- covidData::load_healthdata_data
     } else if (source == "covidcast"){
       function_call <- covidData::load_covidcast_data
+      geography <- "US"
     }
   } else{
     geography <- "US"

@@ -44,8 +44,8 @@ one of 'deaths', 'cases', or 'hospitalizations'}
 "global"}
 
 \item{source}{string specifying data source.  Currently supported sources are
-"jhu" for the "deaths" or "cases" measures or "healthdata" for the "hospitalizations"
-measure.}
+"jhu" for the "deaths" or "cases" measures;
+"healthdata" or "covidcast" for the "hospitalizations" measure.}
 }
 \value{
 data frame with columns location (fips code), date, inc, cum, issue_date, as_of
