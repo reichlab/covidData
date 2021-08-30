@@ -32,7 +32,8 @@ For US locations, this should be a list of FIPS code or 'US'
 For ECDC locations, this should be a list of location name abbreviation.}
 
 \item{spatial_resolution}{character vector specifying spatial unit types to
-include: one or more of 'county', 'state' and/or 'national'.}
+include: one or more of 'county', 'state' and/or 'national'.
+Note that 'county' is not available for hospitalization data.}
 
 \item{temporal_resolution}{string specifying temporal resolution
 to include: one of 'daily' or 'weekly'}
@@ -41,14 +42,15 @@ to include: one of 'daily' or 'weekly'}
 one of 'deaths', 'cases', or 'hospitalizations'}
 
 \item{geography}{character, which data to read. Default is "US", other option is
-"global"}
+"global".
+Note that "global" is not available for hospitalization data.}
 
 \item{source}{string specifying data source.  Currently supported sources are
 "jhu" for the "deaths" or "cases" measures;
 "healthdata" or "covidcast" for the "hospitalizations" measure.}
 }
 \value{
-data frame with columns location (fips code), date, inc, cum, issue_date, as_of
+data frame with columns location (fips code), date, inc, cum
 }
 \description{
 Assemble a data frame of incident and cumulative cases, deaths or hospitalizations due to
