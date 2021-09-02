@@ -71,13 +71,12 @@ load_covidcast_data <- function(issue_date = NULL,
   if (!is.null(location_code)) {
     if (("US" %in% location_code && !"national" %in% spatial_resolution)||
         (!"US" %in% location_code && !"state" %in% spatial_resolution)){
-      stop("Error in load_covidcast_data: Cannot load national data with current spatial_resolution")
+      stop("Error in load_covidcast_data: Cannot load data for requested location_code with current spatial_resolution.")
     }
   }
   
- if ("national" %in% spatial_resolution) {
-    geo_type <- replace(spatial_resolution, spatial_resolution == "national", "nation")
-  }
+
+  geo_type <- replace(spatial_resolution, spatial_resolution == "national", "nation")
 
   # loading data from covidcast and return selected columns
   results <- purrr::map_dfr(
@@ -88,7 +87,7 @@ load_covidcast_data <- function(issue_date = NULL,
         curr_geo_value <- "*"
       } else if (curr_geo_type == "state") {
         if (is.null(location_code)) {
-          curr_geo_type <- "*"
+          curr_geo_value <- "*"
         } else {
           curr_geo_value <- tolower(location_code[location_code != "US"])
         }
