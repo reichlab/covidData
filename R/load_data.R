@@ -2,7 +2,7 @@
 #' COVID-19 as they were available as of one or more past dates.
 #'
 #' @param location_code character vector of location codes. Default to NULL.
-#' For US locations, this should be a list of FIPS code or 'US' 
+#' For US locations, this should be a list of FIPS code or 'US'
 #' For ECDC locations, this should be a list of location name abbreviation.
 #' @param issues vector of issue dates (i.e. report dates) to use for querying data,
 #' either \code{Date} objects or strings in the format 'yyyy-mm-dd'. Data for the
@@ -14,17 +14,19 @@
 #' available data with an issue date on or before the given \code{as_of} date are returned.
 #' @param spatial_resolution character vector specifying spatial unit types to
 #' include: one or more of 'county', 'state' and/or 'national'.
+#' Note that 'county' is not available for hospitalization data.
 #' @param temporal_resolution string specifying temporal resolution
 #' to include: one of 'daily' or 'weekly'
 #' @param measure string specifying measure of covid dynamics:
 #' one of 'deaths', 'cases', or 'hospitalizations'
 #' @param geography character, which data to read. Default is "US", other option is
-#' "global"
+#' "global".
+#' Note that "global" is not available for hospitalization data.
 #' @param source string specifying data source.  Currently supported sources are
-#' "jhu" for the "deaths" or "cases" measures or "healthdata" for the "hospitalizations"
-#' measure.
+#' "jhu" for the "deaths" or "cases" measures;
+#'  "healthdata" or "covidcast" for the "hospitalizations" measure.
 #'
-#' @return data frame with columns location (fips code), date, inc, cum, issue_date, as_of
+#' @return data frame with columns location (fips code), date, inc, cum
 #'
 #' @details Data for a specified \code{issue} are only returned if the data were first available
 #' on that date, or were updated on that date. A warning is generated for any issue dates
@@ -84,19 +86,27 @@ load_data <- function(issues = NULL,
   )
 
   # validate source
-  if (is.null(source)) {
-    source <- ifelse(measure == "hospitalizations", "healthdata", "jhu")
-  } else {
+  if (!is.null(source)) {
     source <- match.arg(
       source,
-      choices = c("healthdata", "jhu"),
+      choices = c("healthdata", "jhu", "covidcast"),
       several.ok = FALSE
     )
   }
-  if (measure == "hospitalizations" && source != "healthdata") {
-    stop("Source must be 'healthdata' when measure is 'hospitalizations'.")
+
+  if (measure == "hospitalizations" &&
+    !source %in% c("healthdata", "covidcast")) {
+    stop("Source must be 'healthdata' or 'covidcast' when measure is 'hospitalizations'.")
   }
-  if (measure != "hospitalizations" && source == "healthdata") {
+  
+  if (measure == "hospitalizations" &&
+      geography[1] != "US") {
+    geography <- "US"
+    warning("Only US hospitalization data are available now. Will be loading US data instead.")
+  }
+
+  if (measure != "hospitalizations" &&
+    source %in% c("healthdata", "covidcast")) {
     stop("Source must be 'jhu' when measure is 'cases' or 'deaths'.")
   }
 
@@ -105,11 +115,14 @@ load_data <- function(issues = NULL,
     warning("Cannot provide both arguments issues and as_of to load_data. Ignoring the issues argument.")
     issues <- NULL
   }
-  
+
   # source proper function
   if (measure == "hospitalizations") {
-    function_call <- covidData::load_healthdata_data
-    geography <- "US"
+    if (source == "healthdata") {
+      function_call <- covidData::load_healthdata_data
+    } else if (source == "covidcast") {
+      function_call <- covidData::load_covidcast_data
+    }
   } else {
     function_call <- covidData::load_jhu_data
   }
@@ -126,23 +139,23 @@ load_data <- function(issues = NULL,
       geography = geography
     )
   } else if (!is.null(as_of)) {
-    purrr::map_dfr(as_of, 
-        function_call,
-        issue_date = issues,
-        location_code = location_code,
-        spatial_resolution = spatial_resolution,
-        temporal_resolution = temporal_resolution,
-        measure = measure,
-        geography = geography
+    purrr::map_dfr(as_of,
+      function_call,
+      issue_date = issues,
+      location_code = location_code,
+      spatial_resolution = spatial_resolution,
+      temporal_resolution = temporal_resolution,
+      measure = measure,
+      geography = geography
     )
   } else {
     function_call(
-      issue_date = issues, 
+      issue_date = issues,
       as_of = as_of,
       location_code = location_code,
       spatial_resolution = spatial_resolution,
       temporal_resolution = temporal_resolution,
-      measure = measure, 
+      measure = measure,
       geography = geography
     )
   }
