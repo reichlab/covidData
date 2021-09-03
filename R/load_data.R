@@ -86,7 +86,9 @@ load_data <- function(issues = NULL,
   )
 
   # validate source
-  if (!is.null(source)) {
+  if (is.null(source)) {
+    source <- ifelse(measure == "hospitalizations", "healthdata", "jhu")
+  } else {
     source <- match.arg(
       source,
       choices = c("healthdata", "jhu", "covidcast"),
