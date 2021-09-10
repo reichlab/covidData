@@ -14,17 +14,21 @@
 #' available data with an issue date on or before the given \code{as_of} date are returned.
 #' @param spatial_resolution character vector specifying spatial unit types to
 #' include: one or more of 'county', 'state' and/or 'national'.
+#' Default to 'state'.
 #' Note that 'county' is not available for hospitalization data.
+#' When source is "covidcast", this parameter has to match with location_code, if specified.
 #' @param temporal_resolution string specifying temporal resolution
 #' to include: one of 'daily' or 'weekly'
 #' @param measure string specifying measure of covid dynamics:
-#' one of 'deaths', 'cases', or 'hospitalizations'
+#' one of 'deaths', 'cases', or 'hospitalizations'. Default to 'deaths'.
 #' @param geography character, which data to read. Default is "US", other option is
 #' "global".
-#' Note that "global" is not available for hospitalization data.
+#' Note that "global" is not available for hospitalization data and "covidcast" source.
 #' @param source string specifying data source.  Currently supported sources are
 #' "jhu" or "covidcast" for the "deaths" or "cases" measures;
 #'  "healthdata" or "covidcast" for the "hospitalizations" measure.
+#'  Default to NULL which means "healthdata" for hospitalization data and "jhu" for all other
+#'  measures.
 #'
 #' @return data frame with columns location (fips code), date, inc, cum
 #'
