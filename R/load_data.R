@@ -23,7 +23,7 @@
 #' "global".
 #' Note that "global" is not available for hospitalization data.
 #' @param source string specifying data source.  Currently supported sources are
-#' "jhu" for the "deaths" or "cases" measures;
+#' "jhu" or "covidcast" for the "deaths" or "cases" measures;
 #'  "healthdata" or "covidcast" for the "hospitalizations" measure.
 #'
 #' @return data frame with columns location (fips code), date, inc, cum
@@ -99,17 +99,14 @@ load_data <- function(issues = NULL,
   if (measure == "hospitalizations" &&
     !source %in% c("healthdata", "covidcast")) {
     stop("Source must be 'healthdata' or 'covidcast' when measure is 'hospitalizations'.")
+  } else if (measure != "hospitalizations" && source == "healthdata"){
+    stop("Source must be 'jhu' or 'covidcast' when measure is not 'hospitalizations'.")
   }
   
   if (measure == "hospitalizations" &&
       geography[1] != "US") {
     geography <- "US"
     warning("Only US hospitalization data are available now. Will be loading US data instead.")
-  }
-
-  if (measure != "hospitalizations" &&
-    source %in% c("healthdata", "covidcast")) {
-    stop("Source must be 'jhu' when measure is 'cases' or 'deaths'.")
   }
 
   # validate issues and as_of
@@ -119,13 +116,11 @@ load_data <- function(issues = NULL,
   }
 
   # source proper function
-  if (measure == "hospitalizations") {
-    if (source == "healthdata") {
-      function_call <- covidData::load_healthdata_data
-    } else if (source == "covidcast") {
-      function_call <- covidData::load_covidcast_data
-    }
-  } else {
+  if (source == "healthdata") {
+    function_call <- covidData::load_healthdata_data
+  } else if (source == "covidcast") {
+    function_call <- covidData::load_covidcast_data
+  } else if (source == "jhu") {
     function_call <- covidData::load_jhu_data
   }
 

@@ -46,7 +46,7 @@ one of 'deaths', 'cases', or 'hospitalizations'}
 Note that "global" is not available for hospitalization data.}
 
 \item{source}{string specifying data source.  Currently supported sources are
-"jhu" for the "deaths" or "cases" measures;
+"jhu" or "covidcast" for the "deaths" or "cases" measures;
 "healthdata" or "covidcast" for the "hospitalizations" measure.}
 }
 \value{

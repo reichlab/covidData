@@ -9,7 +9,7 @@ load_covidcast_data(
   issue_date = NULL,
   as_of = NULL,
   location_code = NULL,
-  spatial_resolution = "state",
+  spatial_resolution = NULL,
   temporal_resolution = "weekly",
   measure = "hospitalizations",
   geography = "US"
@@ -26,7 +26,8 @@ format 'yyyy-mm-dd'}
 For US locations, this should be a list of FIPS code or 'US'}
 
 \item{spatial_resolution}{character vector specifying spatial unit types to
-include: 'state' and/or 'national'. It has to match with locations in \code{location_code}.}
+include: 'state', 'national' and/or 'county'.
+It has to match with locations in \code{location_code}. Default to NULL.}
 
 \item{temporal_resolution}{character vector specifying temporal resolution
 to include: 'daily' or 'weekly'}

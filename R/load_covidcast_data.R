@@ -8,7 +8,8 @@
 #' @param location_code character vector of location codes. Default to NULL.
 #' For US locations, this should be a list of FIPS code or 'US'
 #' @param spatial_resolution character vector specifying spatial unit types to
-#' include: 'state' and/or 'national'. It has to match with locations in `location_code`.
+#' include: 'state', 'national' and/or 'county'.
+#'  It has to match with locations in `location_code`. Default to NULL.
 #' @param temporal_resolution character vector specifying temporal resolution
 #' to include: 'daily' or 'weekly'
 #' @param measure character vector specifying measure of covid prevalence:
@@ -22,33 +23,67 @@
 load_covidcast_data <- function(issue_date = NULL,
                                 as_of = NULL,
                                 location_code = NULL,
-                                spatial_resolution = "state",
+                                spatial_resolution = NULL,
                                 temporal_resolution = "weekly",
                                 measure = "hospitalizations",
                                 geography = "US") {
 
   # validate measure and pull in correct data set
-  measure <- match.arg(measure, choices = c("hospitalizations"))
+  measure <- match.arg(
+    measure,
+    choices = c("hospitalizations", "cases", "deaths"),
+    several.ok = FALSE
+  )
 
+  # set covidcast signal and data source based on measure
+  if (measure == "hospitalizations") {
+    signal <- "confirmed_admissions_covid_1d"
+    data_source <- "hhs"
+    geo_type_choices <- c("nation", "state")
+  } else if (measure == "cases") {
+    signal <- "confirmed_incidence_num"
+    data_source <- "jhu-csse"
+    geo_type_choices <- c("nation", "state", "county")
+  } else if (measure == "deaths") {
+    signal <- "deaths_incidence_num"
+    data_source <- "jhu-csse"
+    geo_type_choices <- c("nation", "state", "county")
+  }
+
+  # validate location_code
   if (!is.null(location_code)) {
     location_code <- match.arg(
       location_code,
       choices = covidData::fips_codes$location,
       several.ok = TRUE
     )
+    
+    location_info <- covidData::fips_codes %>%
+      dplyr::filter(location %in% location_code)
+  }
 
-    # match location fips code to lower-cased abbreviations
-    location_code <- covidData::fips_codes %>%
-      dplyr::filter(location %in% location_code) %>%
-      dplyr::pull(abbreviation)
+  # generate corresponding geo_types based on location_code
+  if (!is.null(location_code)) {
+    geo_type_choices <- unique(location_info$geo_type)
   } 
-  
+
   # validate spatial_resolution
-  spatial_resolution <- match.arg(
-    spatial_resolution,
-    choices = c("state", "national"),
-    several.ok = TRUE
-  )
+  if (!is.null(spatial_resolution)) {
+    spatial_resolution <- replace(spatial_resolution, spatial_resolution == "national", "nation")
+    if (!is.null(location_code)) {
+      if (!dplyr::setequal(spatial_resolution, geo_type_choices)) {
+        stop("Please make sure spatial_resolution matches with location_code.")
+      }
+    } else {
+      spatial_resolution <- match.arg(
+        spatial_resolution,
+        choices = geo_type_choices,
+        several.ok = TRUE
+      )
+    }
+  } else {
+    spatial_resolution <- geo_type_choices
+  }
 
   # validate temporal_resolution
   temporal_resolution <- match.arg(
@@ -57,58 +92,50 @@ load_covidcast_data <- function(issue_date = NULL,
     several.ok = FALSE
   )
 
+  # warnings for issue date
   if (!is.null(issue_date)) {
-    if (issue_date < "2020-11-16") {
-      warning("Warning in load_covidcast_data: The earliest issue_date is 2020-11-16.
+    if (measure == "hospitalizations" & issue_date < "2020-11-16") {
+      warning("Warning in load_covidcast_data: The earliest issue_date for hospitalization data is 2020-11-16.
+              This function will load the latest instead.")
+      issue_date <- NULL
+    } else if (measure != "hospitalizations" & issue_date < "2020-05-07") {
+      warning("Warning in load_covidcast_data: The earliest issue_date for death/case data is 2020-05-07.
               This function will load the latest instead.")
       issue_date <- NULL
     }
   }
 
-  geo_type <- NULL
-  # create geo_type based on spatial resolution
-  
-  if (!is.null(location_code)) {
-    if (("US" %in% location_code && !"national" %in% spatial_resolution)||
-        (!"US" %in% location_code && !"state" %in% spatial_resolution)){
-      stop("Error in load_covidcast_data: Cannot load data for requested location_code with current spatial_resolution.")
-    }
-  }
-  
-
-  geo_type <- replace(spatial_resolution, spatial_resolution == "national", "nation")
-
   # loading data from covidcast and return selected columns
   results <- purrr::map_dfr(
-    geo_type,
+    spatial_resolution,
     function(curr_geo_type) {
-      if (curr_geo_type == "nation") {
-        # default in covidcast_signal
-        curr_geo_value <- "*"
-      } else if (curr_geo_type == "state") {
-        if (is.null(location_code)) {
+      if (curr_geo_type != "county" | measure != "hospitalizations") {
+        if (curr_geo_type == "nation") {
           curr_geo_value <- "*"
         } else {
-          curr_geo_value <- tolower(location_code[location_code != "US"])
+          # "state" and "county"
+          if (is.null(location_code)) {
+            curr_geo_value <- "*"
+          } else {
+            curr_geo_value <- location_info[location_info$geo_type == curr_geo_type,]$geo_value
+          }
         }
+
+        suppressMessages(
+          covidcast::covidcast_signal(
+            data_source = data_source,
+            signal = signal,
+            as_of = as_of,
+            issues = issue_date,
+            geo_type = curr_geo_type,
+            geo_value = curr_geo_value) %>%
+            dplyr::left_join(covidData::fips_codes,
+              by = c("geo_value" = "geo_value")) %>%
+            dplyr::rename(date = time_value, inc = value) %>%
+            # keep fips code
+            dplyr::select(date, inc, location)
+        )
       }
-      suppressMessages(
-        covidcast::covidcast_signal(
-          data_source = "hhs",
-          signal = "confirmed_admissions_covid_1d",
-          as_of = as_of,
-          issues = issue_date,
-          geo_type = curr_geo_type,
-          geo_value = curr_geo_value
-        ) %>%
-          dplyr::mutate(geo_value = toupper(geo_value)) %>%
-          dplyr::left_join(covidData::fips_codes,
-            by = c("geo_value" = "abbreviation")
-          ) %>%
-          dplyr::rename(date = time_value, inc = value) %>%
-          # keep fips code
-          dplyr::select(date, inc, location)
-      )
     }
   )
 
