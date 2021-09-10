@@ -27,13 +27,15 @@ For US locations, this should be a list of FIPS code or 'US'}
 
 \item{spatial_resolution}{character vector specifying spatial unit types to
 include: 'state', 'national' and/or 'county'.
-It has to match with locations in \code{location_code}. Default to NULL.}
+It has to match with locations in \code{location_code}.
+Default to NULL, all available spatial resolution based on the given measure.
+Note that 'county' is not available for hospitalization measure.}
 
 \item{temporal_resolution}{character vector specifying temporal resolution
 to include: 'daily' or 'weekly'}
 
 \item{measure}{character vector specifying measure of covid prevalence:
-must be 'hospitalizations'}
+must one of 'hospitalizations', 'deaths' and 'cases'.}
 
 \item{geography}{character, which data to read. Default is "US".
 Note this variable is not used in the function}
