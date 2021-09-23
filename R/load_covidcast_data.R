@@ -15,7 +15,7 @@
 #' @param temporal_resolution character vector specifying temporal resolution
 #' to include: 'daily' or 'weekly'
 #' @param measure character vector specifying measure of covid prevalence:
-#' must one of 'hospitalizations', 'deaths' and 'cases'.
+#' must be one of 'hospitalizations', 'deaths' or 'cases'.
 #' @param geography character, which data to read. Default is "US".
 #' Note this variable is not used in the function
 #'
