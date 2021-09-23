@@ -35,7 +35,7 @@ Note that 'county' is not available for hospitalization measure.}
 to include: 'daily' or 'weekly'}
 
 \item{measure}{character vector specifying measure of covid prevalence:
-must one of 'hospitalizations', 'deaths' and 'cases'.}
+must be one of 'hospitalizations', 'deaths' or 'cases'.}
 
 \item{geography}{character, which data to read. Default is "US".
 Note this variable is not used in the function}
