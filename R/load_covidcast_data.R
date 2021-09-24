@@ -140,6 +140,8 @@ load_covidcast_data <- function(issue_date = NULL,
       }
     }
   )
+  
+  class(results) <- class(results)[class(results) != "covidcast_signal"]
 
   # aggregate daily incidence to weekly incidence
   if (temporal_resolution == "weekly") {
@@ -174,6 +176,6 @@ load_covidcast_data <- function(issue_date = NULL,
         dplyr::ungroup() %>%
         dplyr::pull(cum)
     )
-
+  
   return(results)
 }
