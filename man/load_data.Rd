@@ -33,21 +33,25 @@ For ECDC locations, this should be a list of location name abbreviation.}
 
 \item{spatial_resolution}{character vector specifying spatial unit types to
 include: one or more of 'county', 'state' and/or 'national'.
-Note that 'county' is not available for hospitalization data.}
+Default to 'state'.
+Note that 'county' is not available for hospitalization data.
+When source is "covidcast", this parameter has to match with location_code, if specified.}
 
 \item{temporal_resolution}{string specifying temporal resolution
 to include: one of 'daily' or 'weekly'}
 
 \item{measure}{string specifying measure of covid dynamics:
-one of 'deaths', 'cases', or 'hospitalizations'}
+one of 'deaths', 'cases', or 'hospitalizations'. Default to 'deaths'.}
 
 \item{geography}{character, which data to read. Default is "US", other option is
 "global".
-Note that "global" is not available for hospitalization data.}
+Note that "global" is not available for hospitalization data and "covidcast" source.}
 
 \item{source}{string specifying data source.  Currently supported sources are
-"jhu" for the "deaths" or "cases" measures;
-"healthdata" or "covidcast" for the "hospitalizations" measure.}
+"jhu" or "covidcast" for the "deaths" or "cases" measures;
+"healthdata" or "covidcast" for the "hospitalizations" measure.
+Default to NULL which means "healthdata" for hospitalization data and "jhu" for all other
+measures.}
 }
 \value{
 data frame with columns location (fips code), date, inc, cum
