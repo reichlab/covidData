@@ -19,11 +19,6 @@ source("R/healthdata_data.R")
 timeseries_files <- Sys.glob("data-raw/healthdata/timeseries/*.csv")
 daily_files <- Sys.glob("data-raw/healthdata/daily/*.csv")
 
-message("time series files")
-message(timeseries_files)
-message("daily files")
-message(daily_files)
-
 healthdata_hosp_data_ts <- tibble::tibble(
   issue_date = purrr::map_chr(
     strsplit(timeseries_files, "/"),
@@ -68,5 +63,3 @@ healthdata_hosp_data <- purrr::map_dfr(
 
 save(healthdata_hosp_data,
   file = "data/healthdata_hosp_data.rdata")
-message("data files")
-message(list.files("data"))
