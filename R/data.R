@@ -27,13 +27,6 @@
 #' @format A tibble with a row per issue date
 "jhu_cases_data"
 
-#' HealthData.gov data for the US and its states and territories with counts of
-#' hospitalizations
-#'
-#' @format A tibble with a row per issue date
-"healthdata_hosp_data"
-
-
 #' Imputed death incidence data for negative incidence and adjustment cases
 #'
 #' @format A data.frame with location (fips code), date, 
@@ -66,3 +59,8 @@
 #'
 #' @format A data.frame with date and file_link
 "jhu_global_cases_data_links"
+
+#' data frame for hosp time series data before 2021-03-12
+#'
+#' @format A data.frame with issue_date and file_link
+"healthdata_hosp_early_data"
