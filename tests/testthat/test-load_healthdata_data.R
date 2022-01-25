@@ -1,7 +1,7 @@
 library(dplyr)
 testthat::context("load_healthdata_data")
 
-test_that("load_jhu_data expected locations: state only", {
+test_that("load_healthdata_data expected locations: state only", {
   expected_locations <- covidData::fips_codes %>%
     dplyr::filter(
       nchar(location) == 2,
@@ -24,7 +24,7 @@ test_that("load_jhu_data expected locations: state only", {
   expect_identical(expected_locations, actual_locations)
 })
 
-test_that("load_jhu_data expected locations: national only", {
+test_that("load_healthdata_data expected locations: national only", {
   expected_locations <- "US"
 
   actual_locations <- covidData::load_healthdata_data(
@@ -41,7 +41,7 @@ test_that("load_jhu_data expected locations: national only", {
   expect_identical(expected_locations, actual_locations)
 })
 
-test_that("load_jhu_data expected locations: state and national", {
+test_that("load_healthdata_data expected locations: state and national", {
   expected_locations <- covidData::fips_codes %>%
     dplyr::filter(
       nchar(location) == 2,
@@ -63,3 +63,6 @@ test_that("load_jhu_data expected locations: state and national", {
 
   expect_identical(expected_locations, actual_locations)
 })
+
+
+
