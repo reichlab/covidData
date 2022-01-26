@@ -152,11 +152,10 @@ build_healthdata_data <- function(
     healthdata_dailyrevision_history <- healthdata_dailyrevision_history %>%
       dplyr::filter(issue_date <= UQ(issue_date))
     
-    last_weekly <- healthdata_timeseries_history %>%
-      dplyr::filter(issue_date <= UQ(issue_date)) %>%
-      dplyr::slice_max(issue_date)
+    # get the latest date that is smaller than the specified issue_date
+    last_weekly_date <- max(healthdata_timeseries_history$issue_date[healthdata_timeseries_history$issue_date <= issue_date])
     
-    last_weekly_data <- download_healthdata_timeseries(last_weekly$issue_date, healthdata_timeseries_history)
+    last_weekly_data <- download_healthdata_timeseries(last_weekly_date, healthdata_timeseries_history)
     last_date <- lubridate::ymd(max(last_weekly_data$date))
     max_date <- lubridate::ymd(max(healthdata_dailyrevision_history$date))
     num_dates_to_add <- max_date - last_date
