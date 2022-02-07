@@ -10,7 +10,7 @@ ROOTDIR = ../../../
 all: install pull
 
 # Define the full make using only recent data
-recent_data: install_recent assemble_recent 
+recent_data: install_recent 
 
 # Pull latest changes to covidData github repo
 pull:
@@ -24,8 +24,5 @@ install: pull
 install_recent: pull assemble_recent
 	R CMD INSTALL ../../../covidData
 
-# Assemble recent csv files into R data object
-assemble_recent: pull 
-	Rscript assemble-historical-jhu.R 
 
 	
