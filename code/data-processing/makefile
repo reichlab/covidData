@@ -21,7 +21,7 @@ install: pull
 	R CMD INSTALL ../../../covidData
 
 # Install R package with most recent data
-install_recent: pull assemble_recent
+install_recent: pull
 	R CMD INSTALL ../../../covidData
 
 
