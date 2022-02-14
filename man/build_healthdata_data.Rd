@@ -14,7 +14,7 @@ build_healthdata_data(
 )
 }
 \arguments{
-\item{issue_date}{issue date}
+\item{issue_date}{date object for issue date}
 
 \item{healthdata_timeseries_history}{data.frame of issue_date and data reported that
 date}
