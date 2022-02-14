@@ -442,12 +442,23 @@ preprocess_jhu_data <- function(issue_date = NULL,
 #' @export
 available_issue_dates <- function(measure,  geography = c("US", "global")){
   if (measure == "hospitalizations"){
-    return (covidData::healthdata_hosp_data$issue_date)
+    #retrieve data update history
+    healthdata_timeseries_history <- healthdata_timeseries_history()
+    healthdata_dailyrevision_history <- healthdata_dailyrevision_history()
+    
+    all_avail_issue_date <- unique(c(
+      healthdata_timeseries_history$issue_date,
+      healthdata_dailyrevision_history$issue_date))
+    all_avail_issue_date <- unique(c(
+      all_avail_issue_date,
+      covidData::healthdata_hosp_early_data$issue_date))
+
+    return(all_avail_issue_date)
   } else if (measure == "deaths"){
     links <- get_time_series_data_link(measure, geography)
-    return (links$date)
+    return(links$date)
   } else if (measure == "cases"){
     links <- get_time_series_data_link(measure, geography)
-    return (links$date)
+    return(links$date)
   }
 }
