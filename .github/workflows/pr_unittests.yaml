@@ -1,0 +1,41 @@
+name: run unit tests
+on: pull_request
+jobs:
+  run-unit-tests:
+    name: run unit tests
+    runs-on: macOS-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-pandoc@v1
+      - name: Cache R packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-${{ hashFiles('DESCRIPTION') }}
+      - name: Install dependencies
+        run: |
+          install.packages(c("remotes","devtools"))
+          remotes::install_deps(dependencies = NA)
+        shell: Rscript {0}
+      - name: Install covidData
+        run: make recent_data
+        working-directory: ./code/data-processing
+      - name: Run unit tests
+        run: |
+          devtools::test_active_file("tests/testthat/test-as_of.R", stop_on_failure = TRUE)
+          devtools::test_active_file("tests/testthat/test-calc_jhu_global_cum.R", stop_on_failure = TRUE)
+          devtools::test_active_file("tests/testthat/test-load_healthdata_data.R", stop_on_failure = TRUE)
+          devtools::test_active_file("tests/testthat/test-load_jhu_data-reconstruct_time_series.R", stop_on_failure = TRUE)
+          devtools::test_active_file("tests/testthat/test-location_code.R", stop_on_failure = TRUE)
+          devtools::test_active_file("tests/testthat/test-preprocess_healthdata_data.R", stop_on_failure = TRUE)
+        shell: Rscript {0}
+    
+          
+        
+
+
