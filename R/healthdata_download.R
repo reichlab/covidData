@@ -166,7 +166,7 @@ build_healthdata_data <- function(
         healthdata_dailyrevision_issue_date <- healthdata_dailyrevision_history %>%
           dplyr::filter(date == new_date) %>%
           dplyr::slice_max(issue_date) %>%
-          dplyr::select(issue_date)
+          dplyr::pull(issue_date)
         
         # can reduce here change paramter to be a row of df
         healthdata_dailyrevision <- download_healthdata_dailyrevision(
