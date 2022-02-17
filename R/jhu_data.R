@@ -15,18 +15,6 @@
 #' 'deaths' or 'cases'
 #' @param geography character, which data to read. Default is "US", other option is
 #' "global"
-#' @param replace_negatives boolean to replace negative incs with imputed data
-#' @param adjustment_cases character vector specifying times and locations with
-#' reporting anomalies to adjust.  Either 'none' (the default) or one or more
-#' of 'CO-2020-04-24', 'MS-2020-06-22', 'DE-2020-06-23', 'NJ-2020-06-25'. These
-#' refer to locations and times affected by reporting anomalies documented at
-#' https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data#user-content-retrospective-reporting-of-probable-cases-and-deaths
-#' @param adjustment_method string specifying how anomalies are adjusted.
-#' 'fill_na' will replace affected observations with NAs and correct daily
-#' cumulative counts for all dates on and after adjustment date.
-#' 'impute_and_redistribute' will replace affected observations with imputed values.
-#' Difference between the original observation and the imputed value will be redistributed
-#' to observations before and on the adjustment date.
 #'
 #' @return data frame with columns location (fips code), date, inc, and cum
 #'
@@ -38,10 +26,7 @@ load_jhu_data <- function(
     spatial_resolution = "state",
     temporal_resolution = "weekly",
     measure = "deaths",
-    geography = c("US", "global"),
-    replace_negatives = FALSE,
-    adjustment_cases = "none",
-    adjustment_method = "none") {
+    geography = c("US", "global")) {
   # validate measure and pull in correct data set
   measure <- match.arg(measure, choices = c("cases", "deaths"))
   
@@ -78,14 +63,6 @@ load_jhu_data <- function(
     choices = c("daily", "weekly"),
     several.ok = FALSE
   )
-  
-  # validate adjustment_method
-  adjustment_method <- match.arg(
-    adjustment_method,
-    choices = c("fill_na", "impute_and_redistribute", "none"),
-    several.ok = FALSE
-  )
-  
 
   # get report for specified issue date
   jhu_data <- jhu_data %>%
@@ -220,90 +197,6 @@ load_jhu_data <- function(
         dplyr::filter(location %in% country_names)
       }
   } 
-  
-
-  # replace negative incidence with imputed data. Residuals will be
-  # redistributed to related observations.
-  if (replace_negatives) {
-    results <- replace_negatives(data = results, measure = measure)
-  }
-
-  if (adjustment_cases != "none" & length(adjustment_cases) > 0) {
-    # create a data frame with adjustment location fips code and adjustment date
-    adjustment_locations <- sub("-.*", "", adjustment_cases)
-    adjustment_dates <- sub("^.*?-", "", adjustment_cases)
-    adjustment_locations_code <- purrr::map_chr(
-      adjustment_locations, function(x) {
-        if (geography[1] == "US"){
-          # get corresponding fips code
-          valid_locations[which(valid_locations$abbreviation == x), ]$location
-        } else if (geography[1] == "global"){
-          x
-        }
-      }
-    )
-    adjustments <- data.frame(
-      location = adjustment_locations_code,
-      date = as.Date(adjustment_dates)
-    )
-
-    # replace daily incidence with NA in specific rows
-    if ("fill_na" %in% adjustment_method) {
-      results <- fill_na(
-        results = results,
-        adjustments = adjustments
-      )
-    }
-
-    # replace daily incidence with imputed data and redistribute
-    # residuals to related observations
-    if ("impute_and_redistribute" %in% adjustment_method) {
-       if (replace_negatives == FALSE) {
-         results = replace_negatives(data = results, measure = measure)
-
-         # aggregate inc to get the correct cum
-         results <- results %>%
-           dplyr::mutate(
-             date = lubridate::ymd(date),
-             cum = results %>%
-               dplyr::group_by(location) %>%
-               dplyr::mutate(cum = cumsum(inc)) %>%
-               dplyr::ungroup() %>%
-               dplyr::pull(cum)
-           )
-       }
-
-      for (i in seq_len(nrow(adjustments))) {
-        adjustment_location_code <- adjustments[i, ]$location
-        adjustment_date <- as.Date(adjustments[i, ]$date)
-
-        # get state, counties and national observations for an adjustment case
-        location_data <- results %>%
-          dplyr::filter(
-            stringr::str_sub(
-              # include counties in adjustment state
-              location, start = 1, end = 2) %in% adjustment_location_code |
-              location == "US" | 
-              # US states or ECDC countries
-              location == adjustment_location_code)
-
-        # for each location in data, get imputed data
-        for (a_location in unique(location_data$location)) {
-          d <- location_data[location_data$location == a_location, ]
-
-          # get adjusted inc column
-          imputed_inc <- adjust_daily_incidence(
-            d,
-            adjustment_date,
-            measure = measure
-          )
-
-          # put imputed data back to results
-          results[which(results$location == a_location), ]$inc <- imputed_inc
-        }
-      }
-    }
-  }
 
   # aggregate daily incidence to weekly incidence
   if (temporal_resolution == "weekly") {

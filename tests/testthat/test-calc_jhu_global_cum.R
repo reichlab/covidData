@@ -19,8 +19,6 @@ test_that("Aggregation is correct",{
   actual <- covidData::load_jhu_data(
     temporal_resolution = 'daily',
     measure = 'deaths',
-    replace_negatives = FALSE,
-    adjustment_cases = 'none',
     as_of = '2021-05-25',
     geography = c("global")) %>%
     # filter to Australia
@@ -40,8 +38,6 @@ test_that("Indexing is correct for european countries",{
   actual <- covidData::load_jhu_data(
     temporal_resolution = 'daily',
     measure = 'deaths',
-    replace_negatives = FALSE,
-    adjustment_cases = 'none',
     as_of = '2021-05-25',
     geography = c("global")) %>%
     # filter to France
