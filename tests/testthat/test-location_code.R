@@ -7,12 +7,14 @@ test_that("location code filter works for US locations",{
   location_code <- c("01", "06059")
   actual <- covidData::load_jhu_data(spatial_resolution = spatial_resolutions,
                                      location_code = location_code,
+                                     as_of = "2022-02-01",
                                      temporal_resolution = "weekly",
                                      measure = "cases",
                                      geography = c("US"))
   
   expected <- covidData::load_jhu_data(spatial_resolution = spatial_resolutions,
                                        location_code = NULL,
+                                       as_of = "2022-02-01",
                                        temporal_resolution = "weekly",
                                        measure = "cases",
                                        geography = c("US")) %>%
@@ -26,12 +28,14 @@ test_that("location code filter works for global locations",{
   location_code <- c("FR", "GB")
   actual <- covidData::load_jhu_data(spatial_resolution = NULL,
                                      location_code = location_code,
+                                     as_of = "2022-02-01",
                                      temporal_resolution = "weekly",
                                      measure = "cases",
                                      geography = c("global"))
   
   expected <- covidData::load_jhu_data(spatial_resolution = NULL,
                                        location_code = NULL,
+                                       as_of = "2022-02-01",
                                        temporal_resolution = "weekly",
                                        measure = "cases",
                                        geography = c("global")) %>%
