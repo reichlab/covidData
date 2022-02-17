@@ -12,8 +12,6 @@ test_that("reconstruct time series data for cumulative deaths count",{
     spatial_resolution = 'county',
     temporal_resolution = 'daily',
     measure = 'deaths',
-    replace_negatives = FALSE,
-    adjustment_cases = 'none',
     as_of = '2021-01-11') %>%
     # take out leading 0 in location 
     dplyr::mutate(location = sub("^0+", "", location))
@@ -47,8 +45,6 @@ test_that("reconstruct time series data for cumulative cases count",{
     spatial_resolution = 'county',
     temporal_resolution = 'daily',
     measure = 'cases',
-    replace_negatives = FALSE,
-    adjustment_cases = 'none',
     as_of = '2021-01-11') %>%
     # take out leading 0 in location 
     dplyr::mutate(location = sub("^0+", "", location))
@@ -80,8 +76,6 @@ test_that("reconstruct time series data for cumulative cases count in global loc
   data <- covidData::load_jhu_data(
     temporal_resolution = 'daily',
     measure = 'cases',
-    replace_negatives = FALSE,
-    adjustment_cases = 'none',
     as_of = '2021-05-25',
     geography = c("global")) %>%
     dplyr::left_join(y = covidData::global_locations, 
@@ -110,8 +104,6 @@ test_that("reconstruct time series data for cumulative death count in global loc
   data <- covidData::load_jhu_data(
     temporal_resolution = 'daily',
     measure = 'deaths',
-    replace_negatives = FALSE,
-    adjustment_cases = 'none',
     as_of = '2021-05-25',
     geography = c("global")) %>%
     dplyr::left_join(y = covidData::global_locations, 
