@@ -45,17 +45,19 @@ load_healthdata_data <- function(
   
   all_avail_issue_date <- unique(c(healthdata_timeseries_history$issue_date,
                                    healthdata_dailyrevision_history$issue_date))
+  # a vector of date objects
   all_avail_issue_date <- unique(c(all_avail_issue_date,
                                    covidData::healthdata_hosp_early_data$issue_date))
 
   # validate issue_date and as_of
+  # and convert as_of and issue_date to date objects
   if (!is.null(issue_date) && !is.null(as_of)) {
     stop("Cannot provide both arguments issue_date and as_of to load_healthcare_data.")
   } else if (is.null(issue_date) && is.null(as_of)) {
     issue_date <- max(all_avail_issue_date)
   } else if (!is.null(as_of)) {
     avail_issues <- all_avail_issue_date[
-      all_avail_issue_date <= as.character(as_of)
+      all_avail_issue_date <= as.Date(as_of)
       ]
 
     if (length(avail_issues) == 0) {
@@ -64,7 +66,7 @@ load_healthdata_data <- function(
       issue_date <- max(avail_issues)
     }
   } else {
-    issue_date <- as.character(lubridate::ymd(issue_date))
+    issue_date <- lubridate::ymd(issue_date)
   }
 
   if (!(issue_date %in% all_avail_issue_date)) {
@@ -112,7 +114,7 @@ load_healthdata_data <- function(
     healthdata_timeseries_history,
     healthdata_dailyrevision_history)
   
-  if (issue_date > "2021-03-12"){
+  if (issue_date > as.Date("2021-03-12")){
     raw_healthdata_data <- preprocess_healthdata_data(
       raw_healthdata_data,
       covidData::fips_codes)

@@ -122,7 +122,7 @@ download_healthdata_dailyrevision <- function(issue_date, healthdata_dailyrevisi
 #' series update on or before the issue date with daily updates that were made
 #' after the last time series update and on or before the issue date
 #' 
-#' @param issue_date issue date
+#' @param issue_date date object for issue date 
 #' @param healthdata_timeseries_history data.frame of issue_date and data reported that
 #' date
 #' @param healthdata_dailyrevision_history data.frame of issue_date, date, and data
@@ -135,7 +135,7 @@ build_healthdata_data <- function(
   healthdata_dailyrevision_history) {
   healthdata_hosp_early_data <- covidData::healthdata_hosp_early_data
   # case 1: issue_date is a date before "2021-03-12"
-  if (as.character(issue_date) %in% healthdata_hosp_early_data$issue_date){
+  if (issue_date %in% healthdata_hosp_early_data$issue_date){
     result <- healthdata_hosp_early_data %>%
       dplyr::filter(issue_date == UQ(issue_date))
   } 
@@ -162,11 +162,11 @@ build_healthdata_data <- function(
     
     for (i in seq_len(num_dates_to_add)) {
       new_date <- last_date + i
-      if (as.character(new_date) %in% healthdata_dailyrevision_history$date) {
+      if (new_date %in% healthdata_dailyrevision_history$date) {
         healthdata_dailyrevision_issue_date <- healthdata_dailyrevision_history %>%
-          dplyr::filter(date == as.character(new_date)) %>%
+          dplyr::filter(date == new_date) %>%
           dplyr::slice_max(issue_date) %>%
-          dplyr::select(issue_date)
+          dplyr::pull(issue_date)
         
         # can reduce here change paramter to be a row of df
         healthdata_dailyrevision <- download_healthdata_dailyrevision(
