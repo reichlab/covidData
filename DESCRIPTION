@@ -10,7 +10,9 @@ Authors@R:
 Description: Versioned Data for COVID-19
 License: MIT
 Imports:
-  dplyr, tibble, tidyr, MMWRweek, lubridate, purrr, magrittr, xml2, rvest, here, httr, covidcast
+  dplyr, tibble, tidyr, MMWRweek, lubridate, purrr, magrittr, xml2, rvest, here, httr
+Suggests:
+  covidcast
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
