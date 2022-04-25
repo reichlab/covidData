@@ -364,7 +364,7 @@ preprocess_jhu_data <- function(issue_date = NULL,
   
   # create url for data update links files
   link_base <- "https://raw.githubusercontent.com/reichlab/covidData/master/data/"
-  link_file_name <- paste("jhu", tolower(geography[1]), measure, "links", sep = "_")
+  link_file_name <- paste("jhu", tolower(geography[1]), measure, "data_links", sep = "_")
   # load links
   links <- suppressMessages(readr::read_csv(url(paste0(link_base, link_file_name,".csv"))))
   
