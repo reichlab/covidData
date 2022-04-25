@@ -38,29 +38,29 @@ jobs:
                                                                 geography = "US",
                                                                 download_files = FALSE,
                                                                 download_recent = FALSE)
-          save(jhu_us_deaths_data_links, file = "data/jhu_us_deaths_data_links.rdata") 
+          write.csv(jhu_us_deaths_data_links, file = "data/jhu_us_deaths_data_links.csv", row.names = FALSE) 
           jhu_us_cases_data_links <- get_time_series_data_link(measure = "cases",
                                                                geography = "US",
                                                                download_files = FALSE,
                                                                download_recent = FALSE)
-          save(jhu_us_cases_data_links, file = "data/jhu_us_cases_data_links.rdata")
+          write.csv(jhu_us_cases_data_links, file = "data/jhu_us_cases_data_links.csv", row.names = FALSE)
           # get global data links
           jhu_global_deaths_data_links <- get_time_series_data_link(measure = "deaths", 
                                                                     geography = "global",
                                                                     download_files = FALSE,
                                                                     download_recent = FALSE)
-          save(jhu_global_deaths_data_links, file = "data/jhu_global_deaths_data_links.rdata") 
+          write.csv(jhu_global_deaths_data_links, file = "data/jhu_global_deaths_data_links.csv", row.names = FALSE) 
           jhu_global_cases_data_links <- get_time_series_data_link(measure = "cases",
                                                                    geography =  "global",
                                                                    download_files = FALSE,
                                                                    download_recent = FALSE)
-          save(jhu_global_cases_data_links, file = "data/jhu_global_cases_data_links.rdata")
+          write.csv(jhu_global_cases_data_links, file = "data/jhu_global_cases_data_links.csv", row.names = FALSE)
         shell: Rscript {0}
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v7
         with: 
-          add: '["data/jhu_us_cases_data_links.rdata", "data/jhu_us_deaths_data_links.rdata", "data/jhu_global_cases_data_links.rdata", "data/jhu_global_deaths_data_links.rdata"]'
+          add: '["data/jhu_us_cases_data_links.csv", "data/jhu_us_deaths_data_links.csv", "data/jhu_global_cases_data_links.csv", "data/jhu_global_deaths_data_links.csv"]'
           message: "Update time series data links"
           default_author: github_actions
           push: true
