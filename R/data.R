@@ -27,19 +27,6 @@
 #' @format A tibble with a row per issue date
 "jhu_cases_data"
 
-#' Imputed death incidence data for negative incidence and adjustment cases
-#'
-#' @format A data.frame with location (fips code), date, 
-#' measure ('deaths') and inc
-"jhu_deaths_imputed_data"
-
-#' imputed cases incidence data for negative incidence and adjustment cases
-#'
-#' @format A data.frame with location (fips code), date,
-#' measure ('cases') and inc
-"jhu_cases_imputed_data"
-
-
 #' data frame for JHU US deaths time series data links
 #'
 #' @format A data.frame with date and file_link
