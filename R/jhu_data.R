@@ -384,6 +384,7 @@ preprocess_jhu_data <- function(issue_date = NULL,
   }
   
   # validate issue_date and as_of
+  orig_issue_date_null <- is.null(issue_date)
   if (!is.null(issue_date) && !is.null(as_of)) {
     stop("Cannot provide both arguments issue_date and as_of to load_jhu_data.")
   } else if (is.null(issue_date) && is.null(as_of)) {
@@ -415,7 +416,13 @@ preprocess_jhu_data <- function(issue_date = NULL,
       # query Github API to get the first page of results
       links <- get_time_series_data_link(measure, first_page_only = FALSE, geography)
       if (!issue_date %in% links$date){
-        stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
+        if (orig_issue_date_null) {
+          # user just wants the latest available issue date
+          issue_date <- max(links$date)
+        } else {
+          # user specifically requested an issue date that's not available
+          stop("Couldn't find link to the timeseries data file. Please check issue_date parameter.")
+        }
       }
     } 
     # download data from link
