@@ -16,17 +16,6 @@
 #' }
 "global_locations"
 
-#' JHU data for the US and its states and territories with counts of deaths
-#'
-#' @format A tibble with a row per issue date
-"jhu_deaths_data"
-
-
-#' JHU data for the US and its states and territories with counts of cases
-#'
-#' @format A tibble with a row per issue date
-"jhu_cases_data"
-
 #' Imputed death incidence data for negative incidence and adjustment cases
 #'
 #' @format A data.frame with location (fips code), date, 

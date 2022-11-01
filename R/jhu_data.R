@@ -357,24 +357,28 @@ load_jhu_data <- function(
 #' 
 #' @return tibble with issue_date and data
 #' 
+#' @importFrom readr read_csv
 preprocess_jhu_data <- function(issue_date = NULL, 
                                 as_of = NULL, 
                                 measure = "deaths",
                                 geography = c("US", "global")){
+  
+  # create url for data update links files
+  link_base <- "https://raw.githubusercontent.com/reichlab/covidData/master/data/"
+  link_file_name <- paste("jhu", tolower(geography[1]), measure, "data_links", sep = "_")
+  # load links
+  links <- suppressMessages(readr::read_csv(url(paste0(link_base, link_file_name,".csv"))))
+  
   if (measure == "deaths"){
     if (geography[1] == "US"){
-      links <- covidData::jhu_us_deaths_data_links
       jhu_data <- covidData::jhu_us_deaths_data
     } else if (geography[1] == "global"){
-      links <- covidData::jhu_global_deaths_data_links
       jhu_data <- covidData::jhu_global_deaths_data
     }
   } else if (measure == "cases"){
     if (geography[1] == "US"){
-      links <- covidData::jhu_us_cases_data_links
       jhu_data <- covidData::jhu_us_cases_data
     } else if (geography[1] == "global"){
-      links <- covidData::jhu_global_cases_data_links
       jhu_data <- covidData::jhu_global_cases_data
     }
   }
