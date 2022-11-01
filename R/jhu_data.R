@@ -357,6 +357,7 @@ load_jhu_data <- function(
 #' 
 #' @return tibble with issue_date and data
 #' 
+#' @importFrom readr read_csv
 preprocess_jhu_data <- function(issue_date = NULL, 
                                 as_of = NULL, 
                                 measure = "deaths",
