@@ -20,6 +20,11 @@
 #' @param adjustment_method string specifying how anomalies are adjusted.
 #' Only the value "none" is currently supported.
 #' @param geography character, which data to read. Only "US" is supported.
+#' @param drop_last_date boolean indicating whether to drop the last 1 day of
+#' data for the influenza and COVID hospitalization signals. The last day of
+#' data from the HHS data source is unreliable, so it is recommended to set this
+#' to `TRUE`. However, the default is `FALSE` so that the function maintains
+#' fidelity to the authoritative data source.
 #'
 #' @return data frame with columns location (fips code), date, inc, and cum
 #' all values of cum will currently be NA
@@ -35,7 +40,8 @@ load_healthdata_data <- function(
     replace_negatives = FALSE,
     adjustment_cases = "none",
     adjustment_method = "none",
-    geography = "US") {
+    geography = "US",
+    drop_last_date = FALSE) {
   
   # validate measure and pull in correct data set
   measure <- match.arg(measure,
@@ -157,8 +163,13 @@ load_healthdata_data <- function(
     dplyr::select(location, date, inc) %>%
     dplyr::filter(location %in% locations_to_keep)
 
-  # TODO: If requested, drop the last day of hospitalizations data
-  # within each location.
+  # If requested, drop the last day of data within each location
+  if (drop_last_date) {
+    results <- results %>%
+      dplyr::group_by(location) %>%
+      dplyr::filter(date < max(date)) %>%
+      dplyr::ungroup()
+  }
 
   # aggregate daily incidence to weekly incidence
   if (temporal_resolution == "weekly") {

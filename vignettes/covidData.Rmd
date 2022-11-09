@@ -141,6 +141,35 @@ ggplot(
   theme_bw()
 ```
 
+## Note on revisions to hospitalizations data
+
+The [description of the hospitalizations data](https://healthdata.gov/Hospital/COVID-19-Reported-Patient-Impact-and-Hospital-Capa/g62h-syeh) on HealthData.gov notes that the data set "...provides the latest values reported by each facility within the last four days." This means that at the end of the time series, the data are unreliable and are subject to revisions when updated facility-level data become available. In particular, we have noted that the reported value for the last date that is included in the data set is very often an exact duplicate of the reported value from the previous date. At a minimum, users of these data should be aware of this. Modelers may wish to include a nowcasting step that adjusts for systematic changes in reporting. Alternatively, as a more gross adjustment, we provide the boolean `drop_last_date` argument, which is only relevant to loading hospitalizations (or influenza hospitalizations) data and simply removes the last one day of reported data within each location. If data at a weekly temporal resolution were requested, this data removal is done before aggregating to a weekly signal.
+
+```{r}
+hosp_data <- load_data(
+  as_of = "2022-10-03",
+  spatial_resolution = c("state", "national"),
+  temporal_resolution = "daily",
+  measure = "hospitalizations"
+)
+
+hosp_data_drop_last_date <- load_data(
+  as_of = "2022-10-03",
+  spatial_resolution = c("state", "national"),
+  temporal_resolution = "daily",
+  measure = "hospitalizations",
+  drop_last_date = TRUE
+)
+
+max(hosp_data$date)
+max(hosp_data_drop_last_date$date)
+identical(
+    hosp_data %>%
+        dplyr::group_by(location) %>%
+        dplyr::filter(date < max(date)) %>%
+        dplyr::ungroup(),
+    hosp_data_drop_last_date)
+```
 
 # Influenza hospitalizations
 

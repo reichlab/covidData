@@ -13,7 +13,8 @@ load_data(
   temporal_resolution = "weekly",
   measure = "deaths",
   geography = c("US", "global"),
-  source = NULL
+  source = NULL,
+  drop_last_date = FALSE
 )
 }
 \arguments{
@@ -55,6 +56,13 @@ Note that "global" is not available for hospitalization data and "covidcast" sou
 "flu hospitalizations" measures.
 Default to NULL which means "healthdata" for hospitalization data and "jhu"
 for all other measures.}
+
+\item{drop_last_date}{boolean indicating whether to drop the last 1 day of
+data for the influenza and COVID hospitalization signals. The last day of
+data from the HHS data source is unreliable, so it is recommended to set this
+to \code{TRUE}. However, the default is \code{FALSE} so that the function maintains
+fidelity to the authoritative data source. This argument is ignored if the
+\code{measure} is 'deaths' or 'cases'.}
 }
 \value{
 data frame with columns location (fips code), date, inc, cum

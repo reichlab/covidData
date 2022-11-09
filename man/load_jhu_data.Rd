@@ -15,7 +15,8 @@ load_jhu_data(
   geography = c("US", "global"),
   replace_negatives = FALSE,
   adjustment_cases = "none",
-  adjustment_method = "none"
+  adjustment_method = "none",
+  ...
 )
 }
 \arguments{
@@ -53,6 +54,8 @@ cumulative counts for all dates on and after adjustment date.
 'impute_and_redistribute' will replace affected observations with imputed values.
 Difference between the original observation and the imputed value will be redistributed
 to observations before and on the adjustment date.}
+
+\item{...}{ignored}
 }
 \value{
 data frame with columns location (fips code), date, inc, and cum

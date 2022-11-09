@@ -15,7 +15,8 @@ load_healthdata_data(
   replace_negatives = FALSE,
   adjustment_cases = "none",
   adjustment_method = "none",
-  geography = "US"
+  geography = "US",
+  drop_last_date = FALSE
 )
 }
 \arguments{
@@ -46,6 +47,12 @@ reporting anomalies to adjust.  Only the value "none" is currently supported}
 Only the value "none" is currently supported.}
 
 \item{geography}{character, which data to read. Only "US" is supported.}
+
+\item{drop_last_date}{boolean indicating whether to drop the last 1 day of
+data for the influenza and COVID hospitalization signals. The last day of
+data from the HHS data source is unreliable, so it is recommended to set this
+to \code{TRUE}. However, the default is \code{FALSE} so that the function maintains
+fidelity to the authoritative data source.}
 }
 \value{
 data frame with columns location (fips code), date, inc, and cum

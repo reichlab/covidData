@@ -32,6 +32,12 @@
 #' "flu hospitalizations" measures.
 #' Default to NULL which means "healthdata" for hospitalization data and "jhu"
 #' for all other measures.
+#' @param drop_last_date boolean indicating whether to drop the last 1 day of
+#' data for the influenza and COVID hospitalization signals. The last day of
+#' data from the HHS data source is unreliable, so it is recommended to set this
+#' to `TRUE`. However, the default is `FALSE` so that the function maintains
+#' fidelity to the authoritative data source. This argument is ignored if the
+#' `measure` is 'deaths' or 'cases'.
 #'
 #' @return data frame with columns location (fips code), date, inc, cum
 #'
@@ -60,8 +66,8 @@ load_data <- function(issues = NULL,
                       temporal_resolution = "weekly",
                       measure = "deaths",
                       geography = c("US", "global"),
-                      source = NULL) {
-
+                      source = NULL,
+                      drop_last_date = FALSE) {
   # validate measure
   measure <- match.arg(
     measure,
@@ -146,7 +152,8 @@ load_data <- function(issues = NULL,
       spatial_resolution = spatial_resolution,
       temporal_resolution = temporal_resolution,
       measure = measure,
-      geography = geography
+      geography = geography,
+      drop_last_date = drop_last_date
     )
   } else if (!is.null(as_of)) {
     purrr::map_dfr(as_of,
@@ -156,7 +163,8 @@ load_data <- function(issues = NULL,
       spatial_resolution = spatial_resolution,
       temporal_resolution = temporal_resolution,
       measure = measure,
-      geography = geography
+      geography = geography,
+      drop_last_date = drop_last_date
     )
   } else {
     function_call(
@@ -166,7 +174,8 @@ load_data <- function(issues = NULL,
       spatial_resolution = spatial_resolution,
       temporal_resolution = temporal_resolution,
       measure = measure,
-      geography = geography
+      geography = geography,
+      drop_last_date = drop_last_date
     )
   }
 }

@@ -12,7 +12,8 @@ load_covidcast_data(
   spatial_resolution = NULL,
   temporal_resolution = "weekly",
   measure = "hospitalizations",
-  geography = "US"
+  geography = "US",
+  drop_last_date = FALSE
 )
 }
 \arguments{
@@ -39,6 +40,13 @@ must be one of 'hospitalizations', 'deaths' or 'cases'.}
 
 \item{geography}{character, which data to read. Default is "US".
 Note this variable is not used in the function}
+
+\item{drop_last_date}{boolean indicating whether to drop the last 1 day of
+data for the influenza and COVID hospitalization signals. The last day of
+data from the HHS data source is unreliable, so it is recommended to set this
+to \code{TRUE}. However, the default is \code{FALSE} so that the function maintains
+fidelity to the authoritative data source. This argument is ignored if the
+\code{measure} is 'deaths' or 'cases'.}
 }
 \value{
 data frame with columns location (fips code), date, inc, and cum
