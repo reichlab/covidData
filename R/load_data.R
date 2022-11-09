@@ -19,16 +19,19 @@
 #' When source is "covidcast", this parameter has to match with location_code, if specified.
 #' @param temporal_resolution string specifying temporal resolution
 #' to include: one of 'daily' or 'weekly'
-#' @param measure string specifying measure of covid dynamics:
-#' one of 'deaths', 'cases', or 'hospitalizations'. Default to 'deaths'.
+#' @param measure string specifying measure of disease dynamics:
+#' one of 'deaths', 'cases', 'hospitalizations', or 'flu hospitalizations'.
+#' The first three of these refer to measures of covid intensity.
+#' Default to 'deaths'.
 #' @param geography character, which data to read. Default is "US", other option is
 #' "global".
 #' Note that "global" is not available for hospitalization data and "covidcast" source.
 #' @param source string specifying data source.  Currently supported sources are
 #' "jhu" or "covidcast" for the "deaths" or "cases" measures;
-#'  "healthdata" or "covidcast" for the "hospitalizations" measure.
-#'  Default to NULL which means "healthdata" for hospitalization data and "jhu" for all other
-#'  measures.
+#' "healthdata" or "covidcast" for the "hospitalizations" and
+#' "flu hospitalizations" measures.
+#' Default to NULL which means "healthdata" for hospitalization data and "jhu"
+#' for all other measures.
 #'
 #' @return data frame with columns location (fips code), date, inc, cum
 #'
@@ -62,13 +65,13 @@ load_data <- function(issues = NULL,
   # validate measure
   measure <- match.arg(
     measure,
-    choices = c("deaths", "cases", "hospitalizations"),
+    choices = c("deaths", "cases", "hospitalizations", "flu hospitalizations"),
     several.ok = FALSE
   )
 
   # validate spatial_resolution
   # hospitalizations measure doesn't allow for spatial resolution of county
-  if (measure == "hospitalizations") {
+  if (measure %in% c("hospitalizations", "flu hospitalizations")) {
     spatial_resolution <- match.arg(
       spatial_resolution,
       choices = c("state", "national"),
@@ -91,7 +94,10 @@ load_data <- function(issues = NULL,
 
   # validate source
   if (is.null(source)) {
-    source <- ifelse(measure == "hospitalizations", "healthdata", "jhu")
+    source <- ifelse(
+        measure %in% c("hospitalizations", "flu hospitalizations"),
+        "healthdata",
+        "jhu")
   } else {
     source <- match.arg(
       source,
@@ -100,14 +106,17 @@ load_data <- function(issues = NULL,
     )
   }
 
-  if (measure == "hospitalizations" &&
+  if (measure %in% c("hospitalizations", "flu hospitalizations") &&
     !source %in% c("healthdata", "covidcast")) {
-    stop("Source must be 'healthdata' or 'covidcast' when measure is 'hospitalizations'.")
-  } else if (measure != "hospitalizations" && source == "healthdata"){
-    stop("Source must be 'jhu' or 'covidcast' when measure is not 'hospitalizations'.")
+    stop("Source must be 'healthdata' or 'covidcast' when measure is ",
+         "'hospitalizations' or 'flu hospitalizations'.")
+  } else if (!(measure %in% c("hospitalizations", "flu hospitalizations")) &&
+             source == "healthdata") {
+    stop("Source must be 'jhu' or 'covidcast' when measure is not ",
+         "'hospitalizations' or 'flu hospitalizations'.")
   }
   
-  if (measure == "hospitalizations" &&
+  if (measure %in% c("hospitalizations", "flu hospitalizations") &&
       geography[1] != "US") {
     geography <- "US"
     warning("Only US hospitalization data are available now. Will be loading US data instead.")

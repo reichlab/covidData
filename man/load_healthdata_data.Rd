@@ -3,7 +3,7 @@
 \name{load_healthdata_data}
 \alias{load_healthdata_data}
 \title{Assemble a data frame of incident hospitalizations due to
-COVID-19 as they were available as of a specified issue date.}
+COVID-19 or influenza as they were available as of a specified issue date.}
 \usage{
 load_healthdata_data(
   issue_date = NULL,
@@ -11,7 +11,7 @@ load_healthdata_data(
   location_code = NULL,
   spatial_resolution = "state",
   temporal_resolution = "weekly",
-  measure = "hospitalizations",
+  measure = c("hospitalizations", "flu hospitalizations"),
   replace_negatives = FALSE,
   adjustment_cases = "none",
   adjustment_method = "none",
@@ -32,8 +32,9 @@ This parameter will be ignored if location_code is provided.}
 \item{temporal_resolution}{character vector specifying temporal resolution
 to include: 'daily' or 'weekly'}
 
-\item{measure}{character vector specifying measure of covid prevalence:
-must be 'hospitalizations'}
+\item{measure}{character vector specifying measure of disease prevalence:
+either 'hospitalizations' for COVID hospitalizations or
+'flu hospitalizations' for hospitalizations with influenza}
 
 \item{replace_negatives}{boolean to replace negative incs with imputed data
 Currently only FALSE is supported}
@@ -52,5 +53,5 @@ all values of cum will currently be NA
 }
 \description{
 Assemble a data frame of incident hospitalizations due to
-COVID-19 as they were available as of a specified issue date.
+COVID-19 or influenza as they were available as of a specified issue date.
 }

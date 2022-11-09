@@ -12,8 +12,10 @@ download_healthdata_timeseries(issue_date, healthdata_timeseries_history)
 \item{healthdata_timeseries_history}{a data.frame with hosp time series data update history}
 }
 \value{
-data.frame with columns state, date, previous_day_admission_adult_covid_confirmed
-and previous_day_admission_pediatric_covid_confirmed
+data.frame with columns state, date,
+previous_day_admission_adult_covid_confirmed
+previous_day_admission_pediatric_covid_confirmed, and
+previous_day_admission_influenza_confirmed
 }
 \description{
 Download time series data at a specific issue date

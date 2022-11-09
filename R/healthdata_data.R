@@ -1,5 +1,5 @@
 #' Assemble a data frame of incident hospitalizations due to
-#' COVID-19 as they were available as of a specified issue date.
+#' COVID-19 or influenza as they were available as of a specified issue date.
 #'
 #' @param issue_date character issue date (i.e. report date) to use for
 #' constructing truths in format 'yyyy-mm-dd'
@@ -10,8 +10,9 @@
 #' This parameter will be ignored if location_code is provided.
 #' @param temporal_resolution character vector specifying temporal resolution
 #' to include: 'daily' or 'weekly'
-#' @param measure character vector specifying measure of covid prevalence:
-#' must be 'hospitalizations'
+#' @param measure character vector specifying measure of disease prevalence:
+#' either 'hospitalizations' for COVID hospitalizations or
+#' 'flu hospitalizations' for hospitalizations with influenza
 #' @param replace_negatives boolean to replace negative incs with imputed data
 #' Currently only FALSE is supported
 #' @param adjustment_cases character vector specifying times and locations with
@@ -30,16 +31,17 @@ load_healthdata_data <- function(
     location_code = NULL,
     spatial_resolution = "state",
     temporal_resolution = "weekly",
-    measure = "hospitalizations",
+    measure = c("hospitalizations", "flu hospitalizations"),
     replace_negatives = FALSE,
     adjustment_cases = "none",
     adjustment_method = "none",
     geography = "US") {
   
   # validate measure and pull in correct data set
-  measure <- match.arg(measure, choices = c("hospitalizations"))
+  measure <- match.arg(measure,
+                       choices = c("hospitalizations", "flu hospitalizations"))
 
-  #retrieve data update history
+  # retrieve data update history
   healthdata_timeseries_history <- healthdata_timeseries_history()
   healthdata_dailyrevision_history <- healthdata_dailyrevision_history()
   
@@ -114,10 +116,13 @@ load_healthdata_data <- function(
     healthdata_timeseries_history,
     healthdata_dailyrevision_history)
   
-  if (issue_date > as.Date("2021-03-12")){
+  if (issue_date > as.Date("2021-03-12")) {
     raw_healthdata_data <- preprocess_healthdata_data(
       raw_healthdata_data,
-      covidData::fips_codes)
+      covidData::fips_codes,
+      measure = measure)
+  } else if (measure == "flu hospitalizations") {
+    stop("Flu hospitalizations not available for specified issue date.")
   }
 
   # data with as_of/issue_date before/on "2021-03-12"
@@ -151,6 +156,9 @@ load_healthdata_data <- function(
   results <- healthdata_data %>%
     dplyr::select(location, date, inc) %>%
     dplyr::filter(location %in% locations_to_keep)
+
+  # TODO: If requested, drop the last day of hospitalizations data
+  # within each location.
 
   # aggregate daily incidence to weekly incidence
   if (temporal_resolution == "weekly") {
@@ -193,22 +201,40 @@ load_healthdata_data <- function(
 #' The data column should be a list of data frames, with column names
 #' date, state, previous_day_admission_adult_covid_confirmed, and
 #' previous_day_admission_pediatric_covid_confirmed
-#' 
 #' @param fips_codes covidData::fips_codes data object
+#' @param measure the measure to retrieve, either "hospitalizations" or
+#' "flu hospitalizations"
+#' 
 #' @return a result of similar format to raw_healthdata_data, but columns
 #' date, location, and inc
-preprocess_healthdata_data <- function(raw_healthdata_data, fips_codes) {
+preprocess_healthdata_data <- function(raw_healthdata_data, fips_codes,
+                                       measure) {
   result <- raw_healthdata_data
 
   # calculate incidence column, change date to previous day, and
   # rename state to abbreviation
-  result$data[[1]] <- result$data[[1]] %>%
-    dplyr::transmute(
-      abbreviation = state,
-      date = as.Date(date) - 1,
-      inc = previous_day_admission_adult_covid_confirmed +
-        previous_day_admission_pediatric_covid_confirmed
-    )
+  if (measure == "hospitalizations") {
+    result$data[[1]] <- result$data[[1]] %>%
+        dplyr::transmute(
+        abbreviation = state,
+        date = as.Date(date) - 1,
+        inc = previous_day_admission_adult_covid_confirmed +
+            previous_day_admission_pediatric_covid_confirmed
+        )
+  } else if (measure == "flu hospitalizations") {
+    if (!("previous_day_admission_influenza_confirmed" %in% colnames(result$data[[1]]))) {
+      stop("Flu hospitalizations not available for specified issue date.")
+    }
+    result$data[[1]] <- result$data[[1]] %>%
+      dplyr::transmute(
+        abbreviation = state,
+        date = as.Date(date) - 1,
+        inc = previous_day_admission_influenza_confirmed
+      )
+  } else {
+    stop("Invalid measure: must be either 'hospitalizations' or ",
+         "'flu hospitalizations'.")
+  }
 
   # add US location by summing across all others
   result$data[[1]] <- dplyr::bind_rows(

@@ -33,13 +33,17 @@ load_covidcast_data <- function(issue_date = NULL,
   # validate measure and pull in correct data set
   measure <- match.arg(
     measure,
-    choices = c("hospitalizations", "cases", "deaths"),
+    choices = c("hospitalizations", "flu hospitalizations", "cases", "deaths"),
     several.ok = FALSE
   )
 
   # set covidcast signal and data source based on measure
   if (measure == "hospitalizations") {
     signal <- "confirmed_admissions_covid_1d"
+    data_source <- "hhs"
+    geo_type_choices <- c("nation", "state")
+  } else if (measure == "flu hospitalizations") {
+    signal <- "confirmed_admissions_influenza_1d"
     data_source <- "hhs"
     geo_type_choices <- c("nation", "state")
   } else if (measure == "cases") {
@@ -50,6 +54,9 @@ load_covidcast_data <- function(issue_date = NULL,
     signal <- "deaths_incidence_num"
     data_source <- "jhu-csse"
     geo_type_choices <- c("nation", "state", "county")
+  } else {
+    stop("Invalid measure: must be one of 'hospitalizations', ",
+         "'flu hospitalizations', 'cases', or 'deaths'")
   }
 
   # validate location_code
@@ -96,7 +103,7 @@ load_covidcast_data <- function(issue_date = NULL,
 
   # warnings for issue date
   if (!is.null(issue_date)) {
-    if (measure == "hospitalizations" & issue_date < "2020-11-16") {
+    if (measure %in% c("hospitalizations", "flu hospitalizations") & issue_date < "2020-11-16") {
       warning("Warning in load_covidcast_data: The earliest issue_date for hospitalization data is 2020-11-16.
               This function will load the latest instead.")
       issue_date <- NULL

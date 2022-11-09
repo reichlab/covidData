@@ -5,7 +5,7 @@
 \title{Preprocess healthdata data set, calculating incidence, adjusting date, and
 calculating national incidence.}
 \usage{
-preprocess_healthdata_data(raw_healthdata_data, fips_codes)
+preprocess_healthdata_data(raw_healthdata_data, fips_codes, measure)
 }
 \arguments{
 \item{raw_healthdata_data}{tibble one row and columns issue_date and data
@@ -14,6 +14,9 @@ date, state, previous_day_admission_adult_covid_confirmed, and
 previous_day_admission_pediatric_covid_confirmed}
 
 \item{fips_codes}{covidData::fips_codes data object}
+
+\item{measure}{the measure to retrieve, either "hospitalizations" or
+"flu hospitalizations"}
 }
 \value{
 a result of similar format to raw_healthdata_data, but columns
