@@ -12,7 +12,8 @@ test_that("preprocess_healthdata_data correct output",{
     date = "2020-11-15",
     data = list(daily_data)
   )
-  actual_result <- covidData:::preprocess_healthdata_data(healthdata_hosp_data_daily, fips)
+  actual_result <- covidData:::preprocess_healthdata_data(
+    healthdata_hosp_data_daily, fips, "hospitalizations")
   expected_result <- read_csv("test data/test_result.csv")
   expected_result <- expected_result %>% 
                      dplyr::mutate(date = lubridate::mdy(date)) %>%
