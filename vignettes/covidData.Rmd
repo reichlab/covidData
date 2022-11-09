@@ -9,19 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 ```
 
-
-## Setting up covidData
-
-To use the `covidData` package, you must first do some set-up to install the package and download the data from various sources.
-It is not as straight-forward as installing a normal R package.
-The latest instructions on how to install the package can be found on the package's [GitHub page](https://github.com/reichlab/covidData/).
-
-
-## Code to retrieve and plot data
-
-The following code retrieves and plots case and death data from JHU CSSE and hospitalization data from HealthData.gov.
-For more details about how these data are computed and what sources they come from, please see the [COVID-19 Forecast Hub Technical README file](https://github.com/reichlab/covid19-forecast-hub/blob/master/data-processed/README.md#ground-truth-data).
-
 ```{r message=FALSE}
 library(dplyr)
 library(forcats)
@@ -29,25 +16,34 @@ library(ggplot2)
 library(covidData)
 ```
 
+# Retrieve and plot COVID-19 data
+
+In this section, we illustrate retrieval of case and death data from JHU CSSE and hospitalization data from the HHS Protect system, as available on HealthData.gov.
+For more details about how these data are computed and what sources they come from, please see the [COVID-19 Forecast Hub Technical README file](https://github.com/reichlab/covid19-forecast-hub/blob/master/data-processed/README.md#ground-truth-data).
+
+## Data as of December 5, 2020, retrieved from JHU/CSSE
+
+By supplying the `as_of` argument, we can retrieve the version of data that had been reported as of a past date. Here, we retrieve state and national level data for each of the three measures of COVID-19 incidence, and combine them into a single data frame for plotting. The default behavior retrieves data directly from the JHU/CSSE GitHub repository; in the next section we illustrate retrieval of data from covidcast.
+
 ```{r message=FALSE}
 # Load incident cases, hospitalizations, and deaths data at state and national level
 combined_data <- dplyr::bind_rows(
-  load_jhu_data(
-    issue_date = "2020-12-05",
+  load_data(
+    as_of = "2020-12-05",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "cases"
   ) %>%
     dplyr::mutate(measure = "cases"),
-  load_jhu_data(
-    issue_date = "2020-12-05",
+  load_data(
+    as_of = "2020-12-05",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "deaths"
   ) %>%
     dplyr::mutate(measure = "deaths"),
-  load_healthdata_data(
-    issue_date = "2020-12-05",
+  load_data(
+    as_of = "2020-12-05",
     spatial_resolution = c("state", "national"),
     temporal_resolution = "daily",
     measure = "hospitalizations"
@@ -56,7 +52,12 @@ combined_data <- dplyr::bind_rows(
 )
 ```
 
+The `fips_codes` object provided by the `covidData` package has information about the locations for which it is possible to retrieve data. The default location encoding in the covidData package is the FIPS code of the location. Here, we add more human-readable location names to the data frame.
+
 ```{r}
+# The first few rows of the fips_codes data frame
+head(covidData::fips_codes)
+
 # Add more human readable location names,
 # set location abbreviation as a factor with US first
 combined_data <- combined_data %>%
@@ -68,6 +69,8 @@ combined_data <- combined_data %>%
     abbreviation = forcats::fct_relevel(factor(abbreviation), "US")
   )
 ```
+
+Finally, we plot the data.
 
 ```{r message=FALSE, fig.width=10, fig.height=32}
 # Plot the data
@@ -82,3 +85,128 @@ ggplot(
   #scale_x_date(limits=c(as.Date("2020-07-01"), Sys.Date())) +
   theme_bw()
 ```
+
+
+## Data retrieval from covidcast
+
+Here we illustrate retrieval of hospitalizations data from covidcast and compare to the data retrieved from HHS directly.
+
+```{r message=FALSE}
+# Load incident hospitalizations at state and national level from HHS directly
+# and from covidcast
+hosp_data <- dplyr::bind_rows(
+  load_data(
+    as_of = "2022-10-03",
+    spatial_resolution = c("state", "national"),
+    temporal_resolution = "daily",
+    measure = "hospitalizations"
+  ) %>%
+    dplyr::mutate(source = "healthdata"),
+  load_data(
+    as_of = "2022-10-03",
+    spatial_resolution = c("state", "national"),
+    temporal_resolution = "daily",
+    measure = "hospitalizations",
+    source = "covidcast"
+  ) %>%
+    dplyr::mutate(source = "covidcast")
+) %>%
+  # Add more human readable location names,
+  # set location abbreviation as a factor with US first
+  dplyr::left_join(
+    covidData::fips_codes,
+    by = "location"
+  ) %>%
+  dplyr::mutate(
+    abbreviation = forcats::fct_relevel(factor(abbreviation), "US")
+  )
+```
+
+A plot reveals that the data retrieved directly from HealthData has a couple more days of data at the end of the times series than the data retrieved from covidcast. The reason for this is differences in the interpretation of the "as of" date as implemented by covidcast and by our package. The covidcast system queries the data source for updates each morning, so the data returned by covidcast "as of" October 3, 2022 is the snapshot of the data that were available that morning. An advantage of this system is that the data retrieved as of October 3, 2022 will always be the same, but a disadvantage is that the latest data may not always be available. In contrast, when the covidData package retrieves data directly from HealthData.gov, it pulls the last available version of the data that was published on or before the specified as of date. Typically that last update is published after the time that covidcast takes a snapshot of the data. An advantage of this system is that published data are immediately available on the same day, but a disadvantage is that the version of the data obtained by making a query as of a specified date can change -- for instance, if I make a query for data as of October 3, 2022 on the morning of October 3 before a data release is made and again after a data release, the second query will return more data.
+
+```{r message=FALSE, fig.width=10, fig.height=8}
+# Plot the data
+ggplot(
+    #data = hosp_data,
+    data = hosp_data %>%
+        dplyr::filter(
+            abbreviation %in% c("US", "CA", "TX", "NY"),
+            date >= "2022-07-01"
+        ),
+    mapping = aes(x = date, y = inc, color = source)) +
+  geom_smooth(se=FALSE, span=.25) +
+  geom_point(alpha=.2) +
+  facet_wrap( ~ abbreviation, ncol = 2, scales = "free_y") +
+  scale_y_log10() +
+  theme_bw()
+```
+
+## Note on revisions to hospitalizations data
+
+The [description of the hospitalizations data](https://healthdata.gov/Hospital/COVID-19-Reported-Patient-Impact-and-Hospital-Capa/g62h-syeh) on HealthData.gov notes that the data set "...provides the latest values reported by each facility within the last four days." This means that at the end of the time series, the data are unreliable and are subject to revisions when updated facility-level data become available. In particular, we have noted that the reported value for the last date that is included in the data set is very often an exact duplicate of the reported value from the previous date. At a minimum, users of these data should be aware of this. Modelers may wish to include a nowcasting step that adjusts for systematic changes in reporting. Alternatively, as a more gross adjustment, we provide the boolean `drop_last_date` argument, which is only relevant to loading hospitalizations (or influenza hospitalizations) data and simply removes the last one day of reported data within each location. If data at a weekly temporal resolution were requested, this data removal is done before aggregating to a weekly signal.
+
+```{r}
+hosp_data <- load_data(
+  as_of = "2022-10-03",
+  spatial_resolution = c("state", "national"),
+  temporal_resolution = "daily",
+  measure = "hospitalizations"
+)
+
+hosp_data_drop_last_date <- load_data(
+  as_of = "2022-10-03",
+  spatial_resolution = c("state", "national"),
+  temporal_resolution = "daily",
+  measure = "hospitalizations",
+  drop_last_date = TRUE
+)
+
+max(hosp_data$date)
+max(hosp_data_drop_last_date$date)
+identical(
+    hosp_data %>%
+        dplyr::group_by(location) %>%
+        dplyr::filter(date < max(date)) %>%
+        dplyr::ungroup(),
+    hosp_data_drop_last_date)
+```
+
+# Influenza hospitalizations
+
+The covidData package also supports retrieving counts of influenza hospitalizations in the US from the HHS Protect data, either directly from HealthData.gov or via covidcast. As with COVID hospitalizations, there are typically differences at the end of the time series due to slightly different versions of the data being retrieved from the two sources for the same as of date.
+
+```{r message=FALSE, fig.width=10, fig.height=32}
+flu_hosps <- dplyr::bind_rows(
+    load_data(
+        spatial_resolution = c("state", "national"),
+        temporal_resolution = "daily",
+        measure = "flu hospitalizations"
+    ) %>%
+      dplyr::mutate(source = "healthdata"),
+    load_data(
+        spatial_resolution = c("state", "national"),
+        temporal_resolution = "daily",
+        measure = "flu hospitalizations",
+        source = "covidcast"
+    ) %>%
+      dplyr::mutate(source = "covidcast")
+  ) %>%
+  # Add more human readable location names,
+  # set location abbreviation as a factor with US first
+  dplyr::left_join(
+    covidData::fips_codes,
+    by = "location"
+  ) %>%
+  dplyr::mutate(
+    abbreviation = forcats::fct_relevel(factor(abbreviation), "US")
+  )
+
+ggplot(
+    data = flu_hosps %>% dplyr::filter(date >= "2022-01-01"),
+    mapping = aes(x = date, y = inc, color = source)) +
+  geom_point(alpha=.2) +
+  facet_wrap( ~ abbreviation, ncol = 3, scales = "free_y") +
+  theme_bw()
+```
+
+

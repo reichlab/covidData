@@ -12,8 +12,10 @@ download_healthdata_dailyrevision(issue_date, healthdata_dailyrevision_history)
 \item{healthdata_dailyrevision_history}{a data.frame with hosp time series data update history}
 }
 \value{
-data.frame with columns state, date, previous_day_admission_adult_covid_confirmed
-and previous_day_admission_pediatric_covid_confirmed
+data.frame with columns state, date,
+previous_day_admission_adult_covid_confirmed,
+previous_day_admission_pediatric_covid_confirmed,
+and previous_day_admission_influenza_confirmed
 }
 \description{
 Download daily revision data at a specific issue date

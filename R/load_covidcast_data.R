@@ -18,6 +18,12 @@
 #' must be one of 'hospitalizations', 'deaths' or 'cases'.
 #' @param geography character, which data to read. Default is "US".
 #' Note this variable is not used in the function
+#' @param drop_last_date boolean indicating whether to drop the last 1 day of
+#' data for the influenza and COVID hospitalization signals. The last day of
+#' data from the HHS data source is unreliable, so it is recommended to set this
+#' to `TRUE`. However, the default is `FALSE` so that the function maintains
+#' fidelity to the authoritative data source. This argument is ignored if the
+#' `measure` is 'deaths' or 'cases'.
 #'
 #' @return data frame with columns location (fips code), date, inc, and cum
 #'
@@ -28,18 +34,22 @@ load_covidcast_data <- function(issue_date = NULL,
                                 spatial_resolution = NULL,
                                 temporal_resolution = "weekly",
                                 measure = "hospitalizations",
-                                geography = "US") {
-
+                                geography = "US",
+                                drop_last_date = FALSE) {
   # validate measure and pull in correct data set
   measure <- match.arg(
     measure,
-    choices = c("hospitalizations", "cases", "deaths"),
+    choices = c("hospitalizations", "flu hospitalizations", "cases", "deaths"),
     several.ok = FALSE
   )
 
   # set covidcast signal and data source based on measure
   if (measure == "hospitalizations") {
     signal <- "confirmed_admissions_covid_1d"
+    data_source <- "hhs"
+    geo_type_choices <- c("nation", "state")
+  } else if (measure == "flu hospitalizations") {
+    signal <- "confirmed_admissions_influenza_1d"
     data_source <- "hhs"
     geo_type_choices <- c("nation", "state")
   } else if (measure == "cases") {
@@ -50,6 +60,9 @@ load_covidcast_data <- function(issue_date = NULL,
     signal <- "deaths_incidence_num"
     data_source <- "jhu-csse"
     geo_type_choices <- c("nation", "state", "county")
+  } else {
+    stop("Invalid measure: must be one of 'hospitalizations', ",
+         "'flu hospitalizations', 'cases', or 'deaths'")
   }
 
   # validate location_code
@@ -96,7 +109,7 @@ load_covidcast_data <- function(issue_date = NULL,
 
   # warnings for issue date
   if (!is.null(issue_date)) {
-    if (measure == "hospitalizations" & issue_date < "2020-11-16") {
+    if (measure %in% c("hospitalizations", "flu hospitalizations") & issue_date < "2020-11-16") {
       warning("Warning in load_covidcast_data: The earliest issue_date for hospitalization data is 2020-11-16.
               This function will load the latest instead.")
       issue_date <- NULL
@@ -142,6 +155,15 @@ load_covidcast_data <- function(issue_date = NULL,
   )
   
   class(results) <- class(results)[class(results) != "covidcast_signal"]
+
+  # If requested, drop the last day of data within each location
+  if (drop_last_date &&
+        measure %in% c("hospitalizations", "flu hospitalizations")) {
+    results <- results %>%
+      dplyr::group_by(location) %>%
+      dplyr::filter(date < max(date)) %>%
+      dplyr::ungroup()
+  }
 
   # aggregate daily incidence to weekly incidence
   if (temporal_resolution == "weekly") {

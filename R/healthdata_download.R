@@ -32,11 +32,13 @@ healthdata_timeseries_history <- function(){
 #' @param issue_date character issue date (i.e. report date) in format 'yyyy-mm-dd'
 #' @param healthdata_timeseries_history a data.frame with hosp time series data update history
 #'
-#' @return data.frame with columns state, date, previous_day_admission_adult_covid_confirmed 
-#' and previous_day_admission_pediatric_covid_confirmed
+#' @return data.frame with columns state, date,
+#' previous_day_admission_adult_covid_confirmed 
+#' previous_day_admission_pediatric_covid_confirmed, and
+#' previous_day_admission_influenza_confirmed
 download_healthdata_timeseries <- function(issue_date, healthdata_timeseries_history){
   healthdata_timeseries_history <- dplyr::filter(healthdata_timeseries_history, issue_date == UQ(issue_date))
-  data <- suppressMessages(
+  data <- suppressMessages(suppressWarnings(
     readr::read_csv(
       healthdata_timeseries_history$file_link %>%
         httr::GET(config = httr::config(ssl_verifypeer = FALSE)) %>%
@@ -45,13 +47,14 @@ download_healthdata_timeseries <- function(issue_date, healthdata_timeseries_his
         state = readr::col_character(),
         date = readr::col_character(), 
         previous_day_admission_adult_covid_confirmed = readr::col_integer(),
-        previous_day_admission_pediatric_covid_confirmed = readr::col_integer()
+        previous_day_admission_pediatric_covid_confirmed = readr::col_integer(),
+        previous_day_admission_influenza_confirmed = readr::col_integer()
       )
     ) %>%
       dplyr::mutate(
         date = lubridate::ymd(substr(date, 1, 10))
       )
-  )
+  ))
   return (data)
 }
 
@@ -95,8 +98,10 @@ healthdata_dailyrevision_history <- function(){
 #' @param issue_date character issue date (i.e. report date) in format 'yyyy-mm-dd'
 #' @param healthdata_dailyrevision_history a data.frame with hosp time series data update history
 #'
-#' @return data.frame with columns state, date, previous_day_admission_adult_covid_confirmed 
-#' and previous_day_admission_pediatric_covid_confirmed
+#' @return data.frame with columns state, date,
+#' previous_day_admission_adult_covid_confirmed,
+#' previous_day_admission_pediatric_covid_confirmed,
+#' and previous_day_admission_influenza_confirmed
 download_healthdata_dailyrevision <- function(issue_date, healthdata_dailyrevision_history){
   healthdata_dailyrevision_history <- dplyr::filter(healthdata_dailyrevision_history, issue_date == UQ(issue_date))
   data <- suppressMessages(
@@ -107,7 +112,8 @@ download_healthdata_dailyrevision <- function(issue_date, healthdata_dailyrevisi
       col_types = readr::cols_only(
         state = readr::col_character(),
         previous_day_admission_adult_covid_confirmed = readr::col_integer(),
-        previous_day_admission_pediatric_covid_confirmed = readr::col_integer()
+        previous_day_admission_pediatric_covid_confirmed = readr::col_integer(),
+        previous_day_admission_influenza_confirmed = readr::col_integer()
       )
     ) %>%
       dplyr::mutate(date = healthdata_dailyrevision_history$date)

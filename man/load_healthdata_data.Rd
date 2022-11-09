@@ -3,7 +3,7 @@
 \name{load_healthdata_data}
 \alias{load_healthdata_data}
 \title{Assemble a data frame of incident hospitalizations due to
-COVID-19 as they were available as of a specified issue date.}
+COVID-19 or influenza as they were available as of a specified issue date.}
 \usage{
 load_healthdata_data(
   issue_date = NULL,
@@ -11,11 +11,12 @@ load_healthdata_data(
   location_code = NULL,
   spatial_resolution = "state",
   temporal_resolution = "weekly",
-  measure = "hospitalizations",
+  measure = c("hospitalizations", "flu hospitalizations"),
   replace_negatives = FALSE,
   adjustment_cases = "none",
   adjustment_method = "none",
-  geography = "US"
+  geography = "US",
+  drop_last_date = FALSE
 )
 }
 \arguments{
@@ -32,8 +33,9 @@ This parameter will be ignored if location_code is provided.}
 \item{temporal_resolution}{character vector specifying temporal resolution
 to include: 'daily' or 'weekly'}
 
-\item{measure}{character vector specifying measure of covid prevalence:
-must be 'hospitalizations'}
+\item{measure}{character vector specifying measure of disease prevalence:
+either 'hospitalizations' for COVID hospitalizations or
+'flu hospitalizations' for hospitalizations with influenza}
 
 \item{replace_negatives}{boolean to replace negative incs with imputed data
 Currently only FALSE is supported}
@@ -45,6 +47,12 @@ reporting anomalies to adjust.  Only the value "none" is currently supported}
 Only the value "none" is currently supported.}
 
 \item{geography}{character, which data to read. Only "US" is supported.}
+
+\item{drop_last_date}{boolean indicating whether to drop the last 1 day of
+data for the influenza and COVID hospitalization signals. The last day of
+data from the HHS data source is unreliable, so it is recommended to set this
+to \code{TRUE}. However, the default is \code{FALSE} so that the function maintains
+fidelity to the authoritative data source.}
 }
 \value{
 data frame with columns location (fips code), date, inc, and cum
@@ -52,5 +60,5 @@ all values of cum will currently be NA
 }
 \description{
 Assemble a data frame of incident hospitalizations due to
-COVID-19 as they were available as of a specified issue date.
+COVID-19 or influenza as they were available as of a specified issue date.
 }

@@ -13,7 +13,8 @@ load_data(
   temporal_resolution = "weekly",
   measure = "deaths",
   geography = c("US", "global"),
-  source = NULL
+  source = NULL,
+  drop_last_date = FALSE
 )
 }
 \arguments{
@@ -40,8 +41,10 @@ When source is "covidcast", this parameter has to match with location_code, if s
 \item{temporal_resolution}{string specifying temporal resolution
 to include: one of 'daily' or 'weekly'}
 
-\item{measure}{string specifying measure of covid dynamics:
-one of 'deaths', 'cases', or 'hospitalizations'. Default to 'deaths'.}
+\item{measure}{string specifying measure of disease dynamics:
+one of 'deaths', 'cases', 'hospitalizations', or 'flu hospitalizations'.
+The first three of these refer to measures of covid intensity.
+Default to 'deaths'.}
 
 \item{geography}{character, which data to read. Default is "US", other option is
 "global".
@@ -49,9 +52,17 @@ Note that "global" is not available for hospitalization data and "covidcast" sou
 
 \item{source}{string specifying data source.  Currently supported sources are
 "jhu" or "covidcast" for the "deaths" or "cases" measures;
-"healthdata" or "covidcast" for the "hospitalizations" measure.
-Default to NULL which means "healthdata" for hospitalization data and "jhu" for all other
-measures.}
+"healthdata" or "covidcast" for the "hospitalizations" and
+"flu hospitalizations" measures.
+Default to NULL which means "healthdata" for hospitalization data and "jhu"
+for all other measures.}
+
+\item{drop_last_date}{boolean indicating whether to drop the last 1 day of
+data for the influenza and COVID hospitalization signals. The last day of
+data from the HHS data source is unreliable, so it is recommended to set this
+to \code{TRUE}. However, the default is \code{FALSE} so that the function maintains
+fidelity to the authoritative data source. This argument is ignored if the
+\code{measure} is 'deaths' or 'cases'.}
 }
 \value{
 data frame with columns location (fips code), date, inc, cum
