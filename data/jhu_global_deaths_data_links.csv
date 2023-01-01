@@ -1,4 +1,5 @@
 "date","file_link"
+2023-01-01,"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/9688c64ef49b97ed3104fb1ba5b064249de042b6/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
 2022-12-31,"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/ccf095ca363a28d3808e8f7010988f5b5f808faf/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
 2022-12-30,"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/e7a40630a7eed236b5af6e2c8aa5d407bddf0a92/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
 2022-12-29,"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/c823f61fc9f716469f973a877acb53c7c477c83f/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
