@@ -1,6 +1,8 @@
 #' Retrieve hosp time series data update history from healthdata.gov
 #' 
-#' @return a data.frame with columns issue_date, issue_datetime and file_link 
+#' @return a data.frame with columns issue_date, issue_datetime and file_link
+#' 
+#' @importFrom RSocrata read.socrata
 healthdata_timeseries_history <- function(){
   # get issue date and link to file for each timeseries data revision
   # over the weekend of 2020-03-13 to 2021-03-14, healthdata.gov changed their
@@ -59,7 +61,9 @@ download_healthdata_timeseries <- function(issue_date, healthdata_timeseries_his
 #' Retrieve hosp daily revision data update history from healthdata.gov
 #' 
 #' @return a data.frame with columns issue_date, date, issue_datetime and file_link
-healthdata_dailyrevision_history <- function(){  
+#' 
+#' @importFrom RSocrata read.socrata
+healthdata_dailyrevision_history <- function(){
   # get issue date and link to file for each daily data revision
   # over the weekend of 2020-03-13 to 2021-03-14, healthdata.gov changed their
   # data storage mechanism.  For simplicity, we save and re-use the older files,
