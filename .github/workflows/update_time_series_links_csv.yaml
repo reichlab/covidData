@@ -25,12 +25,13 @@ jobs:
       
       - name: Install dependencies
         run: |
-          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here", "tidyr"))
+          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here", "tidyr", "RSocrata"))
         shell: Rscript {0}
 
       - name: Update time series
         run: |
           library(httr)
+          library(RSocrata)
           library(dplyr)
           library(here)
           setwd(here())

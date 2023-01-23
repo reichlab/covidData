@@ -6,11 +6,9 @@ healthdata_timeseries_history <- function(){
   # over the weekend of 2020-03-13 to 2021-03-14, healthdata.gov changed their
   # data storage mechanism.  For simplicity, we save and re-use the older files,
   # downloading only files released after that time
-  temp <- httr::GET(
-    "https://healthdata.gov/resource/qqte-vkut.json",
-    config = httr::config(ssl_verifypeer = FALSE)) %>%
-    as.character() %>%
-    jsonlite::fromJSON()
+  temp <- RSocrata::read.socrata(
+    url = "https://healthdata.gov/resource/qqte-vkut.json") %>% 
+    dplyr::arrange(update_date)
   
   timeseries_revisions_meta <- data.frame(
     issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
@@ -69,11 +67,9 @@ healthdata_dailyrevision_history <- function(){
   
   # temporarily commenting out collection of new daily updates --
   # the resource is not available to the public as of 2021-03-29
-  temp <- httr::GET(
-    "https://healthdata.gov/resource/4cnb-m4rz.json",
-    config = httr::config(ssl_verifypeer = FALSE)) %>%
-    as.character() %>%
-    jsonlite::fromJSON()
+  temp <- RSocrata::read.socrata(
+    url = "https://healthdata.gov/resource/4cnb-m4rz.json") %>%
+    dplyr::arrange(update_date)
   
   daily_revisions_meta <- data.frame(
     issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
