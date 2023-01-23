@@ -15,7 +15,7 @@ healthdata_timeseries_history <- function(){
   timeseries_revisions_meta <- data.frame(
     issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
     issue_datetime = temp$update_date,
-    file_link = temp$archive_link$url,
+    file_link = temp$url,
     stringsAsFactors = FALSE
   ) %>%
     dplyr::filter(
@@ -79,7 +79,7 @@ healthdata_dailyrevision_history <- function(){
     issue_date = lubridate::ymd(substr(temp$update_date, 1, 10)), # actually the file creation date, not the issue date
     date = lubridate::ymd(substr(temp$update_date, 1, 10)),
     issue_datetime = temp$update_date,
-    file_link = temp$archive_link$url,
+    file_link = temp$url,
     stringsAsFactors = FALSE
   ) %>%
     dplyr::filter(
