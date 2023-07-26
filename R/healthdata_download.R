@@ -8,10 +8,7 @@ healthdata_timeseries_history <- function(){
   # over the weekend of 2020-03-13 to 2021-03-14, healthdata.gov changed their
   # data storage mechanism.  For simplicity, we save and re-use the older files,
   # downloading only files released after that time
-  temp <- dplyr::bind_rows(
-    RSocrata::read.socrata(url = "https://healthdata.gov/resource/qqte-vkut.json"),
-    RSocrata::read.socrata(url = "https://healthdata.gov/resource/p43m-k9xz.json")
-  ) %>%
+  temp <- RSocrata::read.socrata(url = "https://healthdata.gov/resource/qqte-vkut.json") %>%
     dplyr::arrange(update_date)
   
   timeseries_revisions_meta <- data.frame(
