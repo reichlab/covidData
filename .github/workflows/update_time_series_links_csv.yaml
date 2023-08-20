@@ -12,6 +12,11 @@ on:
 jobs:
   update_time_series_links_csv:
     runs-on: macOS-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
     steps:
       - name: Checkout covidData repo
         uses: actions/checkout@v3
