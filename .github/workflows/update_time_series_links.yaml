@@ -12,6 +12,11 @@ on:
 jobs:
   update_time_series_links:
     runs-on: macOS-latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
     steps:
       - name: Checkout covidData repo
         uses: actions/checkout@v3
@@ -25,7 +30,8 @@ jobs:
       
       - name: Install dependencies
         run: |
-          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here", "RSocrata"))
+          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here", "tidyr", "remotes"))
+          remotes::install_github("Chicago/RSocrata")
         shell: Rscript {0}
 
       - name: Update time series
