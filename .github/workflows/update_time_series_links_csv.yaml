@@ -25,7 +25,8 @@ jobs:
       
       - name: Install dependencies
         run: |
-          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here", "tidyr", "RSocrata"))
+          install.packages(c("tidyverse", "dplyr", "httr", "readr", "here", "tidyr", "remotes"))
+          remotes::install_github("Chicago/RSocrata")
         shell: Rscript {0}
 
       - name: Update time series
