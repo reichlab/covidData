@@ -13,18 +13,16 @@ To clone the repository, in a terminal you can run `git clone https://github.com
 
 You will need R 3.x or 4.x
 
-## installation using `make`
-We recommend using `make` to simplify the updating of data. However, some Windows operating systems do not allow for easy use of the command `make`, so manual installation should be used if `make` does not work. 
+## installation via `remotes`
 
-To use `make`, you must complete the following steps once you have cloned the repository:
+You can install the package using the `remotes` package using
 
-1. In a terminal/shell window, navigate to `code/data-processing`.
-2. Run `make all`. (This runs the steps below.)
-
-Note: If you want to only download the most recent JHU data files, for step 2. instead run `make recent_data`
+``` r
+remotes::install_github('reichlab/covidData')
+```
 
 ## manual installation
-If make does not work for you, you may run the following steps by hand. To update the data, please:
+If installation using `remotes` does not work for you, you may run the following steps by hand.
 
 1. Clone the repository. If you have previously installed covidData from an existing local clone, pull any updates to the package by running `git pull origin master` from the terminal, with the repository folder as your working directory.
 1. Run `R CMD INSTALL covidData` from the terminal
