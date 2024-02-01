@@ -1,16 +1,15 @@
 Package: covidData
 Title: Versioned Data for COVID-19
-Version: 1.0.0
+Version: 1.0.1
 Authors@R:
-    person(given = "First",
-           family = "Last",
+    person(given = "Evan",
+           family = "Ray",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "elray@umass.edu")
 Description: Versioned Data for COVID-19
 License: MIT
 Imports:
-  dplyr, tibble, tidyr, MMWRweek, lubridate, purrr, magrittr, xml2, rvest, RSocrata, here, httr
+  dplyr, here, httr, lubridate, magrittr, MMWRweek, purrr, readr, RSocrata, rvest, tibble, tidyr, xml2
 Suggests:
   covidcast
 Remotes:
