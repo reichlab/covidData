@@ -1,4 +1,4 @@
-## covidData 1.0.0
+## covidData 1.0.1
 
 #### Feature updates
 - 
@@ -30,3 +30,6 @@
 #### v 1.0.0
  - Update handling of JHU data: at time of package installation, we only download data for the most recent few days, as well as links to download other data files. Those other files are downloaded and processed only at the time of a request for them.
  - Looking at `covidData::jhu_deaths_data$issue_date` is no longer a reliable way to see all available issue dates!  This may break existing code.  Instead, use new helper function `available_issue_dates`.
+
+#### v 1.0.1
+ - import the readr package
