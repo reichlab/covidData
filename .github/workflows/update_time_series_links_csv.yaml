@@ -5,9 +5,6 @@ on:
       name:
         description: 'Update time series data links'
         required: false
-  schedule:
-    - cron: "10 0 * * *"
-    - cron: "10 17 * * *"
 
 jobs:
   update_time_series_links_csv:
